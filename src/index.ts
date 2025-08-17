@@ -1,41 +1,42 @@
-import { HEIGHT, PATH, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
-import { convertTileToMapBounds, drawTileMap } from "./maps";
-import { Critter, entities, Entity, NEXT_DIR } from "./template_files/entity";
+import { HEIGHT, WIDTH } from "./constants";
+import { drawTileMap } from "./maps";
+import { Critter, entities } from "../x_template_files/entity";
 
 const mapCanvas = document.querySelector('#mc') as HTMLCanvasElement;
 const mapCtx = mapCanvas.getContext('2d') as CanvasRenderingContext2D;
 const canvas = document.querySelector('#c') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-const image = new Image();
+// const image = new Image();
 
-image.src = 'i.png';
+// image.src = 'i.png';
 
 // const MOD_PATH = PATH.map(([x, y]) => [x * 2, y * 2]);
 // console.log(MOD_PATH);
 
-let windowTime = 0;
-let dt = 0;
+// let windowTime = 0;
+// let dt = 0;
 let gameTime = 0;
-let score = 0;
-let viewportX = 0;
+// let score = 0;
+// let viewportX = 0;
 
-function gameLoop(newTime: number): void {
+// function gameLoop(newTime: number): void {
+function gameLoop(): void {
   requestAnimationFrame(gameLoop);
 
   // console.log('GAME!');
   ctx.clearRect(0, 0, WIDTH, HEIGHT);
   render();
-  windowTime = newTime;
-  dt = 0;
+  // windowTime = newTime;
+  // dt = 0;
 }
 
-function handleInput(): void {}
+// function handleInput(): void {}
 
-function updateEntities(): void {}
+// function updateEntities(): void {}
 
-function collisionDetection(): void {}
+// function collisionDetection(): void {}
 
-function updateCamera(): void {}
+// function updateCamera(): void {}
 
 // for (let i = 0; i < 5000; i++) {
 //   new Critter();

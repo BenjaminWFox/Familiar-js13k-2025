@@ -1,5 +1,5 @@
-import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, type Path, CRITTER_MOVE_SPEED } from "../constants";
-import { convertPointPathToMap, convertTileToMapBounds } from "../maps";
+import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED } from "../src/constants";
+import { convertTileToMapBounds } from "../src/maps";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -192,7 +192,7 @@ function critterRender(this: Critter, ctx: CanvasRenderingContext2D) {
       this.dx = moveD.dx;
       this.dy = moveD.dy;
 
-      const { midX, midY, expandedMinX, expandedMaxX, expandedMaxY, expandedMinY, minX, minY, maxX, maxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
+      const { minX, minY, maxX, maxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
       this.destX = getRandomInt(minX - X_TILE_WIDTH * .25, maxX - X_TILE_WIDTH * .5);
       this.destY = getRandomInt(minY - Y_TILE_HEIGHT * .5, maxY - Y_TILE_HEIGHT * 1.25);
 
