@@ -1,4 +1,5 @@
-#c {
+#mc, #c {
+  position: absolute;
   width: 100vw;
   outline: 0;
   image-rendering: pixelated; /* You definitely want this if you are doing pixel art */
@@ -17,7 +18,7 @@ body {
 
 /* Input whatever aspect ratio you use here */
 @media (min-aspect-ratio: 16 / 9) {
-  #c {
+  #mc, #c {
     height: 100vh;
     width: auto;
   }

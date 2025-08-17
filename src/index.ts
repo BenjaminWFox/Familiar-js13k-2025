@@ -1,10 +1,17 @@
-import { PATH, PATH_OBJ, X_TILE_WIDTH, X_TILES, Y_TILE_HEIGHT, Y_TILES } from "./constants";
+import { HEIGHT, PATH, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
+import { convertTileToMapBounds, drawTileMap } from "./maps";
+import { Critter, entities, Entity, NEXT_DIR } from "./template_files/entity";
 
+const mapCanvas = document.querySelector('#mc') as HTMLCanvasElement;
+const mapCtx = mapCanvas.getContext('2d') as CanvasRenderingContext2D;
 const canvas = document.querySelector('#c') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const image = new Image();
 
 image.src = 'i.png';
+
+// const MOD_PATH = PATH.map(([x, y]) => [x * 2, y * 2]);
+// console.log(MOD_PATH);
 
 let windowTime = 0;
 let dt = 0;
@@ -13,10 +20,10 @@ let score = 0;
 let viewportX = 0;
 
 function gameLoop(newTime: number): void {
-  // requestAnimationFrame(gameLoop);
+  requestAnimationFrame(gameLoop);
 
   // console.log('GAME!');
-
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
   render();
   windowTime = newTime;
   dt = 0;
@@ -30,145 +37,40 @@ function collisionDetection(): void {}
 
 function updateCamera(): void {}
 
+// for (let i = 0; i < 5000; i++) {
+//   new Critter();
+// }
+new Critter();
+
 function render(): void {
+  gameTime += 1;
+  if (gameTime % 7 === 0) {
+    new Critter();
+  }
   clearScreen();
-  drawTileMap();
   drawEntities();
+  entities.forEach(e => e.render(ctx));
+
+  for (let i = 0; i < entities.length; i++) {
+    if (entities[i].deleted) {
+      entities.splice(i, 1);
+      i--;
+    }
+  }
+
+  // // Show "expanded" data results
+  // const data = convertTileToMapBounds(PATH[1], NEXT_DIR.SW);
+  // const data2 = convertTileToMapBounds(PATH[1], NEXT_DIR.W);
+  // ctx.fillStyle = 'red';
+  // ctx.fillRect(data.expandedMinX, data.expandedMinY, 10, 10);
+  // ctx.fillRect(data.expandedMaxX, data.expandedMaxY, -10, -10)
+  // ctx.fillStyle = 'yellow';
+  // ctx.fillRect(data2.expandedMinX, data2.expandedMinY, 10, 10);
+  // ctx.fillRect(data2.expandedMaxX, data2.expandedMaxY, -10, -10)
 }
 
 function clearScreen(): void {}
 
-function testPath(x: number, y: number): keyof typeof PATH_OBJ {
-  let xStr = `${x/2}`;
-  let yStr = `${y/2}`;
-
-  return `${xStr},${yStr}` as keyof typeof PATH_OBJ;
-}
-
-function findPathIndex(x: number, y: number) {
-  return PATH.findIndex(([_x, _y]) => {
-    return _x === x && _y === y
-  });
-}
-
-function drawTileMap(): void {
-
-  let cornerXRight = 0;
-  let cornerXLeft = 0;
-  let cornerY = 0;
-
-  for(let y = 0; y < Y_TILES * 2; y++) {
-    for(let x = 0; x < X_TILES * 2; x++) {
-      
-      // else if (lastX > x) {
-      //   cornerXRight = 0;
-      //   cornerXLeft = 1;
-      // } else {
-      //   cornerXRight = 0;
-      //   cornerXLeft = 0;
-      // }
-
-      if (PATH_OBJ[testPath(x, y)]) {
-        const normalizedX = x / 2
-        const normalizedY = y / 2
-        const currentIndex = findPathIndex(normalizedX, normalizedY);
-        const lastIndex = currentIndex - 1;
-        const [lastX, lastY] = PATH[lastIndex] || [null, null];
-
-        console.log({
-          test: testPath(x, y),
-          lastX: lastX,
-          curX: normalizedX,
-          lastY: lastY,
-          curY: normalizedY,
-        });
-
-        // Colors all:
-        ctx.fillStyle = 'grey';
-
-        ctx.fillRect(
-          (x - 1) * X_TILE_WIDTH,
-          (y - 1) * Y_TILE_HEIGHT,
-          X_TILE_WIDTH * (3),
-          Y_TILE_HEIGHT * 3
-        );
-
-        // ctx.fillStyle = 'black';
-        // ctx.fillRect(x * X_TILE_WIDTH, y * Y_TILE_HEIGHT, X_TILE_WIDTH, Y_TILE_HEIGHT)
-
-        // ctx.fillStyle = 'red'
-        if (lastX > normalizedX) {
-          if (lastY < normalizedY) {
-            ctx.fillRect(
-              (x + 2) * X_TILE_WIDTH,
-              y * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-            ctx.fillRect(
-              x * X_TILE_WIDTH,
-              (y - 2) * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-          }
-          // Possibly not correct, also not implemented with current path
-          // if (lastY > normalizedY) {
-          //   ctx.fillRect(
-          //     (x - 2) * X_TILE_WIDTH,
-          //     y * Y_TILE_HEIGHT,
-          //     X_TILE_WIDTH,
-          //     Y_TILE_HEIGHT
-          //   );
-          //   ctx.fillRect(
-          //     x * X_TILE_WIDTH,
-          //     (y + 2) * Y_TILE_HEIGHT,
-          //     X_TILE_WIDTH,
-          //     Y_TILE_HEIGHT
-          //   );
-          // }
-        }
-
-        if (lastX < normalizedX) {
-
-          if (lastY > normalizedY) {
-            ctx.fillRect(
-              (x - 2) * X_TILE_WIDTH,
-              y * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-            ctx.fillRect(
-              x * X_TILE_WIDTH,
-              (y + 2) * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-          }
-
-          if (lastY < normalizedY) {
-            ctx.fillRect(
-              (x - 2) * X_TILE_WIDTH,
-              y * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-            ctx.fillRect(
-              x * X_TILE_WIDTH,
-              (y - 2) * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-          }
-        }
-      } else {
-        // ctx.strokeRect(x * X_TILE_WIDTH, y * Y_TILE_HEIGHT, X_TILE_WIDTH, Y_TILE_HEIGHT)
-      }
-
-    }
-  }
-}
-
 function drawEntities(): void {}
-
+drawTileMap(mapCtx);
 requestAnimationFrame(gameLoop);

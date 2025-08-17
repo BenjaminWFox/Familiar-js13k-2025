@@ -5,7 +5,12 @@ export const Y_TILES = 20;
 export const X_TILE_WIDTH = WIDTH / X_TILES / 2;
 export const Y_TILE_HEIGHT = HEIGHT / Y_TILES / 2;
 
-export const PATH = [
+console.log('*** Setup Data', {X_TILE_WIDTH, Y_TILE_HEIGHT})
+
+export type Tile = [number, number];
+export type Path = Array<Tile>
+
+export const PATH: Path = [
   [5,0],
   [5,1],
   [4,2],
@@ -104,6 +109,8 @@ export const PATH_OBJ = {
   '28,13': 1,
   '29,13': 1,
 }
+
+export const CRITTER_MOVE_SPEED = 5;
 
 export const CENTER_X = WIDTH / 2;
 export const CENTER_Y = HEIGHT / 2;
