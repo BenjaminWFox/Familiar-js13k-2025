@@ -3,13 +3,17 @@ import { towers } from "./entity";
 import { overlayCtx } from "./elements";
 
 let scale = 1;
+
 export const getScale = () => scale;
+
 export const setScale = () => {
   scale = getCanvas().offsetWidth / WIDTH;
 };
+
 export function getCanvas(): HTMLElement {
   return document.getElementById('gc')! as HTMLElement;
 }
+
 export function translateXYMouseToCanvas(mouseX: number, mouseY: number) {
   const c = getCanvas();
   const x = mouseX - c.offsetLeft;
@@ -29,9 +33,11 @@ const mouseTile = {
 export function setMouseTile(mouseX: number, mouseY: number) {
   const {x, y} = translateXYMouseToCanvas(mouseX, mouseY);
   
+  // Get the total number of X & Y tiles in "round" number of tiles where the draw should start
   const tileStartX = Math.floor(x / X_TILE_WIDTH);
   const tileStartY = Math.floor(y / Y_TILE_HEIGHT);
-  
+
+  // Start the draw and the canvas-scaled X & Y for the given tile
   mouseTile.x = tileStartX * X_TILE_WIDTH;
   mouseTile.y = tileStartY * Y_TILE_HEIGHT;
 }
