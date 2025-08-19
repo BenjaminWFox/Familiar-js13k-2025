@@ -1,9 +1,9 @@
-#mc, #c {
+/* #mc, #c {
   position: absolute;
   width: 100vw;
   outline: 0;
-  image-rendering: pixelated; /* You definitely want this if you are doing pixel art */
-}
+  image-rendering: pixelated;
+} */
 
 /* Get rid of any margins, set background black, use flexbox to center */
 html,
@@ -16,9 +16,22 @@ body {
   height: 100%;
 }
 
+#mc, #gc, #oc {
+  position: absolute;
+  width: 100vw;
+  outline: 0;
+  image-rendering: pixelated; /* You definitely want this if you are doing pixel art */
+}
+
+@media (max-aspect-ratio: 3/2) {
+  #mc, #gc, #oc {
+    width: 100vw;
+  }
+}
+
 /* Input whatever aspect ratio you use here */
-@media (min-aspect-ratio: 16 / 9) {
-  #mc, #c {
+@media (min-aspect-ratio: 3/2) {
+  #mc, #gc, #oc {
     height: 100vh;
     width: auto;
   }

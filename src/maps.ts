@@ -75,6 +75,12 @@ export function convertTileToMapBounds(t: Tile, mDir: NEXT_DIR, isMapPoint = fal
   return conversionData
 }
 
+// Create an object to prevent iterating every time
+// probably overkill
+PATH.forEach((e: Tile) => {
+  PATH_OBJ[e.toString()] = 1
+});
+
 export function drawTileMap(ctx: CanvasRenderingContext2D): void {
   for(let y = 0; y < Y_TILES * 2; y++) {
     for(let x = 0; x < X_TILES * 2; x++) {

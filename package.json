@@ -5,7 +5,7 @@
   "license": "MIT",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "build": "tsc && vite build",
     "fix": "biome check --write --unsafe .",
     "preview": "vite preview",
