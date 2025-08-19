@@ -1,5 +1,5 @@
 import { type Tile, PATH, PATH_OBJ, X_TILE_WIDTH, X_TILES, Y_TILE_HEIGHT, Y_TILES } from "./constants";
-import { getDirectionFromTo, NEXT_DIR } from "../x_template_files/entity";
+import { getDirectionFromTo, NEXT_DIR } from "./entity";
 
 function testPath(x: number, y: number): keyof typeof PATH_OBJ {
   const [xStr, yStr] = convertPointMapToPath(x, y);

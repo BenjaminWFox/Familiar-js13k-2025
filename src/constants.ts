@@ -5,7 +5,9 @@ export const Y_TILES = 20;
 export const X_TILE_WIDTH = WIDTH / X_TILES / 2;
 export const Y_TILE_HEIGHT = HEIGHT / Y_TILES / 2;
 
-console.log("*** Setup Data", { X_TILE_WIDTH, Y_TILE_HEIGHT });
+
+export const MENU_TOWER_START_X = 0
+export const MENU_TOWER_START_Y = 0
 
 export type Tile = [number, number];
 export type Path = Array<Tile>;
