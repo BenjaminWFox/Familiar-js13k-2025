@@ -1,5 +1,5 @@
 import { WIDTH, X_TILE_WIDTH, X_TILES, Y_TILE_HEIGHT } from "./constants";
-import { towers } from "./entity";
+import { Entity, Tower, towers } from "./entity";
 import { overlayCtx } from "./elements";
 
 let scale = 1;
@@ -20,26 +20,28 @@ export function translateXYMouseToCanvas(mouseX: number, mouseY: number) {
   const y = mouseY - c.offsetTop;
 
   return {
-    x: Math.round(x / getScale()),
-    y: Math.round(y / getScale())
+    canvasX: Math.round(x / getScale()),
+    canvasY: Math.round(y / getScale())
   }
 }
 
-const mouseTile = {
+export const mouseTile = {
   x: 0,
   y: 0,
 }
 
+export function getTileLockedXY(x: number, y: number) {
+  return { tileLockedX: Math.floor(x / X_TILE_WIDTH) * X_TILE_WIDTH, tileLockedY: Math.floor(y / Y_TILE_HEIGHT) * Y_TILE_HEIGHT }
+}
+
 export function setMouseTile(mouseX: number, mouseY: number) {
-  const {x, y} = translateXYMouseToCanvas(mouseX, mouseY);
-  
+  const { canvasX, canvasY } = translateXYMouseToCanvas(mouseX, mouseY);
+  const {tileLockedX, tileLockedY} = getTileLockedXY(canvasX, canvasY)
   // Get the total number of X & Y tiles in "round" number of tiles where the draw should start
-  const tileStartX = Math.floor(x / X_TILE_WIDTH);
-  const tileStartY = Math.floor(y / Y_TILE_HEIGHT);
 
   // Start the draw and the canvas-scaled X & Y for the given tile
-  mouseTile.x = tileStartX * X_TILE_WIDTH;
-  mouseTile.y = tileStartY * Y_TILE_HEIGHT;
+  mouseTile.x = tileLockedX;
+  mouseTile.y = tileLockedY;
 }
 
 export function drawMouseTile() {
@@ -49,6 +51,7 @@ export function drawMouseTile() {
 
 export function hitTest(x: number, y: number) {
   console.log('Testing', x, y, getScale())
+  
   towers.forEach(t => {
     console.log({ x: t.x, y: t.y, w: t.width, h: t.height})
     console.log(
@@ -57,8 +60,9 @@ export function hitTest(x: number, y: number) {
       t.y < y,
       t.y + t.height > y
     )
+
     if (t.x < x && t.x + t.width > x && t.y < y && t.y + t.height > y) {
-      console.log('HIT', t.color)
+      console.log('HIT', t.color);
     }
   })
 }

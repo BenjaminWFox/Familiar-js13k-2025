@@ -1,5 +1,6 @@
 import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED } from "./constants";
 import { convertTileToMapBounds } from "./maps";
+import { hitTest, mouseTile, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -217,10 +218,16 @@ export class Critter extends Entity {
   }
 }
 
+
+function draggable(this: Tower, handler: Function) {
+  window.addEventListener('mousedown', handler.bind(this))
+}
+
 export class Tower extends Entity {
   color: string;
   width: number;
   height: number;
+  dragging: boolean = false;
 
   constructor(x: number, y: number, color: string) {
     super(x, y)
@@ -232,7 +239,42 @@ export class Tower extends Entity {
     this.render = (ctx: CanvasRenderingContext2D) => {
       ctx.fillStyle = this.color;
       ctx.fillRect(this.x, this.y, this.width, this.height)
+
+      if (this.dragging) {
+        ctx.fillStyle = "rgba(255, 0, 0, .5)";
+        ctx.fillRect(
+          mouseTile.x - X_TILE_WIDTH,
+          mouseTile.y - Y_TILE_HEIGHT,
+          X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 3)
+      }
     }
+
+    window.addEventListener('mousedown', this.dragHandler.bind(this));
+    window.addEventListener('mouseup', this.releaseHandler.bind(this))
+  }
+
+  dragHandler(e: MouseEvent) {
+    const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
+
+    if (!this.dragging) {
+      if (this.x < canvasX && this.x + this.width > canvasX && this.y < canvasY && this.y + this.height > canvasY) {
+        console.log('drag handler works', this.color);
+        this.dragging = true;
+      }
+    }
+  }
+
+  releaseHandler(e: MouseEvent) { 
+    if (this.dragging) {
+      this.dragging = false;
+      if (this.isValidPlacement()) {
+        new Tower(mouseTile.x - X_TILE_WIDTH, mouseTile.y - Y_TILE_HEIGHT, this.color)
+      }
+    }
+  }
+
+  isValidPlacement() {
+    return true;
   }
 }
 

@@ -3,9 +3,8 @@ import { hitTest, setMouseTile, setScale, translateXYMouseToCanvas } from "./uti
 export function registerListeners(overlayCanvas: HTMLCanvasElement) {
   overlayCanvas.addEventListener('mousedown', (e: MouseEvent) => {
     console.log('DOWN');
-
-    const { x, y } = translateXYMouseToCanvas(e.pageX, e.pageY);
-    hitTest(x, y);
+    const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
+    hitTest(canvasX, canvasY);
   })
 
   overlayCanvas.addEventListener('mouseup', () => {
