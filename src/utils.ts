@@ -1,5 +1,4 @@
 import { WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
-import { towers } from "./entity";
 import { overlayCtx } from "./elements";
 import { TILE_DATA_OBJ } from "./maps";
 
@@ -53,6 +52,6 @@ export function drawMouseTile() {
   overlayCtx.fillText(`${mouseTile.x / X_TILE_WIDTH}, ${mouseTile.y / Y_TILE_HEIGHT} | ${mouseTile.x}, ${mouseTile.y}`, 2550, 75)
 }
 
-export function hitTest(x: number, y: number) {
+export function hitTest() {
   console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / X_TILE_WIDTH},${mouseTile.y / Y_TILE_HEIGHT}`]);
 }

@@ -1,5 +1,5 @@
-import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, PATH_OBJ, TILE_SIZE, WIDTH, MENU_TOWER_START_X, HEIGHT, MENU_START_X } from "./constants";
-import { convertTileToMapBounds, EXTENDED_PATH_OBJ, TILE_DATA_OBJ } from "./maps";
+import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, HEIGHT, MENU_START_X } from "./constants";
+import { convertTileToMapBounds, TILE_DATA_OBJ } from "./maps";
 import { mouseTile, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
@@ -259,6 +259,7 @@ export class MenuTower extends BaseTower {
         (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT < 0 ||
         (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT > (HEIGHT - Y_TILE_HEIGHT) / Y_TILE_HEIGHT
       ) {
+        // Tower is outside of the game board
         this._isValidPlacement = false;
       } else {
         const towerTiles = [
@@ -271,6 +272,7 @@ export class MenuTower extends BaseTower {
 
         towerTiles.forEach(tileArr => {
           if(TILE_DATA_OBJ[tileArr.toString()].isPath) {
+            // Tower is overlapping a part of the path
             this._isValidPlacement = false;
           }
         })

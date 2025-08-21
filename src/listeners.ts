@@ -1,9 +1,9 @@
-import { hitTest, setMouseTile, setScale, translateXYMouseToCanvas } from "./utils";
+import { hitTest, setMouseTile, setScale } from "./utils";
 
 export function registerListeners(overlayCanvas: HTMLCanvasElement) {
-  overlayCanvas.addEventListener('mousedown', (e: MouseEvent) => {
-    const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
-    hitTest(canvasX, canvasY);
+  overlayCanvas.addEventListener('mousedown', (_: MouseEvent) => {
+    // const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
+    hitTest();
   })
 
   // overlayCanvas.addEventListener('mouseup', () => {
