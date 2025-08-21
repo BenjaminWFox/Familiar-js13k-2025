@@ -1,6 +1,6 @@
-import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED } from "./constants";
-import { convertTileToMapBounds } from "./maps";
-import { hitTest, mouseTile, translateXYMouseToCanvas } from "./utils";
+import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, PATH_OBJ, TILE_SIZE, WIDTH, MENU_TOWER_START_X, HEIGHT, MENU_START_X } from "./constants";
+import { convertTileToMapBounds, EXTENDED_PATH_OBJ, TILE_DATA_OBJ } from "./maps";
+import { mouseTile, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -103,16 +103,7 @@ interface SourceTargetPoints {
   y2: number;
 }
 
-class Component {
-
-}
-
-class Draggable extends Component {
-
-}
-
 export class Entity {
-  render: (ctx: CanvasRenderingContext2D) => void;
   x: number;
   y: number;
   dx: number;
@@ -136,7 +127,6 @@ export class Entity {
     this.health = 100;
     this.cooldown = 0;
     // Extend to allow passing in constructor
-    this.render = () => {}
     entities.push(this);
   }
 
@@ -147,6 +137,8 @@ export class Entity {
   add() {
 
   }
+
+  render(_: CanvasRenderingContext2D) {};
 }
 
 
@@ -186,49 +178,48 @@ export class Critter extends Entity {
     this.destX = nextMidX;
     this.destY = nextMidY;
 
-    this.render = (ctx: CanvasRenderingContext2D) => {
-      ctx.fillStyle = 'red';
-      this.x = this.x + this.dx;
-      this.y = this.y + this.dy;
-      ctx.fillRect(this.x, this.y, X_TILE_WIDTH / 2, Y_TILE_HEIGHT / 2);
+  }
 
-      if (!this.deleted && this.shouldUpdateMoveDir({x1: this.x, x2: this.destX, y1: this.y, y2: this.destY})) {
+  override render(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = 'red';
+    this.x = this.x + this.dx;
+    this.y = this.y + this.dy;
+    ctx.fillRect(this.x, this.y, X_TILE_WIDTH / 2, Y_TILE_HEIGHT / 2);
 
-        this.pathIndex += 1
+    if (!this.deleted && this.shouldUpdateMoveDir({x1: this.x, x2: this.destX, y1: this.y, y2: this.destY})) {
 
-        if (!PATH[this.nextPathIndex]) {
-          this.deleted = true;
+      this.pathIndex += 1
 
-          return;
-        }
+      if (!PATH[this.nextPathIndex]) {
+        this.deleted = true;
 
-        this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
-
-        const { moveD, arrivedAtTest } = getDataForDirection(this.moveDir);
-        this.dx = moveD.dx;
-        this.dy = moveD.dy;
-
-        const { minX, minY, maxX, maxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
-        this.destX = getRandomInt(minX - X_TILE_WIDTH * .25, maxX - X_TILE_WIDTH * .5);
-        this.destY = getRandomInt(minY - Y_TILE_HEIGHT * .5, maxY - Y_TILE_HEIGHT * 1.25);
-
-        this.shouldUpdateMoveDir = arrivedAtTest;
+        return;
       }
+
+      this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
+
+      const { moveD, arrivedAtTest } = getDataForDirection(this.moveDir);
+      this.dx = moveD.dx;
+      this.dy = moveD.dy;
+
+      const { minX, minY, maxX, maxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
+      this.destX = getRandomInt(minX - X_TILE_WIDTH * .25, maxX - X_TILE_WIDTH * .5);
+      this.destY = getRandomInt(minY - Y_TILE_HEIGHT * .5, maxY - Y_TILE_HEIGHT * 1.25);
+
+      this.shouldUpdateMoveDir = arrivedAtTest;
     }
   }
 }
 
+// function draggable(this: MenuTower, handler: Function) {
+//   window.addEventListener('mousedown', handler.bind(this))
+// }
 
-function draggable(this: Tower, handler: Function) {
-  window.addEventListener('mousedown', handler.bind(this))
-}
-
-export class Tower extends Entity {
+export class BaseTower extends Entity {
   color: string;
   width: number;
   height: number;
-  dragging: boolean = false;
-
+  
   constructor(x: number, y: number, color: string) {
     super(x, y)
     towers.push(this);
@@ -236,21 +227,67 @@ export class Tower extends Entity {
     this.color = color;
     this.width = X_TILE_WIDTH * 3;
     this.height = Y_TILE_HEIGHT * 3;
-    this.render = (ctx: CanvasRenderingContext2D) => {
-      ctx.fillStyle = this.color;
-      ctx.fillRect(this.x, this.y, this.width, this.height)
+  }
 
-      if (this.dragging) {
-        ctx.fillStyle = "rgba(255, 0, 0, .5)";
-        ctx.fillRect(
-          mouseTile.x - X_TILE_WIDTH,
-          mouseTile.y - Y_TILE_HEIGHT,
-          X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 3)
-      }
-    }
+  override render(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height)
+  }
+}
+
+export class MenuTower extends BaseTower {
+  dragging: boolean = false;
+
+  constructor(x: number, y: number, color: string) {
+    super(x, y, color);
 
     window.addEventListener('mousedown', this.dragHandler.bind(this));
     window.addEventListener('mouseup', this.releaseHandler.bind(this))
+  }
+
+  _isValidPlacement = true;
+
+  override render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+
+    if (this.dragging) {
+      this._isValidPlacement = true;
+
+      if (
+        (mouseTile.x - X_TILE_WIDTH) / X_TILE_WIDTH < 0 || 
+        (mouseTile.x + X_TILE_WIDTH) / X_TILE_WIDTH > (MENU_START_X - X_TILE_WIDTH) / X_TILE_WIDTH ||
+        (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT < 0 ||
+        (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT > (HEIGHT - Y_TILE_HEIGHT) / Y_TILE_HEIGHT
+      ) {
+        this._isValidPlacement = false;
+      } else {
+        const towerTiles = [
+          [(mouseTile.x - X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
+          [(mouseTile.x + X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
+          [mouseTile.x / X_TILE_WIDTH, mouseTile.y / Y_TILE_HEIGHT],
+          [(mouseTile.x - X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
+          [(mouseTile.x + X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
+        ]
+
+        towerTiles.forEach(tileArr => {
+          if(TILE_DATA_OBJ[tileArr.toString()].isPath) {
+            this._isValidPlacement = false;
+          }
+        })
+      }
+
+      if (this._isValidPlacement) {
+        ctx.fillStyle = "rgba(85, 255, 0, .5)";
+      } else {
+        ctx.fillStyle = "rgba(255, 0, 0, .5)";
+      }
+
+      ctx.fillRect(
+        mouseTile.x - X_TILE_WIDTH,
+        mouseTile.y - Y_TILE_HEIGHT,
+        X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 3
+      );
+    }
   }
 
   dragHandler(e: MouseEvent) {
@@ -258,23 +295,18 @@ export class Tower extends Entity {
 
     if (!this.dragging) {
       if (this.x < canvasX && this.x + this.width > canvasX && this.y < canvasY && this.y + this.height > canvasY) {
-        console.log('drag handler works', this.color);
         this.dragging = true;
       }
     }
   }
 
-  releaseHandler(e: MouseEvent) { 
+  releaseHandler() { 
     if (this.dragging) {
       this.dragging = false;
-      if (this.isValidPlacement()) {
-        new Tower(mouseTile.x - X_TILE_WIDTH, mouseTile.y - Y_TILE_HEIGHT, this.color)
+      if (this._isValidPlacement) {
+        new BaseTower(mouseTile.x - X_TILE_WIDTH, mouseTile.y - Y_TILE_HEIGHT, this.color)
       }
     }
-  }
-
-  isValidPlacement() {
-    return true;
   }
 }
 
@@ -283,4 +315,4 @@ export const entities: Entity[] = [];
 // Only critters
 export const critters: Critter[] = [];
 // Only towers
-export const towers: Tower[] = [];
+export const towers: BaseTower[] = [];

@@ -5,6 +5,7 @@ export const Y_TILES = 20;
 export const X_TILE_WIDTH = WIDTH / X_TILES / 2;
 export const Y_TILE_HEIGHT = HEIGHT / Y_TILES / 2;
 
+export const MENU_START_X = WIDTH - (X_TILE_WIDTH * 10)
 
 export const MENU_TOWER_START_X = 0
 export const MENU_TOWER_START_Y = 0

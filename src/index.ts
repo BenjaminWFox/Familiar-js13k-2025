@@ -1,7 +1,7 @@
-import { HEIGHT, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
+import { HEIGHT, MENU_START_X, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
 import { drawMouseTile } from './utils';
 import { drawTileMap } from "./maps";
-import { Critter, critters, entities, Tower, towers } from "./entity";
+import { Critter, critters, entities, MenuTower, towers } from "./entity";
 import { registerListeners } from "./listeners";
 import { mapCtx, ctx, overlayCtx, overlayCanvas } from "./elements";
 
@@ -43,23 +43,21 @@ function gameLoop(): void {
 // }
 new Critter();
 
-
-const towersObj: Record<string, Tower | undefined> = {
+const towersObj: Record<string, MenuTower | undefined> = {
   green: undefined,
   yellow: undefined,
   purple: undefined
 }
-Object.entries(towersObj).forEach(([key, value], i) => {
+Object.keys(towersObj).forEach((key, i) => {
   const menuLeft = WIDTH - (X_TILE_WIDTH * 10);
   const towerStartY = Y_TILE_HEIGHT * 8;
   const towerX = menuLeft + X_TILE_WIDTH;
   const towerY = (i * 4 * Y_TILE_HEIGHT) + towerStartY;
 
-  new Tower(towerX, towerY, key);
+  new MenuTower(towerX, towerY, key);
 })
 
 function render(): void {
-  drawMenu();
   gameTime += 1;
   if (gameTime % 7 === 0) {
     new Critter();
@@ -96,7 +94,7 @@ function drawMenu(): void {
   overlayCtx.clearRect(0, 0, WIDTH, HEIGHT);
 
   overlayCtx.fillStyle = 'blue';
-  overlayCtx.fillRect(WIDTH - (X_TILE_WIDTH * 10), 0, X_TILE_WIDTH * 10, HEIGHT);
+  overlayCtx.fillRect(MENU_START_X, 0, X_TILE_WIDTH * 10, HEIGHT);
 
   towers.forEach(e => e.render(overlayCtx))
 

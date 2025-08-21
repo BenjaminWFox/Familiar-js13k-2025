@@ -81,11 +81,32 @@ PATH.forEach((e: Tile) => {
   PATH_OBJ[e.toString()] = 1
 });
 
+class TileData {
+  x: number;
+  y: number;
+  isPath: boolean;
+
+  constructor(x: number, y: number, isPath: boolean = false) {
+    this.x = x;
+    this.y = y;
+    this.isPath = isPath;
+  }
+}
+
+export const TILE_DATA_OBJ: Record<string, TileData> = {}
+
 export function drawTileMap(ctx: CanvasRenderingContext2D): void {
   for(let y = 0; y < Y_TILES * 2; y++) {
     for(let x = 0; x < X_TILES * 2; x++) {
+      const currentTile = new TileData(x, y, false);
+
       if (PATH_OBJ[testPath(x, y)]) {
         const [normalizedX, normalizedY] = convertPointMapToPath(x, y)
+        currentTile.isPath = true;
+        console.log('Current', {
+          x, y, normalizedX, normalizedY
+        })
+
         const currentIndex = findPathIndex(normalizedX, normalizedY);
         const previousPath = PATH[currentIndex - 1]
 
@@ -93,13 +114,23 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
         ctx.fillStyle = 'grey';
 
         // Fill in extra 1 square all around each tile
-        const {minX, minY} = convertTileToMapBounds([x -1, y - 1], NEXT_DIR.SW, true)
+        const {minX, minY} = convertTileToMapBounds([x - 1, y - 1], NEXT_DIR.SW, true)
         ctx.fillRect(
           minX,
           minY,
           X_TILE_WIDTH * 3,
           Y_TILE_HEIGHT * 3
         );
+
+        for(let i = x - 1; i < x + 2;i++) {
+          for (let p = y - 1; p < y + 2;p++) {
+            if (!TILE_DATA_OBJ[`${i},${p}`]) {
+              TILE_DATA_OBJ[`${i},${p}`] = new TileData(i, p, true);
+            } else {
+              TILE_DATA_OBJ[`${i},${p}`].isPath = true;
+            }
+          }
+        }
 
         if (previousPath) {
           const dir = getDirectionFromTo(previousPath, PATH[currentIndex]);
@@ -172,10 +203,12 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
         // Can be enabled to show the specific tiles (from map array) which were drawn
         ctx.fillStyle = 'black';
         ctx.fillRect(x * X_TILE_WIDTH, y * Y_TILE_HEIGHT, X_TILE_WIDTH, Y_TILE_HEIGHT)
-      } else {
-        // ctx.strokeRect(x * X_TILE_WIDTH, y * Y_TILE_HEIGHT, X_TILE_WIDTH, Y_TILE_HEIGHT)
+      } else if (!TILE_DATA_OBJ[`${x},${y}`]) {
+        TILE_DATA_OBJ[`${x},${y}`] = currentTile;
       }
 
     }
   }
+
+  console.log(TILE_DATA_OBJ)
 }
