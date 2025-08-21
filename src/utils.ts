@@ -55,18 +55,4 @@ export function drawMouseTile() {
 
 export function hitTest(x: number, y: number) {
   console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / X_TILE_WIDTH},${mouseTile.y / Y_TILE_HEIGHT}`]);
-  
-  towers.forEach(t => {
-    console.log({ x: t.x, y: t.y, w: t.width, h: t.height})
-    console.log(
-      t.x < x,
-      t.x + t.width > x,
-      t.y < y,
-      t.y + t.height > y
-    )
-
-    if (t.x < x && t.x + t.width > x && t.y < y && t.y + t.height > y) {
-      console.log('HIT', t.color);
-    }
-  })
 }
