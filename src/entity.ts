@@ -1,6 +1,6 @@
 import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, HEIGHT, MENU_START_X } from "./constants";
-import { convertTileToMapBounds, TILE_DATA_OBJ } from "./maps";
-import { mouseTile, translateXYMouseToCanvas } from "./utils";
+import { TILE_DATA_OBJ } from "./maps";
+import { convertTileToMapBounds, getExpanededDraggingTileBounds, mouseTile, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -163,11 +163,11 @@ export class Critter extends Entity {
     this.pathIndex = 0;
     this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
     
-    const { expandedMinX, expandedMaxX, expandedMaxY, expandedMinY } = convertTileToMapBounds(PATH[this.pathIndex], this.moveDir);
+    const { directionalMinX, directionalMaxX, directionalMaxY, directionalMinY } = convertTileToMapBounds(PATH[this.pathIndex], this.moveDir);
     const { midX: nextMidX, midY: nextMidY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
     
-    this.x = getRandomInt(expandedMinX + X_TILE_WIDTH, expandedMaxX - X_TILE_WIDTH);
-    this.y = getRandomInt(expandedMinY, expandedMaxY );
+    this.x = getRandomInt(directionalMinX + X_TILE_WIDTH, directionalMaxX - X_TILE_WIDTH);
+    this.y = getRandomInt(directionalMinY, directionalMaxY );
 
     const { moveD, arrivedAtTest } = getDataForDirection(this.moveDir);
 
@@ -177,7 +177,6 @@ export class Critter extends Entity {
 
     this.destX = nextMidX;
     this.destY = nextMidY;
-
   }
 
   override render(ctx: CanvasRenderingContext2D) {
@@ -252,22 +251,22 @@ export class MenuTower extends BaseTower {
 
     if (this.dragging) {
       this._isValidPlacement = true;
-
+      const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds()
       if (
-        (mouseTile.x - X_TILE_WIDTH) / X_TILE_WIDTH < 0 || 
-        (mouseTile.x + X_TILE_WIDTH) / X_TILE_WIDTH > (MENU_START_X - X_TILE_WIDTH) / X_TILE_WIDTH ||
-        (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT < 0 ||
-        (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT > (HEIGHT - Y_TILE_HEIGHT) / Y_TILE_HEIGHT
+        expandedMinX < 0 || 
+        expandedMaxX > (MENU_START_X - X_TILE_WIDTH) / X_TILE_WIDTH ||
+        expandedMinY / Y_TILE_HEIGHT < 0 ||
+        expandedMaxY > (HEIGHT - Y_TILE_HEIGHT) / Y_TILE_HEIGHT
       ) {
         // Tower is outside of the game board
         this._isValidPlacement = false;
       } else {
         const towerTiles = [
-          [(mouseTile.x - X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
-          [(mouseTile.x + X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
+          [expandedMinX, expandedMinY],
+          [expandedMaxX, expandedMinY],
           [mouseTile.x / X_TILE_WIDTH, mouseTile.y / Y_TILE_HEIGHT],
-          [(mouseTile.x - X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
-          [(mouseTile.x + X_TILE_WIDTH) / X_TILE_WIDTH, (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT],
+          [expandedMinX, expandedMaxY],
+          [expandedMaxX, expandedMaxY],
         ]
 
         towerTiles.forEach(tileArr => {

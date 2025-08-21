@@ -1,5 +1,6 @@
 import { type Tile, PATH, PATH_OBJ, X_TILE_WIDTH, X_TILES, Y_TILE_HEIGHT, Y_TILES } from "./constants";
 import { getDirectionFromTo, NEXT_DIR } from "./entity";
+import { convertPointMapToPath, convertTileToMapBounds } from "./utils";
 
 function testPath(x: number, y: number): keyof typeof PATH_OBJ {
   const [xStr, yStr] = convertPointMapToPath(x, y);
@@ -11,68 +12,6 @@ function findPathIndex(x: number, y: number) {
   return PATH.findIndex(([_x, _y]) => {
     return _x === x && _y === y
   });
-}
-
-export function convertPointPathToMap(x: number, y: number) {
-  return [x*2, y*2];
-}
-
-/**
- * On screen, a single "Path" x/y number would increment by .5 for each
- * individual tile on the Map, since "Map" x/y are 2x the "Point" numbers
- * @param x 
- * @param y 
- * @returns 
- */
-export function convertPointMapToPath(x: number, y: number) {
-  return [x*.5, y*.5];
-}
-
-export function convertTileToMapBounds(t: Tile, mDir: NEXT_DIR, isMapPoint = false) {
-  const tile = isMapPoint ? t : convertPointPathToMap(t[0], t[1]);
-  const minX = tile[0] * X_TILE_WIDTH;
-  const minY = tile[1] * Y_TILE_HEIGHT;
-  let expandedMinX;
-  let expandedMaxX;
-  let expandedMinY;
-  let expandedMaxY;
-
-  switch(mDir) {
-    case NEXT_DIR.SW:
-    case NEXT_DIR.S:
-    case NEXT_DIR.SE:
-    case NEXT_DIR.NW:
-    case NEXT_DIR.N:
-    case NEXT_DIR.NE:
-      expandedMinX = (tile[0] - 1) * X_TILE_WIDTH;
-      expandedMaxX = (tile[0] + 2) * X_TILE_WIDTH;
-      expandedMinY = minY;
-      expandedMaxY = (tile[1] + 1) * Y_TILE_HEIGHT;
-      break;
-    case NEXT_DIR.E:
-    case NEXT_DIR.W:
-    default:
-      expandedMinX = minX;
-      expandedMaxX = (tile[0] + 1) * X_TILE_WIDTH;
-      expandedMinY = (tile[1] - 1) * Y_TILE_HEIGHT;
-      expandedMaxY = (tile[1] + 2) * Y_TILE_HEIGHT;
-      break;
-  }
-
-  const conversionData = {
-    minX,
-    minY,
-    maxX: tile[0] * X_TILE_WIDTH + X_TILE_WIDTH,
-    maxY: tile[1] * Y_TILE_HEIGHT + Y_TILE_HEIGHT,
-    midX: tile[0] * X_TILE_WIDTH + (X_TILE_WIDTH * .5),
-    midY: tile[1] * Y_TILE_HEIGHT + (Y_TILE_HEIGHT * .5),
-    expandedMinX,
-    expandedMaxX,
-    expandedMinY,
-    expandedMaxY,
-  }
-
-  return conversionData
 }
 
 // Create an object to prevent iterating every time
