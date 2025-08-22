@@ -1,6 +1,6 @@
 import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, HEIGHT, MENU_START_X } from "./constants";
-import { TILE_DATA_OBJ } from "./maps";
-import { convertTileToMapBounds, getExpanededDraggingTileBounds, mouseTile, translateXYMouseToCanvas } from "./utils";
+import { TILE_DATA_OBJ, TileData } from "./maps";
+import { convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, mouseTile, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -138,7 +138,7 @@ export class Entity {
 
   }
 
-  render(_: CanvasRenderingContext2D) {};
+  render(_: CanvasRenderingContext2D, __?: CanvasRenderingContext2D) {};
 }
 
 
@@ -147,17 +147,23 @@ export class Entity {
 // When arriving at that point, then we need to get the *next* point
 // so we'll need to track which index the critter is on
 export class Critter extends Entity {
+  static CRITTER_ID = 0;
+
+  id: number;
   pathIndex: number;
   moveDir: NEXT_DIR;
   shouldUpdateMoveDir;
   destX;
   destY;
+  currentTile: TileData | undefined;
+  lastTile: TileData | undefined;
 
   get nextPathIndex() { return this.pathIndex + 1 }
 
   constructor() {
     super(0, 0, 0, 0);
 
+    this.id = ++Critter.CRITTER_ID;
     critters.push(this);
 
     this.pathIndex = 0;
@@ -179,17 +185,39 @@ export class Critter extends Entity {
     this.destY = nextMidY;
   }
 
-  override render(ctx: CanvasRenderingContext2D) {
+  override render(ctx: CanvasRenderingContext2D, overlayCtx: CanvasRenderingContext2D) {
     ctx.fillStyle = 'red';
     this.x = this.x + this.dx;
     this.y = this.y + this.dy;
     ctx.fillRect(this.x, this.y, X_TILE_WIDTH / 2, Y_TILE_HEIGHT / 2);
+
+    const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
+    const tile = TILE_DATA_OBJ[`${tileLockedX / X_TILE_WIDTH},${tileLockedY / Y_TILE_HEIGHT}`];
+    if (tile && (!this.currentTile || tile !== this.currentTile)) {
+      if (this.currentTile) {
+        delete this.currentTile?.critters[this.id]
+      }
+
+      this.lastTile = this.currentTile;
+      this.currentTile = tile;
+      this.currentTile.critters[this.id] = this;
+    } else {
+      // if () {
+      //   // isCovered to be a tiledata property to determine hittesting
+      // }
+    }
+
+    // // debug only
+    // overlayCtx.fillStyle = 'white';
+    // overlayCtx.font = "40px Arial"
+    // overlayCtx.fillText(`${tileLockedX / X_TILE_WIDTH}, ${tileLockedY / Y_TILE_HEIGHT} | ${this.x}, ${this.y}`, 2550, 175)
 
     if (!this.deleted && this.shouldUpdateMoveDir({x1: this.x, x2: this.destX, y1: this.y, y2: this.destY})) {
 
       this.pathIndex += 1
 
       if (!PATH[this.nextPathIndex]) {
+        console.log('DELETE')
         this.deleted = true;
 
         return;
@@ -228,9 +256,9 @@ export class BaseTower extends Entity {
     this.height = Y_TILE_HEIGHT * 3;
   }
 
-  override render(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height)
+  override render(overlayCtx: CanvasRenderingContext2D, ctx?: CanvasRenderingContext2D) {
+    overlayCtx.fillStyle = this.color;
+    overlayCtx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
 
@@ -246,8 +274,8 @@ export class MenuTower extends BaseTower {
 
   _isValidPlacement = true;
 
-  override render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  override render(overlayCtx: CanvasRenderingContext2D, ctx: CanvasRenderingContext2D) {
+    super.render(overlayCtx);
 
     if (this.dragging) {
       this._isValidPlacement = true;
@@ -278,12 +306,20 @@ export class MenuTower extends BaseTower {
       }
 
       if (this._isValidPlacement) {
-        ctx.fillStyle = "rgba(85, 255, 0, .5)";
+        overlayCtx.fillStyle = "rgba(85, 255, 0, .5)";
       } else {
-        ctx.fillStyle = "rgba(255, 0, 0, .5)";
+        overlayCtx.fillStyle = "rgba(255, 0, 0, .5)";
       }
 
-      ctx.fillRect(
+      ctx.fillStyle = "rgba(72, 203, 255, 0.35)";
+      // ctx?.fillRect(mouseTile.x - X_TILE_WIDTH, mouseTile.y - (Y_TILE_HEIGHT * 4), X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 9);
+      // ctx?.fillRect(mouseTile.x - (X_TILE_WIDTH * 4), mouseTile.y - Y_TILE_HEIGHT, X_TILE_WIDTH * 9, Y_TILE_HEIGHT * 3);
+      
+      // ctx?.fillRect(mouseTile.x - X_TILE_WIDTH, mouseTile.y - (Y_TILE_HEIGHT * 4), X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 9)
+      ctx?.fillRect(mouseTile.x - (X_TILE_WIDTH * 3), mouseTile.y - (Y_TILE_HEIGHT * 3), X_TILE_WIDTH * 7, Y_TILE_HEIGHT * 7)
+
+      
+      overlayCtx.fillRect(
         mouseTile.x - X_TILE_WIDTH,
         mouseTile.y - Y_TILE_HEIGHT,
         X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 3

@@ -24,7 +24,7 @@ function gameLoop(): void {
   requestAnimationFrame(gameLoop);
 
   // console.log('GAME!');
-  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+  clearScreen();
   render();
   // windowTime = newTime;
   // dt = 0;
@@ -62,18 +62,20 @@ function render(): void {
   if (gameTime % 7 === 0) {
     new Critter();
   }
-  clearScreen();
   drawEntities();
-  critters.forEach(e => e.render(ctx));
 
-  for (let i = 0; i < entities.length; i++) {
-    if (entities[i].deleted) {
-      entities.splice(i, 1);
+  drawMenu();
+
+  critters.forEach(e => e.render(ctx, overlayCtx));
+
+
+  for (let i = 0; i < critters.length; i++) {
+    if (critters[i].deleted) {
+      delete critters[i].currentTile?.critters[critters[i].id];
+      critters.splice(i, 1);
       i--;
     }
   }
-
-  drawMenu();
 
   // // Show "expanded" data results
   // const data = convertTileToMapBounds(PATH[1], NEXT_DIR.SW);
@@ -86,17 +88,18 @@ function render(): void {
   // ctx.fillRect(data2.expandedMaxX, data2.expandedMaxY, -10, -10)
 }
 
-function clearScreen(): void {}
+function clearScreen(): void {
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+    overlayCtx.clearRect(0, 0, WIDTH, HEIGHT);
+}
 
 function drawEntities(): void {}
 
 function drawMenu(): void {
-  overlayCtx.clearRect(0, 0, WIDTH, HEIGHT);
-
   overlayCtx.fillStyle = 'blue';
   overlayCtx.fillRect(MENU_START_X, 0, X_TILE_WIDTH * 10, HEIGHT);
 
-  towers.forEach(e => e.render(overlayCtx))
+  towers.forEach(e => e.render(overlayCtx, ctx))
 
   drawMouseTile();
 }
