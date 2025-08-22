@@ -1,5 +1,5 @@
 import { type Tile, PATH, PATH_OBJ, X_TILE_WIDTH, X_TILES, Y_TILE_HEIGHT, Y_TILES } from "./constants";
-import { getDirectionFromTo, NEXT_DIR } from "./entity";
+import { Critter, getDirectionFromTo, NEXT_DIR } from "./entity";
 import { convertPointMapToPath, convertTileToMapBounds } from "./utils";
 
 function testPath(x: number, y: number): keyof typeof PATH_OBJ {
@@ -20,10 +20,13 @@ PATH.forEach((e: Tile) => {
   PATH_OBJ[e.toString()] = 1
 });
 
-class TileData {
+export class TileData {
   x: number;
   y: number;
   isPath: boolean;
+  isCovered: boolean = false;
+  critters: Record<string, Critter> = {};
+
 
   constructor(x: number, y: number, isPath: boolean = false) {
     this.x = x;
