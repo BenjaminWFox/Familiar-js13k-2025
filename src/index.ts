@@ -1,7 +1,7 @@
 import { HEIGHT, MENU_START_X, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
 import { drawMouseTile } from './utils';
 import { drawTileMap } from "./maps";
-import { Critter, critters, entities, MenuTower, towers } from "./entity";
+import { Critter, critters, MenuTower, towers } from "./entity";
 import { registerListeners } from "./listeners";
 import { mapCtx, ctx, overlayCtx, overlayCanvas } from "./elements";
 
@@ -66,7 +66,7 @@ function render(): void {
 
   drawMenu();
 
-  critters.forEach(e => e.render(ctx, overlayCtx));
+  critters.forEach(e => e.render(ctx));
 
 
   for (let i = 0; i < critters.length; i++) {

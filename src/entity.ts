@@ -185,7 +185,7 @@ export class Critter extends Entity {
     this.destY = nextMidY;
   }
 
-  override render(ctx: CanvasRenderingContext2D, overlayCtx: CanvasRenderingContext2D) {
+  override render(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = 'red';
     this.x = this.x + this.dx;
     this.y = this.y + this.dy;
@@ -256,7 +256,7 @@ export class BaseTower extends Entity {
     this.height = Y_TILE_HEIGHT * 3;
   }
 
-  override render(overlayCtx: CanvasRenderingContext2D, ctx?: CanvasRenderingContext2D) {
+  override render(overlayCtx: CanvasRenderingContext2D, _?: CanvasRenderingContext2D) {
     overlayCtx.fillStyle = this.color;
     overlayCtx.fillRect(this.x, this.y, this.width, this.height)
   }
