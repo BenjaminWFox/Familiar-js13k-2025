@@ -1,4 +1,4 @@
-import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, HEIGHT, MENU_START_X, LAYERS } from "./constants";
+import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, HEIGHT, MENU_START_X, LAYERS } from "./constants";
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
 import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, translateXYMouseToCanvas } from "./utils";
@@ -47,61 +47,6 @@ export function getDirectionFromTo(tFrom: Tile, tTo: Tile) {
   } else {
     return NEXT_DIR.S;
   }
-}
-
-function getDataForDirection(dir: NEXT_DIR): { moveD: {dx: number, dy: number}, arrivedAtTest: (points: SourceTargetPoints) => boolean } {
-  const d = {dx: 0, dy: 0};
-  let t = (_: SourceTargetPoints) => true;
-  
-  switch (dir) {
-    case NEXT_DIR.N:
-      d.dy = -CRITTER_MOVE_SPEED;
-      t = ({y1, y2}) => y1 < y2
-      break;
-    case NEXT_DIR.NE:
-      d.dy = -CRITTER_MOVE_SPEED;
-      d.dx = CRITTER_MOVE_SPEED;
-      t = ({x1, x2, y1, y2}) => x1 > x2 && y1 < y2
-      break;
-    case NEXT_DIR.E:
-      d.dx = CRITTER_MOVE_SPEED;
-      t = ({x1, x2}) => x1 > x2
-      break;
-    case NEXT_DIR.SE:
-      d.dy = CRITTER_MOVE_SPEED;
-      d.dx = CRITTER_MOVE_SPEED;
-      t = ({x1, x2, y1, y2}) => x1 > x2 && y1 > y2
-      break;
-    case NEXT_DIR.S:
-      d.dy = CRITTER_MOVE_SPEED;
-      t = ({y1, y2}) => y1 > y2
-      break;
-    case NEXT_DIR.SW:
-      d.dy = CRITTER_MOVE_SPEED;
-      d.dx = -CRITTER_MOVE_SPEED;
-      t = ({x1, x2, y1, y2}) => x1 < x2 && y1 > y2
-      break;
-    case NEXT_DIR.W:
-      d.dx = -CRITTER_MOVE_SPEED;
-      t = ({x1, x2}) => x1 < x2
-      break;
-    case NEXT_DIR.NW:
-      d.dy = -CRITTER_MOVE_SPEED;
-      d.dx = -CRITTER_MOVE_SPEED;
-      t = ({x1, x2, y1, y2}) => x1 < x2 && y1 < y2
-      break;
-    default:
-      break;
-  }
-
-  return { moveD: d, arrivedAtTest: t };
-}
-
-interface SourceTargetPoints {
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
 }
 
 export class Entity {
@@ -161,9 +106,6 @@ export class Entity {
 export class Critter extends Entity {
   pathIndex: number;
   moveDir: NEXT_DIR;
-  shouldUpdateMoveDir;
-  destX;
-  destY;
   // Each critter has a reference to its current tile.
   // The currentTile will have a reference (`critters`) to all critters within
   currentTile: TileData | undefined;
@@ -171,30 +113,32 @@ export class Critter extends Entity {
   chased: boolean = false;
   caught: boolean = false;
 
+  // assigned in constructor via `getNextDirection`
+  att: number = 0;
+  destX: number = 0;
+  destY: number = 0;
+
   get nextPathIndex() { return this.pathIndex + 1 }
 
   constructor() {
     super(0, 0, 0, 0, 20, 20, LAYERS.critters);
 
-    // critters.push(this);
-
     this.pathIndex = 0;
     this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
+    // this.moveDir = angleToTarget()
     
     const { directionalMinX, directionalMaxX, directionalMaxY, directionalMinY } = convertTileToMapBounds(PATH[this.pathIndex], this.moveDir);
-    const { midX: nextMidX, midY: nextMidY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
     
-    this.x = getRandomInt(directionalMinX + X_TILE_WIDTH, directionalMaxX - X_TILE_WIDTH);
-    this.y = getRandomInt(directionalMinY, directionalMaxY );
+    this.x = getRandomInt(directionalMinX, directionalMaxX - this.width);
+    this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
+    this.getNextDirection();
+  }
 
-    const { moveD, arrivedAtTest } = getDataForDirection(this.moveDir);
-
-    this.dx = moveD.dx;
-    this.dy = moveD.dy;
-    this.shouldUpdateMoveDir = arrivedAtTest
-
-    this.destX = nextMidX;
-    this.destY = nextMidY;
+  getNextDirection() {
+      const { directionalMinX, directionalMaxX, directionalMinY, directionalMaxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
+      this.destX = getRandomInt(directionalMinX, directionalMaxX - this.width);
+      this.destY = getRandomInt(directionalMinY, directionalMaxY - this.height);
+      this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
   }
 
   setCaught() {
@@ -218,9 +162,13 @@ export class Critter extends Entity {
   }
 
   override render(ctx: CanvasRenderingContext2D) {
-    if (!this.caught) {
-      this.x = this.x + this.dx;
-      this.y = this.y + this.dy;
+    if (!this.caught && !this.deleted) {
+      const {x, y} = movePoint(this, this.att, 5);
+      this.x = x;
+      this.y = y;
+
+      ctx.fillStyle = 'yellow';
+      ctx.fillRect(this.destX, this.destY, 5, 5)
 
       const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
       const tile = TILE_DATA_OBJ[`${tileLockedX / X_TILE_WIDTH},${tileLockedY / Y_TILE_HEIGHT}`];
@@ -231,15 +179,9 @@ export class Critter extends Entity {
         this.addToTile();
       }
 
-      // // debug only
-      // overlayCtx.fillStyle = 'white';
-      // overlayCtx.font = "40px Arial"
-      // overlayCtx.fillText(`${tileLockedX / X_TILE_WIDTH}, ${tileLockedY / Y_TILE_HEIGHT} | ${this.x}, ${this.y}`, 2550, 175)
-
-      if (!this.deleted && this.shouldUpdateMoveDir({x1: this.x, x2: this.destX, y1: this.y, y2: this.destY})) {
-
-        this.pathIndex += 1
-
+      if (hitTest(this, {x: this.destX, y: this.destY, width: 10, height: 10})) {
+        this.pathIndex += 1;
+        
         if (!PATH[this.nextPathIndex]) {
           this.deleted = true;
 
@@ -247,29 +189,14 @@ export class Critter extends Entity {
         }
 
         this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
-
-        const { moveD, arrivedAtTest } = getDataForDirection(this.moveDir);
-        this.dx = moveD.dx;
-        this.dy = moveD.dy;
-
-        const { minX, minY, maxX, maxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
-        this.destX = getRandomInt(minX - X_TILE_WIDTH * .25, maxX - X_TILE_WIDTH * .5);
-        this.destY = getRandomInt(minY - Y_TILE_HEIGHT * .5, maxY - Y_TILE_HEIGHT * 1.25);
-
-        this.shouldUpdateMoveDir = arrivedAtTest;
+        this.getNextDirection();
       }
-      ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-    } else {
-      ctx.fillStyle = 'rgba(0, 255, 255, 1)';
     }
 
+    ctx.fillStyle = 'rgba(255, 0, 0, 1)';
     ctx.fillRect(this.x, this.y, this.width, this.height);
   }
 }
-
-// function draggable(this: MenuTower, handler: Function) {
-//   window.addEventListener('mousedown', handler.bind(this))
-// }
 
 export class BaseTower extends Entity {
   color: string;
@@ -467,7 +394,7 @@ class Fetcher extends Entity {
         }
 
         const chaseAngle = angleToTarget(this, this.chasing!);
-        const {x: cX, y: cY} = movePoint(this, chaseAngle, 10);
+        const {x: cX, y: cY} = movePoint(this, chaseAngle, 12);
         this.x = cX;
         this.y = cY;
 
@@ -483,13 +410,13 @@ class Fetcher extends Entity {
         }
 
         const fetchAngle = angleToTarget(this, {x: this.destX, y: this.destY});
-        const {x: fX, y: fY} = movePoint(this, fetchAngle, 20);
+        const {x: fX, y: fY} = movePoint(this, fetchAngle, 8);
         this.x = fX;
         this.y = fY;
         this.chasing!.x = this.x + 5;
         this.chasing!.y = this.y + 5;
 
-        if (hitTest(this, {x: this.destX, y: this.destY, width: 10, height: 10})) {
+        if (hitTest(this, {x: this.destX, y: this.destY, width: 4, height: 4})) {
           this.destX = 0;
           this.destY = 0;
           this.state = FetcherStates.waiting

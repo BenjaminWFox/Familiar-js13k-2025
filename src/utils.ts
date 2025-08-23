@@ -1,5 +1,5 @@
 import { WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile } from "./constants";
-import { entities, Entity, NEXT_DIR } from "./entity";
+import { Entity, NEXT_DIR } from "./entity";
 import { TILE_DATA_OBJ } from "./maps";
 
 let scale = 1;
@@ -96,9 +96,18 @@ export function getExpanededDraggingTileBounds() {
   }
 }
 
+/**
+ * Tile[0] = x
+ * 
+ * @param tile Tile X Y points as Array<number, number>
+ * @param mDir 
+ * @returns 
+ */
 export function convertTileToMapBounds(tile: Tile, mDir: NEXT_DIR) {
-  const minX = tile[0] * X_TILE_WIDTH;
-  const minY = tile[1] * Y_TILE_HEIGHT;
+  const [x, y] = tile;
+
+  const minX = x * X_TILE_WIDTH;
+  const minY = y * Y_TILE_HEIGHT;
   let directionalMinX;
   let directionalMaxX;
   let directionalMinY;
@@ -111,18 +120,19 @@ export function convertTileToMapBounds(tile: Tile, mDir: NEXT_DIR) {
     case NEXT_DIR.NW:
     case NEXT_DIR.N:
     case NEXT_DIR.NE:
-      directionalMinX = (tile[0] - 1) * X_TILE_WIDTH;
-      directionalMaxX = (tile[0] + 2) * X_TILE_WIDTH;
+      directionalMinX = (x - 1) * X_TILE_WIDTH;
+      directionalMaxX = (x + 2) * X_TILE_WIDTH;
       directionalMinY = minY;
-      directionalMaxY = (tile[1] + 1) * Y_TILE_HEIGHT;
+      directionalMaxY = (y + 1) * Y_TILE_HEIGHT;
       break;
     case NEXT_DIR.E:
     case NEXT_DIR.W:
     default:
+      console.log('Next dir E/W')
       directionalMinX = minX;
-      directionalMaxX = (tile[0] + 1) * X_TILE_WIDTH;
-      directionalMinY = (tile[1] - 1) * Y_TILE_HEIGHT;
-      directionalMaxY = (tile[1] + 2) * Y_TILE_HEIGHT;
+      directionalMaxX = (x + 1) * X_TILE_WIDTH;
+      directionalMinY = (y - 1) * Y_TILE_HEIGHT;
+      directionalMaxY = (y + 2) * Y_TILE_HEIGHT;
       break;
   }
 
@@ -133,10 +143,6 @@ export function convertTileToMapBounds(tile: Tile, mDir: NEXT_DIR) {
     maxY: tile[1] * Y_TILE_HEIGHT + Y_TILE_HEIGHT,
     midX: tile[0] * X_TILE_WIDTH + (X_TILE_WIDTH * .5),
     midY: tile[1] * Y_TILE_HEIGHT + (Y_TILE_HEIGHT * .5),
-    expanededMinX: 0,
-    expanededMaxX: 0,
-    expanededMinY: 0,
-    expanededMaxY: 0,
     directionalMinX,
     directionalMaxX,
     directionalMinY,

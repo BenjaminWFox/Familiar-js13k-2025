@@ -60,9 +60,12 @@ Object.keys(towersObj).forEach((key, i) => {
 
 function render(): void {
   gameState.gameTime += 1;
-  if (gameState.gameTime % 7 === 0) {
+  if (gameState.gameTime % 5 === 0) {
     new Critter();
   }
+  // if (gameState.gameTime % 2 === 0) {
+  //   new Critter();
+  // }
 
   entities.forEach(e => e.render(ctx));
 
@@ -79,15 +82,6 @@ function render(): void {
   if (hasMouseMoved) {
     drawMouseTile(ctx);
   }
-  // // Show "expanded" data results
-  // const data = convertTileToMapBounds(PATH[1], NEXT_DIR.SW);
-  // const data2 = convertTileToMapBounds(PATH[1], NEXT_DIR.W);
-  // ctx.fillStyle = 'red';
-  // ctx.fillRect(data.expandedMinX, data.expandedMinY, 10, 10);
-  // ctx.fillRect(data.expandedMaxX, data.expandedMaxY, -10, -10)
-  // ctx.fillStyle = 'yellow';
-  // ctx.fillRect(data2.expandedMinX, data2.expandedMinY, 10, 10);
-  // ctx.fillRect(data2.expandedMaxX, data2.expandedMaxY, -10, -10)
 }
 
 function clearScreen(): void {
