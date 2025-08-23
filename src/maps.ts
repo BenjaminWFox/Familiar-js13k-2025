@@ -26,7 +26,6 @@ export class TileData {
   isCovered: boolean = false;
   critters: Record<string, Critter> = {};
 
-
   constructor(x: number, y: number, isPath: boolean = false, pathIndex?: number) {
     this.x = x;
     this.y = y;

@@ -1,11 +1,11 @@
-import { hitTest, setMouseTile, setScale } from "./utils";
+import { mouseHitTest, setMouseTile, setScale } from "./utils";
 
 export let hasMouseMoved = false;
 
 export function registerListeners(canvas: HTMLCanvasElement) {
   canvas.addEventListener('mousedown', (_: MouseEvent) => {
     // const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
-    hitTest();
+    mouseHitTest();
   })
 
   // overlayCanvas.addEventListener('mouseup', () => {

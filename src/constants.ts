@@ -10,6 +10,7 @@ export const LAYERS = {
   critters: 30,
   towers: 40,
   fetchers: 50,
+  fetchersCarry: 51,
   menu: 60,
   menuTowers: 70
 }

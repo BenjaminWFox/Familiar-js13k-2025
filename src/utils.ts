@@ -1,5 +1,5 @@
 import { WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile } from "./constants";
-import { entities, NEXT_DIR } from "./entity";
+import { entities, Entity, NEXT_DIR } from "./entity";
 import { TILE_DATA_OBJ } from "./maps";
 
 let scale = 1;
@@ -61,9 +61,22 @@ export function drawMouseTile(ctx: CanvasRenderingContext2D) {
 /**
  * Debug function - logs data for a tile when clicked by mouse
  */
-export function hitTest() {
+export function mouseHitTest() {
   console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / X_TILE_WIDTH},${mouseTile.y / Y_TILE_HEIGHT}`]);
-  console.log('Data', entities);
+  // console.log('Data', entities);
+}
+
+function valueInRange(point: number, min: number, max: number) {
+  return point >= min && point <= max;
+}
+
+type Point = Pick<Entity, 'x' | 'y'>
+type HitTestable = Point & Pick<Entity, 'width' | 'height'>
+
+export function hitTest(e1: HitTestable, e2: HitTestable) {
+  const xOverlap = valueInRange(e1.x, e2.x, e2.x + e2.width) || valueInRange(e2.x, e1.x, e1.x + e1.width)
+  const yOverlap = valueInRange(e1.y, e2.y, e2.y + e2.height) || valueInRange(e2.y, e1.y, e1.y + e1.height)
+  return xOverlap && yOverlap;
 }
 
 export function convertCanvasXYToPathXY(canvasX: number, canvasY: number) {
@@ -131,4 +144,15 @@ export function convertTileToMapBounds(tile: Tile, mDir: NEXT_DIR) {
   }
 
   return conversionData
+}
+
+export function angleToTarget(source: Point, target: Point) {
+  return Math.atan2(target.y - source.y, target.x - source.x);
+}
+
+export function movePoint(point: Point, angle: number, distance: number) {
+  return {
+    x: point.x + Math.cos(angle) * distance,
+    y: point.y + Math.sin(angle) * distance
+  };
 }

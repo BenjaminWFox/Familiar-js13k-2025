@@ -4,6 +4,7 @@ import { drawTileMap } from "./maps";
 import { Critter, entities, Menu, MenuTower } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
+import { gameState } from "./gameState";
 
 
 // const image = new Image();
@@ -15,7 +16,6 @@ import { mapCtx, ctx, canvas } from "./elements";
 
 // let windowTime = 0;
 // let dt = 0;
-let gameTime = 0;
 // let score = 0;
 // let viewportX = 0;
 
@@ -59,17 +59,13 @@ Object.keys(towersObj).forEach((key, i) => {
 })
 
 function render(): void {
-  gameTime += 1;
-  if (gameTime % 7 === 0) {
+  gameState.gameTime += 1;
+  if (gameState.gameTime % 7 === 0) {
     new Critter();
   }
 
-// console.log('*** BEGIN')
-  entities.forEach(e => {
-    // console.log(e);
-    e.render(ctx)
-  });
-// console.log('*** END')
+  entities.forEach(e => e.render(ctx));
+
   for (let i = 0; i < entities.length; i++) {
     if (entities[i].deleted) {
       if ((entities[i] as Critter).currentTile) {
