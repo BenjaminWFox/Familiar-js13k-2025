@@ -1,6 +1,5 @@
 import { WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile } from "./constants";
-import { overlayCtx } from "./elements";
-import { NEXT_DIR } from "./entity";
+import { entities, NEXT_DIR } from "./entity";
 import { TILE_DATA_OBJ } from "./maps";
 
 let scale = 1;
@@ -31,8 +30,14 @@ export const mouseTile = {
   y: 0,
 }
 
-export function getTileLockedXY(x: number, y: number) {
-  return { tileLockedX: Math.floor(x / X_TILE_WIDTH) * X_TILE_WIDTH, tileLockedY: Math.floor(y / Y_TILE_HEIGHT) * Y_TILE_HEIGHT }
+/**
+ * Gets the min X Y points (in Canvas coords) needed to draw the tile which contains the passed X Y 
+ * @param canvasX X location in canvas coords
+ * @param canvasY Y location in canvas coords
+ * @returns the X and Y canvas coords to begin drawing a tile
+ */
+export function getTileLockedXY(canvasX: number, canvasY: number) {
+  return { tileLockedX: Math.floor(canvasX / X_TILE_WIDTH) * X_TILE_WIDTH, tileLockedY: Math.floor(canvasY / Y_TILE_HEIGHT) * Y_TILE_HEIGHT }
 }
 
 export function setMouseTile(mouseX: number, mouseY: number) {
@@ -45,31 +50,28 @@ export function setMouseTile(mouseX: number, mouseY: number) {
   mouseTile.y = tileLockedY;
 }
 
-export function drawMouseTile() {
-  overlayCtx.fillStyle = 'red';
-  overlayCtx.fillRect(mouseTile.x, mouseTile.y, X_TILE_WIDTH, Y_TILE_HEIGHT);
-  overlayCtx.fillStyle = 'white';
-  overlayCtx.font = "40px Arial"
-  overlayCtx.fillText(`${mouseTile.x / X_TILE_WIDTH}, ${mouseTile.y / Y_TILE_HEIGHT} | ${mouseTile.x}, ${mouseTile.y}`, 2550, 75)
-}
-
-export function hitTest() {
-  console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / X_TILE_WIDTH},${mouseTile.y / Y_TILE_HEIGHT}`]);
-}
-
-export function convertPointPathToMap(x: number, y: number) {
-  return [x*2, y*2];
+export function drawMouseTile(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = 'red';
+  ctx.fillRect(mouseTile.x, mouseTile.y, X_TILE_WIDTH, Y_TILE_HEIGHT);
+  ctx.fillStyle = 'white';
+  ctx.font = "40px Arial"
+  ctx.fillText(`${mouseTile.x / X_TILE_WIDTH}, ${mouseTile.y / Y_TILE_HEIGHT} | ${mouseTile.x}, ${mouseTile.y}`, 2550, 75)
 }
 
 /**
- * On screen, a single "Path" x/y number would increment by .5 for each
- * individual tile on the Map, since "Map" x/y are 2x the "Point" numbers
- * @param x 
- * @param y 
- * @returns 
+ * Debug function - logs data for a tile when clicked by mouse
  */
-export function convertPointMapToPath(x: number, y: number) {
-  return [x*.5, y*.5];
+export function hitTest() {
+  console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / X_TILE_WIDTH},${mouseTile.y / Y_TILE_HEIGHT}`]);
+  console.log('Data', entities);
+}
+
+export function convertCanvasXYToPathXY(canvasX: number, canvasY: number) {
+  const { tileLockedX, tileLockedY } = getTileLockedXY(canvasX, canvasY);
+  return {
+    pathX: tileLockedX / X_TILE_WIDTH,
+    pathY: tileLockedY / Y_TILE_HEIGHT
+  }
 }
 
 export function getExpanededDraggingTileBounds() {
@@ -81,8 +83,7 @@ export function getExpanededDraggingTileBounds() {
   }
 }
 
-export function convertTileToMapBounds(t: Tile, mDir: NEXT_DIR, isMapPoint = false) {
-  const tile = isMapPoint ? t : convertPointPathToMap(t[0], t[1]);
+export function convertTileToMapBounds(tile: Tile, mDir: NEXT_DIR) {
   const minX = tile[0] * X_TILE_WIDTH;
   const minY = tile[1] * Y_TILE_HEIGHT;
   let directionalMinX;

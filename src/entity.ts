@@ -1,6 +1,6 @@
-import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, HEIGHT, MENU_START_X } from "./constants";
-import { TILE_DATA_OBJ, TileData } from "./maps";
-import { convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, mouseTile, translateXYMouseToCanvas } from "./utils";
+import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, CRITTER_MOVE_SPEED, HEIGHT, MENU_START_X, LAYERS } from "./constants";
+import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
+import { convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, mouseTile, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -104,6 +104,8 @@ interface SourceTargetPoints {
 }
 
 export class Entity {
+  static ENTITY_ID = 0;
+
   x: number;
   y: number;
   dx: number;
@@ -114,8 +116,11 @@ export class Entity {
   health: number;
   cooldown: number;
   deleted: boolean = false;
+  id: number;
+  layer: number;
 
-  constructor(x: number, y: number, dx = 0, dy = 0) {
+  constructor(x: number, y: number, dx = 0, dy = 0, layer = LAYERS.base) {
+    this.id = ++Entity.ENTITY_ID;
     // this.entityType = entityType;
     this.x = x;
     this.y = y;
@@ -126,8 +131,10 @@ export class Entity {
     this.frame = 0;
     this.health = 100;
     this.cooldown = 0;
+    this.layer = layer;
     // Extend to allow passing in constructor
     entities.push(this);
+    entities.sort((e1, e2) => e1.layer - e2.layer)
   }
 
   distance(other: Entity): number {
@@ -138,7 +145,7 @@ export class Entity {
 
   }
 
-  render(_: CanvasRenderingContext2D, __?: CanvasRenderingContext2D) {};
+  render(_: CanvasRenderingContext2D) {};
 }
 
 
@@ -147,24 +154,22 @@ export class Entity {
 // When arriving at that point, then we need to get the *next* point
 // so we'll need to track which index the critter is on
 export class Critter extends Entity {
-  static CRITTER_ID = 0;
-
-  id: number;
   pathIndex: number;
   moveDir: NEXT_DIR;
   shouldUpdateMoveDir;
   destX;
   destY;
+  // Each critter has a reference to its current tile.
+  // The currentTile will have a reference (`critters`) to all critters within
   currentTile: TileData | undefined;
   lastTile: TileData | undefined;
 
   get nextPathIndex() { return this.pathIndex + 1 }
 
   constructor() {
-    super(0, 0, 0, 0);
+    super(0, 0, 0, 0, LAYERS.critters);
 
-    this.id = ++Critter.CRITTER_ID;
-    critters.push(this);
+    // critters.push(this);
 
     this.pathIndex = 0;
     this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
@@ -217,7 +222,6 @@ export class Critter extends Entity {
       this.pathIndex += 1
 
       if (!PATH[this.nextPathIndex]) {
-        console.log('DELETE')
         this.deleted = true;
 
         return;
@@ -247,18 +251,18 @@ export class BaseTower extends Entity {
   width: number;
   height: number;
   
-  constructor(x: number, y: number, color: string) {
-    super(x, y)
-    towers.push(this);
+  constructor(x: number, y: number, color: string, layer = LAYERS.towers) {
+    super(x, y, 0, 0, layer)
+    // towers.push(this);
 
     this.color = color;
     this.width = X_TILE_WIDTH * 3;
     this.height = Y_TILE_HEIGHT * 3;
   }
 
-  override render(overlayCtx: CanvasRenderingContext2D, _?: CanvasRenderingContext2D) {
-    overlayCtx.fillStyle = this.color;
-    overlayCtx.fillRect(this.x, this.y, this.width, this.height)
+  override render(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = this.color;
+    ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
 
@@ -266,7 +270,7 @@ export class MenuTower extends BaseTower {
   dragging: boolean = false;
 
   constructor(x: number, y: number, color: string) {
-    super(x, y, color);
+    super(x, y, color, LAYERS.menuTowers);
 
     window.addEventListener('mousedown', this.dragHandler.bind(this));
     window.addEventListener('mouseup', this.releaseHandler.bind(this))
@@ -274,8 +278,8 @@ export class MenuTower extends BaseTower {
 
   _isValidPlacement = true;
 
-  override render(overlayCtx: CanvasRenderingContext2D, ctx: CanvasRenderingContext2D) {
-    super.render(overlayCtx);
+  override render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
 
     if (this.dragging) {
       this._isValidPlacement = true;
@@ -306,20 +310,18 @@ export class MenuTower extends BaseTower {
       }
 
       if (this._isValidPlacement) {
-        overlayCtx.fillStyle = "rgba(85, 255, 0, .5)";
+        ctx.fillStyle = "rgba(140, 243, 248, 0.33)";
       } else {
-        overlayCtx.fillStyle = "rgba(255, 0, 0, .5)";
+        ctx.fillStyle = "rgba(255, 0, 0, .33)";
       }
 
-      ctx.fillStyle = "rgba(72, 203, 255, 0.35)";
-      // ctx?.fillRect(mouseTile.x - X_TILE_WIDTH, mouseTile.y - (Y_TILE_HEIGHT * 4), X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 9);
-      // ctx?.fillRect(mouseTile.x - (X_TILE_WIDTH * 4), mouseTile.y - Y_TILE_HEIGHT, X_TILE_WIDTH * 9, Y_TILE_HEIGHT * 3);
-      
-      // ctx?.fillRect(mouseTile.x - X_TILE_WIDTH, mouseTile.y - (Y_TILE_HEIGHT * 4), X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 9)
-      ctx?.fillRect(mouseTile.x - (X_TILE_WIDTH * 3), mouseTile.y - (Y_TILE_HEIGHT * 3), X_TILE_WIDTH * 7, Y_TILE_HEIGHT * 7)
+      // Draw "valid" range for tower
+      ctx?.fillRect(mouseTile.x - (X_TILE_WIDTH * 4), mouseTile.y - (Y_TILE_HEIGHT * 4), X_TILE_WIDTH * 9, Y_TILE_HEIGHT * 9)
 
-      
-      overlayCtx.fillRect(
+
+      ctx.fillStyle = "rgba(85, 255, 0, .75)";
+      // Draw tower
+      ctx.fillRect(
         mouseTile.x - X_TILE_WIDTH,
         mouseTile.y - Y_TILE_HEIGHT,
         X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 3
@@ -337,19 +339,91 @@ export class MenuTower extends BaseTower {
     }
   }
 
-  releaseHandler() { 
+  releaseHandler() {
     if (this.dragging) {
       this.dragging = false;
       if (this._isValidPlacement) {
-        new BaseTower(mouseTile.x - X_TILE_WIDTH, mouseTile.y - Y_TILE_HEIGHT, this.color)
+        new FetcherTower(mouseTile.x - X_TILE_WIDTH, mouseTile.y - Y_TILE_HEIGHT, this.color)
       }
     }
+  }
+}
+
+class PlacedTower extends BaseTower {
+  coveredTiles: Array<TileData> = [];
+
+  constructor(x: number, y: number, color: string) {
+    super(x, y, color);
+
+    const pathXY = convertCanvasXYToPathXY(x, y);
+    const coverage = {minX: pathXY.pathX - 3, maxX: pathXY.pathX + 6, minY: pathXY.pathY - 3, maxY: pathXY.pathY + 6 };
+    
+    for(let x = coverage.minX;x < coverage.maxX;x++){
+      for(let y = coverage.minY;y < coverage.maxY;y++){
+        const tileData = getTileDataEntry(x, y);
+        if (tileData?.isPath) {
+          this.coveredTiles.push(tileData);
+        }
+      }
+    }
+    // Sort so that furthest tiles is first in the list
+    this.coveredTiles.sort((a, b) => b.pathIndex! - a.pathIndex!)
+  }
+
+  override render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+  }
+}
+
+class FetcherTower extends PlacedTower {
+  fetchers: Array<Fetcher> = [];
+
+  constructor(x: number, y: number, color: string) {
+    super(x, y, color);
+
+    this.fetchers.push(...[
+      new Fetcher(this),
+      new Fetcher(this),
+      new Fetcher(this),
+    ])
+  }
+
+  override render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+  }
+}
+
+class Fetcher extends Entity {
+  parent: PlacedTower;
+
+  constructor(parent: PlacedTower) {
+    super(-100, -100, 0, 0, LAYERS.fetchers);
+
+    this.parent = parent;
+    this.x = getRandomInt(parent.x, parent.x + parent.width);
+    this.y = getRandomInt(parent.y, parent.y + parent.width);
+  }
+
+  override render(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = 'blue'
+    ctx.fillRect(this.x, this.y, 30, 30);
+  }
+}
+
+export class Menu extends Entity {
+  constructor() {
+    super(MENU_START_X, 0, 0, 0, LAYERS.menu);
+  }
+
+  override render(ctx: CanvasRenderingContext2D): void {
+    ctx.fillStyle = 'blue';
+    ctx.fillRect(MENU_START_X, 0, X_TILE_WIDTH * 10, HEIGHT);
   }
 }
 
 // All entities
 export const entities: Entity[] = [];
 // Only critters
-export const critters: Critter[] = [];
+// export const critters: Critter[] = [];
 // Only towers
-export const towers: BaseTower[] = [];
+// export const towers: BaseTower[] = [];

@@ -1,9 +1,9 @@
-import { HEIGHT, MENU_START_X, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
+import { HEIGHT, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
 import { drawMouseTile } from './utils';
 import { drawTileMap } from "./maps";
-import { Critter, critters, MenuTower, towers } from "./entity";
-import { registerListeners } from "./listeners";
-import { mapCtx, ctx, overlayCtx, overlayCanvas } from "./elements";
+import { Critter, entities, Menu, MenuTower } from "./entity";
+import { hasMouseMoved, registerListeners } from "./listeners";
+import { mapCtx, ctx, canvas } from "./elements";
 
 
 // const image = new Image();
@@ -42,6 +42,7 @@ function gameLoop(): void {
 //   new Critter();
 // }
 new Critter();
+new Menu();
 
 const towersObj: Record<string, MenuTower | undefined> = {
   green: undefined,
@@ -62,21 +63,26 @@ function render(): void {
   if (gameTime % 7 === 0) {
     new Critter();
   }
-  drawEntities();
 
-  drawMenu();
-
-  critters.forEach(e => e.render(ctx));
-
-
-  for (let i = 0; i < critters.length; i++) {
-    if (critters[i].deleted) {
-      delete critters[i].currentTile?.critters[critters[i].id];
-      critters.splice(i, 1);
-      i--;
+// console.log('*** BEGIN')
+  entities.forEach(e => {
+    // console.log(e);
+    e.render(ctx)
+  });
+// console.log('*** END')
+  for (let i = 0; i < entities.length; i++) {
+    if (entities[i].deleted) {
+      if ((entities[i] as Critter).currentTile) {
+        delete (entities[i] as Critter).currentTile?.critters[entities[i].id];
+        entities.splice(i, 1);
+        i--;
+      }
     }
   }
 
+  if (hasMouseMoved) {
+    drawMouseTile(ctx);
+  }
   // // Show "expanded" data results
   // const data = convertTileToMapBounds(PATH[1], NEXT_DIR.SW);
   // const data2 = convertTileToMapBounds(PATH[1], NEXT_DIR.W);
@@ -90,20 +96,8 @@ function render(): void {
 
 function clearScreen(): void {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    overlayCtx.clearRect(0, 0, WIDTH, HEIGHT);
 }
 
-function drawEntities(): void {}
-
-function drawMenu(): void {
-  overlayCtx.fillStyle = 'blue';
-  overlayCtx.fillRect(MENU_START_X, 0, X_TILE_WIDTH * 10, HEIGHT);
-
-  towers.forEach(e => e.render(overlayCtx, ctx))
-
-  drawMouseTile();
-}
-
-registerListeners(overlayCanvas);
+registerListeners(canvas);
 drawTileMap(mapCtx);
 requestAnimationFrame(gameLoop);

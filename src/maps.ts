@@ -1,11 +1,9 @@
 import { type Tile, PATH, PATH_OBJ, X_TILE_WIDTH, X_TILES, Y_TILE_HEIGHT, Y_TILES } from "./constants";
 import { Critter, getDirectionFromTo, NEXT_DIR } from "./entity";
-import { convertPointMapToPath, convertTileToMapBounds } from "./utils";
+import { convertTileToMapBounds } from "./utils";
 
 function testPath(x: number, y: number): keyof typeof PATH_OBJ {
-  const [xStr, yStr] = convertPointMapToPath(x, y);
-
-  return `${xStr},${yStr}` as keyof typeof PATH_OBJ;
+  return `${x},${y}` as keyof typeof PATH_OBJ;
 }
 
 function findPathIndex(x: number, y: number) {
@@ -24,39 +22,39 @@ export class TileData {
   x: number;
   y: number;
   isPath: boolean;
+  pathIndex?: number;
   isCovered: boolean = false;
   critters: Record<string, Critter> = {};
 
 
-  constructor(x: number, y: number, isPath: boolean = false) {
+  constructor(x: number, y: number, isPath: boolean = false, pathIndex?: number) {
     this.x = x;
     this.y = y;
     this.isPath = isPath;
+    this.pathIndex = pathIndex;
   }
 }
 
 export const TILE_DATA_OBJ: Record<string, TileData> = {}
+export const getTileDataKey = (x: number, y: number) => `${x},${y}`;
+export const getTileDataEntry = (x: number, y: number) => TILE_DATA_OBJ[getTileDataKey(x, y)];
 
 export function drawTileMap(ctx: CanvasRenderingContext2D): void {
-  for(let y = 0; y < Y_TILES * 2; y++) {
-    for(let x = 0; x < X_TILES * 2; x++) {
+  for(let y = 0; y < Y_TILES; y++) {
+    for(let x = 0; x < X_TILES; x++) {
       const currentTile = new TileData(x, y, false);
 
       if (PATH_OBJ[testPath(x, y)]) {
-        const [normalizedX, normalizedY] = convertPointMapToPath(x, y)
         currentTile.isPath = true;
-        console.log('Current', {
-          x, y, normalizedX, normalizedY
-        })
 
-        const currentIndex = findPathIndex(normalizedX, normalizedY);
+        const currentIndex = findPathIndex(x, y);
         const previousPath = PATH[currentIndex - 1]
 
         // Colors all:
         ctx.fillStyle = 'grey';
 
         // Fill in extra 1 square all around each tile
-        const {minX, minY} = convertTileToMapBounds([x - 1, y - 1], NEXT_DIR.SW, true)
+        const {minX, minY} = convertTileToMapBounds([x - 1, y - 1], NEXT_DIR.SW)
         ctx.fillRect(
           minX,
           minY,
@@ -66,10 +64,11 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
 
         for(let i = x - 1; i < x + 2;i++) {
           for (let p = y - 1; p < y + 2;p++) {
-            if (!TILE_DATA_OBJ[`${i},${p}`]) {
-              TILE_DATA_OBJ[`${i},${p}`] = new TileData(i, p, true);
+            if (!getTileDataEntry(i, p)) {
+              TILE_DATA_OBJ[getTileDataKey(i, p)] = new TileData(i, p, true, currentIndex);
             } else {
-              TILE_DATA_OBJ[`${i},${p}`].isPath = true;
+              TILE_DATA_OBJ[getTileDataKey(i, p)].isPath = true;
+              TILE_DATA_OBJ[getTileDataKey(i, p)].pathIndex = currentIndex;
             }
           }
         }
@@ -145,8 +144,8 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
         // Can be enabled to show the specific tiles (from map array) which were drawn
         ctx.fillStyle = 'black';
         ctx.fillRect(x * X_TILE_WIDTH, y * Y_TILE_HEIGHT, X_TILE_WIDTH, Y_TILE_HEIGHT)
-      } else if (!TILE_DATA_OBJ[`${x},${y}`]) {
-        TILE_DATA_OBJ[`${x},${y}`] = currentTile;
+      } else if (!getTileDataEntry(x,  y)) {
+        TILE_DATA_OBJ[getTileDataKey(x, y)] = currentTile;
       }
 
     }
