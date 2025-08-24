@@ -70,6 +70,7 @@ export class Entity {
   deleted: boolean = false;
   id: number;
   layer: number;
+  count: number = 0;
 
   constructor(x: number, y: number, dx = 0, dy = 0, width = 0, height = 0, layer = LAYERS.base) {
     this.id = ++Entity.ENTITY_ID;
@@ -102,6 +103,24 @@ export class Entity {
   render(_: CanvasRenderingContext2D) {};
 }
 
+const critterTypes = {
+  'fly': {
+    x: 40,
+    y: 10
+  },
+  'frog': {
+    x: 40,
+    y: 20
+  },
+  'snake': {
+    x: 40,
+    y: 30
+  },
+  'lizard': {
+    x: 40,
+    y: 40
+  },
+};
 
 // When creating the class, we need to get the next point in line
 // Then we need to know when the create is at that next point
@@ -122,6 +141,8 @@ export class Critter extends Entity {
   destX: number = 0;
   destY: number = 0;
 
+  type: keyof typeof critterTypes;
+
   get nextPathIndex() { return this.pathIndex + 1 }
 
   constructor() {
@@ -136,6 +157,10 @@ export class Critter extends Entity {
     this.x = getRandomInt(directionalMinX, directionalMaxX - this.width);
     this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
     this.getNextDirection();
+
+    const keys = Object.keys(critterTypes) as unknown as keyof typeof critterTypes;
+
+    this.type = keys[getRandomInt(0, keys.length - 1)] as keyof typeof critterTypes;
   }
 
   getNextDirection() {
@@ -167,7 +192,7 @@ export class Critter extends Entity {
 
   override render(ctx: CanvasRenderingContext2D) {
     if (!this.caught && !this.deleted) {
-      const {x, y} = movePoint(this, this.att, 5);
+      const {x, y} = movePoint(this, this.att, 2);
       this.x = x;
       this.y = y;
 
@@ -197,8 +222,19 @@ export class Critter extends Entity {
       }
     }
 
-    ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
+    // ctx.fillRect(this.x, this.y, this.width, this.height);
+    const type = critterTypes[this.type];
+    if (this.count < 8) {
+      ctx.drawImage(gameState.image!, type.x, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
+    } else if (this.count < 16) {
+      ctx.drawImage(gameState.image!, type.x + 10, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
+      if (this.count === 15) {
+        this.count = 0;
+      }
+    }
+    this.count++;
+    
   }
 }
 
@@ -213,7 +249,7 @@ export class BaseTower extends Entity {
 
   override render(ctx: CanvasRenderingContext2D) {
     if (this.color === 'fetcher') {
-    ctx.drawImage(gameState.image!, 0, 10, 30, 30, this.x, this.y, TILE_WIDTH * 3, TILE_WIDTH * 3)
+      ctx.drawImage(gameState.image!, 0, 10, 30, 30, this.x, this.y, TILE_WIDTH * 3, TILE_WIDTH * 3)
     }
     // ctx.fillStyle = this.color;
     // ctx.fillRect(this.x, this.y, this.width, this.height)
@@ -358,7 +394,6 @@ class Fetcher extends Entity {
   state: FetcherStates = FetcherStates.waiting;
   destX: number = 0;
   destY: number = 0;
-  count: number = 0;
 
   constructor(parent: PlacedTower) {
     super(-100, -100, 0, 0, 30, 30, LAYERS.fetchers);

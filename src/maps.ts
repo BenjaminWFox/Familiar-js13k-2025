@@ -216,10 +216,10 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
         drawTile(minX, minY, image, rotation);
 
         /// For debugging
-        if (PATH_OBJ[testPath(x, y)]) {
-          ctx.fillStyle = 'black';
-          ctx.fillRect(minX, minY, 50, 50);
-        }
+        // if (PATH_OBJ[testPath(x, y)]) {
+        //   ctx.fillStyle = 'black';
+        //   ctx.fillRect(minX, minY, 50, 50);
+        // }
       }
     }
   }
