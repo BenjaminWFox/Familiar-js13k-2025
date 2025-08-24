@@ -1,4 +1,4 @@
-import { WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile } from "./constants";
+import { WIDTH, TILE_WIDTH, type Tile } from "./constants";
 import { Entity, NEXT_DIR } from "./entity";
 import { TILE_DATA_OBJ } from "./maps";
 
@@ -37,7 +37,7 @@ export const mouseTile = {
  * @returns the X and Y canvas coords to begin drawing a tile
  */
 export function getTileLockedXY(canvasX: number, canvasY: number) {
-  return { tileLockedX: Math.floor(canvasX / X_TILE_WIDTH) * X_TILE_WIDTH, tileLockedY: Math.floor(canvasY / Y_TILE_HEIGHT) * Y_TILE_HEIGHT }
+  return { tileLockedX: Math.floor(canvasX / TILE_WIDTH) * TILE_WIDTH, tileLockedY: Math.floor(canvasY / TILE_WIDTH) * TILE_WIDTH }
 }
 
 export function setMouseTile(mouseX: number, mouseY: number) {
@@ -52,17 +52,17 @@ export function setMouseTile(mouseX: number, mouseY: number) {
 
 export function drawMouseTile(ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = 'red';
-  ctx.fillRect(mouseTile.x, mouseTile.y, X_TILE_WIDTH, Y_TILE_HEIGHT);
+  ctx.fillRect(mouseTile.x, mouseTile.y, TILE_WIDTH, TILE_WIDTH);
   ctx.fillStyle = 'white';
   ctx.font = "40px Arial"
-  ctx.fillText(`${mouseTile.x / X_TILE_WIDTH}, ${mouseTile.y / Y_TILE_HEIGHT} | ${mouseTile.x}, ${mouseTile.y}`, 2550, 75)
+  ctx.fillText(`${mouseTile.x / TILE_WIDTH}, ${mouseTile.y / TILE_WIDTH} | ${mouseTile.x}, ${mouseTile.y}`, 2550, 75)
 }
 
 /**
  * Debug function - logs data for a tile when clicked by mouse
  */
 export function mouseHitTest() {
-  console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / X_TILE_WIDTH},${mouseTile.y / Y_TILE_HEIGHT}`]);
+  console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / TILE_WIDTH},${mouseTile.y / TILE_WIDTH}`]);
   // console.log('Data', entities);
 }
 
@@ -82,17 +82,17 @@ export function hitTest(e1: HitTestable, e2: HitTestable) {
 export function convertCanvasXYToPathXY(canvasX: number, canvasY: number) {
   const { tileLockedX, tileLockedY } = getTileLockedXY(canvasX, canvasY);
   return {
-    pathX: tileLockedX / X_TILE_WIDTH,
-    pathY: tileLockedY / Y_TILE_HEIGHT
+    pathX: tileLockedX / TILE_WIDTH,
+    pathY: tileLockedY / TILE_WIDTH
   }
 }
 
 export function getExpanededDraggingTileBounds() {
   return {
-    expandedMinX: (mouseTile.x - X_TILE_WIDTH) / X_TILE_WIDTH,
-    expandedMaxX: (mouseTile.x + X_TILE_WIDTH) / X_TILE_WIDTH,
-    expandedMinY: (mouseTile.y - Y_TILE_HEIGHT) / Y_TILE_HEIGHT,
-    expandedMaxY: (mouseTile.y + Y_TILE_HEIGHT) / Y_TILE_HEIGHT,
+    expandedMinX: (mouseTile.x - TILE_WIDTH) / TILE_WIDTH,
+    expandedMaxX: (mouseTile.x + TILE_WIDTH) / TILE_WIDTH,
+    expandedMinY: (mouseTile.y - TILE_WIDTH) / TILE_WIDTH,
+    expandedMaxY: (mouseTile.y + TILE_WIDTH) / TILE_WIDTH,
   }
 }
 
@@ -103,11 +103,11 @@ export function getExpanededDraggingTileBounds() {
  * @param mDir 
  * @returns 
  */
-export function convertTileToMapBounds(tile: Tile, mDir: NEXT_DIR) {
+export function convertTileToMapBounds(tile: Tile, mDir?: NEXT_DIR) {
   const [x, y] = tile;
 
-  const minX = x * X_TILE_WIDTH;
-  const minY = y * Y_TILE_HEIGHT;
+  const minX = x * TILE_WIDTH;
+  const minY = y * TILE_WIDTH;
   let directionalMinX;
   let directionalMaxX;
   let directionalMinY;
@@ -120,29 +120,28 @@ export function convertTileToMapBounds(tile: Tile, mDir: NEXT_DIR) {
     case NEXT_DIR.NW:
     case NEXT_DIR.N:
     case NEXT_DIR.NE:
-      directionalMinX = (x - 1) * X_TILE_WIDTH;
-      directionalMaxX = (x + 2) * X_TILE_WIDTH;
+      directionalMinX = (x - 1) * TILE_WIDTH;
+      directionalMaxX = (x + 2) * TILE_WIDTH;
       directionalMinY = minY;
-      directionalMaxY = (y + 1) * Y_TILE_HEIGHT;
+      directionalMaxY = (y + 1) * TILE_WIDTH;
       break;
     case NEXT_DIR.E:
     case NEXT_DIR.W:
     default:
-      console.log('Next dir E/W')
       directionalMinX = minX;
-      directionalMaxX = (x + 1) * X_TILE_WIDTH;
-      directionalMinY = (y - 1) * Y_TILE_HEIGHT;
-      directionalMaxY = (y + 2) * Y_TILE_HEIGHT;
+      directionalMaxX = (x + 1) * TILE_WIDTH;
+      directionalMinY = (y - 1) * TILE_WIDTH;
+      directionalMaxY = (y + 2) * TILE_WIDTH;
       break;
   }
 
   const conversionData = {
     minX,
     minY,
-    maxX: tile[0] * X_TILE_WIDTH + X_TILE_WIDTH,
-    maxY: tile[1] * Y_TILE_HEIGHT + Y_TILE_HEIGHT,
-    midX: tile[0] * X_TILE_WIDTH + (X_TILE_WIDTH * .5),
-    midY: tile[1] * Y_TILE_HEIGHT + (Y_TILE_HEIGHT * .5),
+    maxX: tile[0] * TILE_WIDTH + TILE_WIDTH,
+    maxY: tile[1] * TILE_WIDTH + TILE_WIDTH,
+    midX: tile[0] * TILE_WIDTH + (TILE_WIDTH * .5),
+    midY: tile[1] * TILE_WIDTH + (TILE_WIDTH * .5),
     directionalMinX,
     directionalMaxX,
     directionalMinY,

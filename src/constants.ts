@@ -2,8 +2,7 @@ export const WIDTH = 3000;
 export const HEIGHT = 2000;
 export const X_TILES = 60;
 export const Y_TILES = 40;
-export const X_TILE_WIDTH = WIDTH / X_TILES;
-export const Y_TILE_HEIGHT = HEIGHT / Y_TILES;
+export const TILE_WIDTH = 50;
 export const LAYERS = {
   base: 10,
   pather: 20,
@@ -15,13 +14,61 @@ export const LAYERS = {
   menuTowers: 70
 }
 
-export const MENU_START_X = WIDTH - X_TILE_WIDTH * 10;
+export const MENU_START_X = WIDTH - TILE_WIDTH * 10;
 
 export const MENU_TOWER_START_X = 0;
 export const MENU_TOWER_START_Y = 0;
 
 export type Tile = [number, number];
 export type Path = Array<Tile>;
+
+// export const ORIGINAL_PATH: Path = [
+//   [8, -2],
+//   [8, 0],
+//   [8, 2],
+//   [6, 4],
+//   [6, 6],
+//   [6, 8],
+//   [4, 10],
+//   [4, 12],
+//   [6, 14],
+//   [6, 16],
+//   [8, 18],
+//   [8, 20],
+//   [8, 22],
+//   [8, 24],
+//   [8, 26],
+//   [6, 28],
+//   [4, 30],
+//   [4, 32],
+//   [6, 34],
+//   [8, 34],
+//   [10, 34],
+//   [12, 34],
+//   [14, 32],
+//   [16, 30],
+//   [18, 28],
+//   [20, 26],
+//   [22, 24],
+//   [24, 22],
+//   [24, 20],
+//   [26, 18],
+//   [26, 16],
+//   [28, 14],
+//   [30, 12],
+//   [32, 10],
+//   [34, 10],
+//   [36, 12],
+//   [38, 14],
+//   [40, 16],
+//   [40, 18],
+//   [40, 20],
+//   [42, 22],
+//   [44, 24],
+//   [46, 26],
+//   [48, 26],
+//   [50, 26],
+// ];
 
 export const PATH: Path = [
   [8, -2],
@@ -56,10 +103,18 @@ export const PATH: Path = [
   [26, 18],
   [26, 16],
   [28, 14],
-  [30, 12],
-  [32, 10],
+  [28, 12],
+  [26, 10],
+  [24, 8],
+  [24, 6],
+  [26, 4],
+  [28, 4],
+  [30, 4],
+  [32, 6],
+  [32, 8],
   [34, 10],
-  [36, 12],
+  [36, 10],
+  [38, 12],
   [38, 14],
   [40, 16],
   [40, 18],

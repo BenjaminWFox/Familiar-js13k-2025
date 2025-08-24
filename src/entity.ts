@@ -1,4 +1,4 @@
-import { PATH, X_TILE_WIDTH, Y_TILE_HEIGHT, type Tile, HEIGHT, MENU_START_X, LAYERS } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS } from "./constants";
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
 import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, translateXYMouseToCanvas } from "./utils";
@@ -26,6 +26,10 @@ function getRandomInt(min: number, max: number) {
 }
 
 export function getDirectionFromTo(tFrom: Tile, tTo: Tile) {
+  if (!tFrom || !tTo) {
+    return;
+  }
+  
   if (tTo[0] < tFrom[0]) {
       if (tTo[1] < tFrom[1]) {
         return NEXT_DIR.NW;
@@ -105,7 +109,7 @@ export class Entity {
 // so we'll need to track which index the critter is on
 export class Critter extends Entity {
   pathIndex: number;
-  moveDir: NEXT_DIR;
+  moveDir: NEXT_DIR | undefined;
   // Each critter has a reference to its current tile.
   // The currentTile will have a reference (`critters`) to all critters within
   currentTile: TileData | undefined;
@@ -171,7 +175,7 @@ export class Critter extends Entity {
       ctx.fillRect(this.destX, this.destY, 5, 5)
 
       const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
-      const tile = TILE_DATA_OBJ[`${tileLockedX / X_TILE_WIDTH},${tileLockedY / Y_TILE_HEIGHT}`];
+      const tile = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY / TILE_WIDTH}`];
       if (tile && (!this.currentTile || tile !== this.currentTile)) {
         this.removeFromTile();
         this.lastTile = this.currentTile;
@@ -202,7 +206,7 @@ export class BaseTower extends Entity {
   color: string;
   
   constructor(x: number, y: number, color: string, layer = LAYERS.towers) {
-    super(x, y, 0, 0, X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 3, layer)
+    super(x, y, 0, 0, TILE_WIDTH * 3, TILE_WIDTH * 3, layer)
 
     this.color = color;
   }
@@ -233,9 +237,9 @@ export class MenuTower extends BaseTower {
       const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds()
       if (
         expandedMinX < 0 || 
-        expandedMaxX > (MENU_START_X - X_TILE_WIDTH) / X_TILE_WIDTH ||
-        expandedMinY / Y_TILE_HEIGHT < 0 ||
-        expandedMaxY > (HEIGHT - Y_TILE_HEIGHT) / Y_TILE_HEIGHT
+        expandedMaxX > (MENU_START_X - TILE_WIDTH) / TILE_WIDTH ||
+        expandedMinY / TILE_WIDTH < 0 ||
+        expandedMaxY > (HEIGHT - TILE_WIDTH) / TILE_WIDTH
       ) {
         // Tower is outside of the game board
         this._isValidPlacement = false;
@@ -243,7 +247,7 @@ export class MenuTower extends BaseTower {
         const towerTiles = [
           [expandedMinX, expandedMinY],
           [expandedMaxX, expandedMinY],
-          [mouseTile.x / X_TILE_WIDTH, mouseTile.y / Y_TILE_HEIGHT],
+          [mouseTile.x / TILE_WIDTH, mouseTile.y / TILE_WIDTH],
           [expandedMinX, expandedMaxY],
           [expandedMaxX, expandedMaxY],
         ]
@@ -263,15 +267,15 @@ export class MenuTower extends BaseTower {
       }
 
       // Draw "valid" range for tower
-      ctx?.fillRect(mouseTile.x - (X_TILE_WIDTH * 4), mouseTile.y - (Y_TILE_HEIGHT * 4), X_TILE_WIDTH * 9, Y_TILE_HEIGHT * 9)
+      ctx?.fillRect(mouseTile.x - (TILE_WIDTH * 4), mouseTile.y - (TILE_WIDTH * 4), TILE_WIDTH * 9, TILE_WIDTH * 9)
 
 
       ctx.fillStyle = "rgba(85, 255, 0, .75)";
       // Draw tower
       ctx.fillRect(
-        mouseTile.x - X_TILE_WIDTH,
-        mouseTile.y - Y_TILE_HEIGHT,
-        X_TILE_WIDTH * 3, Y_TILE_HEIGHT * 3
+        mouseTile.x - TILE_WIDTH,
+        mouseTile.y - TILE_WIDTH,
+        TILE_WIDTH * 3, TILE_WIDTH * 3
       );
     }
   }
@@ -290,7 +294,7 @@ export class MenuTower extends BaseTower {
     if (this.dragging) {
       this.dragging = false;
       if (this._isValidPlacement) {
-        new FetcherTower(mouseTile.x - X_TILE_WIDTH, mouseTile.y - Y_TILE_HEIGHT, this.color)
+        new FetcherTower(mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, this.color)
       }
     }
   }
@@ -405,8 +409,8 @@ class Fetcher extends Entity {
         break;
       case FetcherStates.fetching:
         if (this.destX === 0) {
-          this.destX = getRandomInt(this.parent.x, this.parent.x + this.parent.width - this.width);
-          this.destY = getRandomInt(this.parent.y, this.parent.y + this.parent.height - this.height);
+          this.destX = getRandomInt(this.parent.x + this.width, this.parent.x + this.parent.width - this.width);
+          this.destY = getRandomInt(this.parent.y + this.width, this.parent.y + this.parent.height - this.height);
         }
 
         const fetchAngle = angleToTarget(this, {x: this.destX, y: this.destY});
@@ -416,11 +420,14 @@ class Fetcher extends Entity {
         this.chasing!.x = this.x + 5;
         this.chasing!.y = this.y + 5;
 
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(this.destX, this.destY, 4, 4);
+
         if (hitTest(this, {x: this.destX, y: this.destY, width: 4, height: 4})) {
           this.destX = 0;
           this.destY = 0;
           this.state = FetcherStates.waiting
-          // this.chasing!.deleted = true;
+          this.chasing!.deleted = true;
           this.chasing = undefined;
         }
 
@@ -439,7 +446,7 @@ class Fetcher extends Entity {
 
 export class Menu extends Entity {
   constructor() {
-    super(MENU_START_X, 0, 0, 0, X_TILE_WIDTH * 10, HEIGHT, LAYERS.menu);
+    super(MENU_START_X, 0, 0, 0, TILE_WIDTH * 10, HEIGHT, LAYERS.menu);
   }
 
   override render(ctx: CanvasRenderingContext2D): void {

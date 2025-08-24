@@ -16,15 +16,15 @@ body {
   height: 100%;
 }
 
-#mc, #gc, #oc {
+#mc, #gc {
   position: absolute;
   width: 100vw;
   outline: 0;
-  image-rendering: pixelated; /* You definitely want this if you are doing pixel art */
+  image-rendering: pixelated;
 }
 
 @media (max-aspect-ratio: 3/2) {
-  #mc, #gc, #oc {
+  #mc, #gc {
     width: 100vw;
   }
 }

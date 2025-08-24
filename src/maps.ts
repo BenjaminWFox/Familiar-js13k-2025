@@ -1,4 +1,4 @@
-import { type Tile, PATH, PATH_OBJ, X_TILE_WIDTH, X_TILES, Y_TILE_HEIGHT, Y_TILES } from "./constants";
+import { type Tile, PATH, PATH_OBJ, TILE_WIDTH, X_TILES, Y_TILES } from "./constants";
 import { Critter, getDirectionFromTo, NEXT_DIR } from "./entity";
 import { convertTileToMapBounds } from "./utils";
 
@@ -22,9 +22,11 @@ export class TileData {
   x: number;
   y: number;
   isPath: boolean;
+  fillinDir?: NEXT_DIR;
   pathIndex?: number;
   isCovered: boolean = false;
   critters: Record<string, Critter> = {};
+  imageRotation: number = 0;
 
   constructor(x: number, y: number, isPath: boolean = false, pathIndex?: number) {
     this.x = x;
@@ -38,117 +40,174 @@ export const TILE_DATA_OBJ: Record<string, TileData> = {}
 export const getTileDataKey = (x: number, y: number) => `${x},${y}`;
 export const getTileDataEntry = (x: number, y: number) => TILE_DATA_OBJ[getTileDataKey(x, y)];
 
-export function drawTileMap(ctx: CanvasRenderingContext2D): void {
+const images = {
+  path: {x: 75},
+  edge: {x: 50},
+  inside: {x: 25},
+  outside: {x: 0}
+}
+
+
+
+export function drawTileMap(ctx: CanvasRenderingContext2D, image: HTMLImageElement): void {
+  function drawTile(x: number, y: number, type: any, rotation: number = 0) {
+    const c = document.createElement('canvas');
+    const c_ctx = c.getContext('2d') as CanvasRenderingContext2D;
+    c.width = TILE_WIDTH;
+    c.height = TILE_WIDTH;
+    c_ctx.imageSmoothingEnabled = false;
+    c_ctx.translate(25, 25);
+    c_ctx.rotate((rotation * Math.PI) / 180);
+    c_ctx.drawImage(image, type.x, type.y || 0, 25, 25, -25, -25, TILE_WIDTH, TILE_WIDTH)
+    
+    // c.style.transform = 'rotate(45deg)';
+    ctx.drawImage(c, x, y);
+  }
+
+  // Build all TileData
   for(let y = 0; y < Y_TILES; y++) {
     for(let x = 0; x < X_TILES; x++) {
-      const currentTile = new TileData(x, y, false);
+      const currentIndex = findPathIndex(x, y);
 
       if (PATH_OBJ[testPath(x, y)]) {
-        currentTile.isPath = true;
-
-        const currentIndex = findPathIndex(x, y);
-        const previousPath = PATH[currentIndex - 1]
-
-        // Colors all:
-        ctx.fillStyle = 'grey';
-
-        // Fill in extra 1 square all around each tile
-        const {minX, minY} = convertTileToMapBounds([x - 1, y - 1], NEXT_DIR.SW)
-        ctx.fillRect(
-          minX,
-          minY,
-          X_TILE_WIDTH * 3,
-          Y_TILE_HEIGHT * 3
-        );
-
         for(let i = x - 1; i < x + 2;i++) {
           for (let p = y - 1; p < y + 2;p++) {
-            if (!getTileDataEntry(i, p)) {
+            const tileData = getTileDataEntry(i, p);
+            if (!tileData) {
               TILE_DATA_OBJ[getTileDataKey(i, p)] = new TileData(i, p, true, currentIndex);
             } else {
-              TILE_DATA_OBJ[getTileDataKey(i, p)].isPath = true;
-              TILE_DATA_OBJ[getTileDataKey(i, p)].pathIndex = currentIndex;
+              tileData.isPath = true;
+              tileData.pathIndex = currentIndex;
             }
           }
         }
+      } else if (!getTileDataEntry(x,  y)) {
+        TILE_DATA_OBJ[getTileDataKey(x, y)] = new TileData(x, y, false);
+      }
+    }
+  }
 
-        if (previousPath) {
-          const dir = getDirectionFromTo(previousPath, PATH[currentIndex]);
-          
+
+  for(let y = 0; y < Y_TILES; y++) {
+    for(let x = 0; x < X_TILES; x++) {
+
+      if (PATH_OBJ[testPath(x, y)]) {
+        const currentIndex = findPathIndex(x, y);
+        const prevPath = PATH[currentIndex - 1];
+        const dirPastToCurrent = getDirectionFromTo(prevPath, PATH[currentIndex]);
+        if (dirPastToCurrent) {
           // Fill in the extra corners
           ctx.fillStyle = 'teal'
-          if (dir === NEXT_DIR.SW) {
-            ctx.fillRect(
-              (x + 2) * X_TILE_WIDTH,
-              y * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-            ctx.fillRect(
-              x * X_TILE_WIDTH,
-              (y - 2) * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
+          let tileData;
+
+          if (dirPastToCurrent === NEXT_DIR.SW) {
+            tileData = getTileDataEntry(x, y - 2);
+            tileData.fillinDir = NEXT_DIR.SW;
+            tileData.isPath = true;
+
+            tileData = getTileDataEntry(x + 2, y);
+            tileData.fillinDir = NEXT_DIR.SW;
+            tileData.imageRotation = 180;
+            tileData.isPath = true;
           }
 
           // TODO: remove this if no other maps are added with NW direction
           // current map has no NW direction
-          if (dir === NEXT_DIR.NW) {
-            ctx.fillRect(
-              (x + 2) * X_TILE_WIDTH,
-              y * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-            ctx.fillRect(
-              x * X_TILE_WIDTH,
-              (y + 2) * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-          }
-            
-          if (dir === NEXT_DIR.NE) {
-            ctx.fillRect(
-              (x - 2) * X_TILE_WIDTH,
-              y * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-            ctx.fillRect(
-              x * X_TILE_WIDTH,
-              (y + 2) * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
+          if (dirPastToCurrent === NEXT_DIR.NW) {
+            tileData = getTileDataEntry(x + 2, y);
+            tileData.fillinDir = NEXT_DIR.NW;
+            tileData.isPath = true;
+
+            tileData = getTileDataEntry(x, y + 2);
+            tileData.fillinDir = NEXT_DIR.NW;
+            tileData.isPath = true;
+
+            // ctx.fillRect(
+            //   (x + 2) * TILE_WIDTH,
+            //   y * TILE_WIDTH,
+            //   TILE_WIDTH,
+            //   TILE_WIDTH
+            // );
+            // ctx.fillRect(
+            //   x * TILE_WIDTH,
+            //   (y + 2) * TILE_WIDTH,
+            //   TILE_WIDTH,
+            //   TILE_WIDTH
+            // );
           }
 
-          if (dir === NEXT_DIR.SE) {
-            ctx.fillRect(
-              (x - 2) * X_TILE_WIDTH,
-              y * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
-            ctx.fillRect(
-              x * X_TILE_WIDTH,
-              (y - 2) * Y_TILE_HEIGHT,
-              X_TILE_WIDTH,
-              Y_TILE_HEIGHT
-            );
+          if (dirPastToCurrent === NEXT_DIR.NE) {
+            tileData = getTileDataEntry(x - 2, y);
+            tileData.fillinDir = NEXT_DIR.NE;
+            tileData.isPath = true;
+
+            tileData = getTileDataEntry(x, y + 2);
+            tileData.imageRotation = 180;
+            tileData.fillinDir = NEXT_DIR.NE;
+            tileData.isPath = true;
+          }
+
+          if (dirPastToCurrent === NEXT_DIR.SE) {
+            tileData = getTileDataEntry(x - 2, y);
+            tileData.imageRotation = 270;
+            tileData.fillinDir = NEXT_DIR.SE;
+            tileData.isPath = true;
+
+            tileData = getTileDataEntry(x, y - 2);
+            tileData.imageRotation = 90;
+            tileData.fillinDir = NEXT_DIR.SE;
+            tileData.isPath = true;
           }
         }
-
-        // Can be enabled to show the specific tiles (from map array) which were drawn
-        ctx.fillStyle = 'black';
-        ctx.fillRect(x * X_TILE_WIDTH, y * Y_TILE_HEIGHT, X_TILE_WIDTH, Y_TILE_HEIGHT)
-      } else if (!getTileDataEntry(x,  y)) {
-        TILE_DATA_OBJ[getTileDataKey(x, y)] = currentTile;
       }
-
     }
   }
 
-  console.log(TILE_DATA_OBJ)
+  for(let y = 0; y < Y_TILES; y++) {
+    for(let x = 0; x < X_TILES; x++) {
+      const tileData = getTileDataEntry(x, y);
+      
+      if (tileData.isPath) {
+        let image = images.path;
+        let rotation = 0;
+
+        const {minX, minY} = convertTileToMapBounds([x, y]);
+        if (!getTileDataEntry(x-1, y).isPath && !getTileDataEntry(x, y-1).isPath) {
+          image = images.outside;
+        } else if (!getTileDataEntry(x+1, y).isPath && !getTileDataEntry(x, y+1).isPath) {
+          image = images.outside;
+          rotation = 180;
+        } else if (!getTileDataEntry(x+1, y).isPath && !getTileDataEntry(x, y-1).isPath) {
+          image = images.outside;
+          rotation = 90;
+        } else if (!getTileDataEntry(x-1, y).isPath && !getTileDataEntry(x, y+1).isPath) {
+          image = images.outside;
+          rotation = 270;
+        } else if (!getTileDataEntry(x-1, y).isPath) {
+          image = images.edge;
+        } else if ((!getTileDataEntry(x+1, y).isPath)) {
+          image = images.edge;
+          rotation = 180;
+        }  else if ((!getTileDataEntry(x, y-1).isPath)) {
+          image = images.edge;
+          rotation = 90;
+        }  else if ((!getTileDataEntry(x, y+1).isPath)) {
+          image = images.edge;
+          rotation = 270;
+        } else if (tileData.fillinDir) {
+          image = images.inside;
+          rotation = tileData.imageRotation;
+          return
+        }
+
+        drawTile(minX, minY, image, rotation);
+
+        /// For debugging
+        if (PATH_OBJ[testPath(x, y)]) {
+          ctx.fillStyle = 'black';
+          ctx.fillRect(minX, minY, 50, 50);
+        }
+      }
+    }
+  }
 }

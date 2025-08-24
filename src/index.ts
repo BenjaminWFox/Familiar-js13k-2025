@@ -1,4 +1,4 @@
-import { HEIGHT, WIDTH, X_TILE_WIDTH, Y_TILE_HEIGHT } from "./constants";
+import { HEIGHT, WIDTH, TILE_WIDTH } from "./constants";
 import { drawMouseTile } from './utils';
 import { drawTileMap } from "./maps";
 import { Critter, entities, Menu, MenuTower } from "./entity";
@@ -6,13 +6,8 @@ import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
 
-
-// const image = new Image();
-
-// image.src = 'i.png';
-
-// const MOD_PATH = PATH.map(([x, y]) => [x * 2, y * 2]);
-// console.log(MOD_PATH);
+const image = new Image();
+image.src = 'path.png';
 
 // let windowTime = 0;
 // let dt = 0;
@@ -23,7 +18,6 @@ import { gameState } from "./gameState";
 function gameLoop(): void {
   requestAnimationFrame(gameLoop);
 
-  // console.log('GAME!');
   clearScreen();
   render();
   // windowTime = newTime;
@@ -50,10 +44,10 @@ const towersObj: Record<string, MenuTower | undefined> = {
   purple: undefined
 }
 Object.keys(towersObj).forEach((key, i) => {
-  const menuLeft = WIDTH - (X_TILE_WIDTH * 10);
-  const towerStartY = Y_TILE_HEIGHT * 8;
-  const towerX = menuLeft + X_TILE_WIDTH;
-  const towerY = (i * 4 * Y_TILE_HEIGHT) + towerStartY;
+  const menuLeft = WIDTH - (TILE_WIDTH * 10);
+  const towerStartY = TILE_WIDTH * 8;
+  const towerX = menuLeft + TILE_WIDTH;
+  const towerY = (i * 4 * TILE_WIDTH) + towerStartY;
 
   new MenuTower(towerX, towerY, key);
 })
@@ -88,6 +82,10 @@ function clearScreen(): void {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 }
 
-registerListeners(canvas);
-drawTileMap(mapCtx);
-requestAnimationFrame(gameLoop);
+image.onload = () => {
+  mapCtx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = false;
+  registerListeners(canvas);
+  drawTileMap(mapCtx, image);
+  requestAnimationFrame(gameLoop);
+}
