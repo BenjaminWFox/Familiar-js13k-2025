@@ -1,5 +1,6 @@
-import { type Tile, PATH, PATH_OBJ, TILE_WIDTH, X_TILES, Y_TILES } from "./constants";
+import { type Tile, HEIGHT, PATH, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
 import { Critter, getDirectionFromTo, NEXT_DIR } from "./entity";
+import { gameState } from "./gameState";
 import { convertTileToMapBounds } from "./utils";
 
 function testPath(x: number, y: number): keyof typeof PATH_OBJ {
@@ -40,17 +41,24 @@ export const TILE_DATA_OBJ: Record<string, TileData> = {}
 export const getTileDataKey = (x: number, y: number) => `${x},${y}`;
 export const getTileDataEntry = (x: number, y: number) => TILE_DATA_OBJ[getTileDataKey(x, y)];
 
+// const images = {
+//   path: {x: 75},
+//   edge: {x: 50},
+//   inside: {x: 25},
+//   outside: {x: 0}
+// }
+
 const images = {
-  path: {x: 75},
-  edge: {x: 50},
-  inside: {x: 25},
+  path: {x: 30},
+  edge: {x: 20},
+  inside: {x: 10},
   outside: {x: 0}
 }
 
+export function drawTileMap(ctx: CanvasRenderingContext2D): void {
+    const tileWidthAdjust = TILE_WIDTH * .5
 
-
-export function drawTileMap(ctx: CanvasRenderingContext2D, image: HTMLImageElement): void {
-  function drawTile(x: number, y: number, type: any, rotation: number = 0) {
+    function drawTile(x: number, y: number, type: any, rotation: number = 0) {
     const c = document.createElement('canvas');
     const c_ctx = c.getContext('2d') as CanvasRenderingContext2D;
     c.width = TILE_WIDTH;
@@ -58,11 +66,16 @@ export function drawTileMap(ctx: CanvasRenderingContext2D, image: HTMLImageEleme
     c_ctx.imageSmoothingEnabled = false;
     c_ctx.translate(25, 25);
     c_ctx.rotate((rotation * Math.PI) / 180);
-    c_ctx.drawImage(image, type.x, type.y || 0, 25, 25, -25, -25, TILE_WIDTH, TILE_WIDTH)
+    // c_ctx.drawImage(image, type.x, type.y || 0, 25, 25, -30, -30, TILE_WIDTH, TILE_WIDTH)
+    c_ctx.drawImage(gameState.image!, type.x, type.y || 0, 10, 10, -25, -25, TILE_WIDTH, TILE_WIDTH)
+    // c_ctx.drawImage(gameState.image!, 0, 40, 10, 10, 0, 0, TILE_WIDTH, TILE_WIDTH)
     
     // c.style.transform = 'rotate(45deg)';
     ctx.drawImage(c, x, y);
   }
+
+  // ctx.fillStyle = '#cca458';
+  // ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   // Build all TileData
   for(let y = 0; y < Y_TILES; y++) {

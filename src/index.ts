@@ -7,7 +7,7 @@ import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
 
 const image = new Image();
-image.src = 'path.png';
+image.src = 'path2.png';
 
 // let windowTime = 0;
 // let dt = 0;
@@ -39,9 +39,7 @@ new Critter();
 new Menu();
 
 const towersObj: Record<string, MenuTower | undefined> = {
-  green: undefined,
-  yellow: undefined,
-  purple: undefined
+  fetcher: undefined,
 }
 Object.keys(towersObj).forEach((key, i) => {
   const menuLeft = WIDTH - (TILE_WIDTH * 10);
@@ -83,9 +81,10 @@ function clearScreen(): void {
 }
 
 image.onload = () => {
+  gameState.image = image;
   mapCtx.imageSmoothingEnabled = false;
   ctx.imageSmoothingEnabled = false;
   registerListeners(canvas);
-  drawTileMap(mapCtx, image);
+  drawTileMap(mapCtx);
   requestAnimationFrame(gameLoop);
 }

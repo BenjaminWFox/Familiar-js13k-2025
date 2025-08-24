@@ -171,8 +171,8 @@ export class Critter extends Entity {
       this.x = x;
       this.y = y;
 
-      ctx.fillStyle = 'yellow';
-      ctx.fillRect(this.destX, this.destY, 5, 5)
+      // ctx.fillStyle = 'yellow';
+      // ctx.fillRect(this.destX, this.destY, 5, 5)
 
       const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
       const tile = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY / TILE_WIDTH}`];
@@ -212,8 +212,11 @@ export class BaseTower extends Entity {
   }
 
   override render(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.color;
-    ctx.fillRect(this.x, this.y, this.width, this.height)
+    if (this.color === 'fetcher') {
+    ctx.drawImage(gameState.image!, 0, 10, 30, 30, this.x, this.y, TILE_WIDTH * 3, TILE_WIDTH * 3)
+    }
+    // ctx.fillStyle = this.color;
+    // ctx.fillRect(this.x, this.y, this.width, this.height)
   }
 }
 
@@ -355,6 +358,7 @@ class Fetcher extends Entity {
   state: FetcherStates = FetcherStates.waiting;
   destX: number = 0;
   destY: number = 0;
+  count: number = 0;
 
   constructor(parent: PlacedTower) {
     super(-100, -100, 0, 0, 30, 30, LAYERS.fetchers);
@@ -387,6 +391,7 @@ class Fetcher extends Entity {
   }
 
   override render(ctx: CanvasRenderingContext2D) {
+
     switch (this.state) {
       case FetcherStates.chasing:
 
@@ -420,8 +425,8 @@ class Fetcher extends Entity {
         this.chasing!.x = this.x + 5;
         this.chasing!.y = this.y + 5;
 
-        ctx.fillStyle = "yellow";
-        ctx.fillRect(this.destX, this.destY, 4, 4);
+        // ctx.fillStyle = "yellow";
+        // ctx.fillRect(this.destX, this.destY, 4, 4);
 
         if (hitTest(this, {x: this.destX, y: this.destY, width: 4, height: 4})) {
           this.destX = 0;
@@ -439,8 +444,21 @@ class Fetcher extends Entity {
         break;
     }
 
-    ctx.fillStyle = 'blue'
-    ctx.fillRect(this.x, this.y, 30, 30);
+    // ctx.fillStyle = 'blue'
+    // ctx.fillRect(this.x, this.y, 30, 30);
+    // console.log(gameState.image);
+    // ctx.save();
+    // ctx.translate(this.x + 10, this.y)
+    // ctx.scale(-1, 1);
+    if (this.count < 8) {
+      ctx.drawImage(gameState.image!, 0, 40, 10, 10, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
+    } else if (this.count < 16) {
+      ctx.drawImage(gameState.image!, 10, 40, 10, 10, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
+      if (this.count === 15) {
+        this.count = 0;
+      }
+    }
+    this.count++;
   }
 }
 
