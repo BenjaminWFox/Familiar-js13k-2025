@@ -1,6 +1,7 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MAP_GREEN, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH } from "./constants";
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
+import { Sprite, sprites, SpritesKey } from "./sprites";
 import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
@@ -71,6 +72,7 @@ export class Entity {
   id: number;
   layer: number;
   count: number = 0;
+  sprite?: Sprite;
 
   constructor(x: number, y: number, dx = 0, dy = 0, width = 0, height = 0, layer = LAYERS.base) {
     this.id = ++Entity.ENTITY_ID;
@@ -103,30 +105,12 @@ export class Entity {
   render(_: CanvasRenderingContext2D) {};
 }
 
-const critterTypes = {
-  'fly': {
-    x: 40,
-    y: 10
-  },
-  'frog': {
-    x: 40,
-    y: 20
-  },
-  'snake': {
-    x: 40,
-    y: 30
-  },
-  'lizard': {
-    x: 40,
-    y: 40
-  },
-};
-
 // When creating the class, we need to get the next point in line
 // Then we need to know when the create is at that next point
 // When arriving at that point, then we need to get the *next* point
 // so we'll need to track which index the critter is on
 export class Critter extends Entity {
+  static types = ['frog', 'fly', 'snake', 'lizard'];
   pathIndex: number;
   moveDir: NEXT_DIR | undefined;
   // Each critter has a reference to its current tile.
@@ -140,8 +124,6 @@ export class Critter extends Entity {
   att: number = 0;
   destX: number = 0;
   destY: number = 0;
-
-  type: keyof typeof critterTypes;
 
   get nextPathIndex() { return this.pathIndex + 1 }
 
@@ -158,9 +140,7 @@ export class Critter extends Entity {
     this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
     this.getNextDirection();
 
-    const keys = Object.keys(critterTypes) as unknown as keyof typeof critterTypes;
-
-    this.type = keys[getRandomInt(0, keys.length - 1)] as keyof typeof critterTypes;
+    this.sprite = sprites[Critter.types[getRandomInt(0, Critter.types.length - 1)] as keyof typeof sprites]();
   }
 
   getNextDirection() {
@@ -224,43 +204,38 @@ export class Critter extends Entity {
 
     // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
     // ctx.fillRect(this.x, this.y, this.width, this.height);
-    const type = critterTypes[this.type];
-    if (this.count < 8) {
-      ctx.drawImage(gameState.image!, type.x, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
-    } else if (this.count < 16) {
-      ctx.drawImage(gameState.image!, type.x + 10, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
-      if (this.count === 15) {
-        this.count = 0;
-      }
-    }
-    this.count++;
+    // const type = critterTypes[this.type];
+    this.sprite?.draw(ctx, this.x, this.y, 50);
+    // if (this.count < 8) {
+    //   ctx.drawImage(gameState.image!, this.sprite.x, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
+    // } else if (this.count < 16) {
+    //   ctx.drawImage(gameState.image!, type.x + 10, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
+    //   if (this.count === 15) {
+    //     this.count = 0;
+    //   }
+    // }
+    // this.count++;
     
   }
 }
 
 export class BaseTower extends Entity {
-  color: string;
-  
-  constructor(x: number, y: number, color: string, layer = LAYERS.towers) {
+  constructor(x: number, y: number, layer = LAYERS.towers) {
     super(x, y, 0, 0, TILE_WIDTH * 3, TILE_WIDTH * 3, layer)
-
-    this.color = color;
   }
 
   override render(ctx: CanvasRenderingContext2D) {
-    if (this.color === 'fetcher') {
-      ctx.drawImage(gameState.image!, 0, 10, 30, 30, this.x, this.y, TILE_WIDTH * 3, TILE_WIDTH * 3)
-    }
-    // ctx.fillStyle = this.color;
-    // ctx.fillRect(this.x, this.y, this.width, this.height)
+    this.sprite?.draw(ctx, this.x, this.y, TILE_WIDTH * 3)
   }
 }
 
 export class MenuTower extends BaseTower {
   dragging: boolean = false;
 
-  constructor(x: number, y: number, color: string) {
-    super(x, y, color, LAYERS.menuTowers);
+  constructor(x: number, y: number, key: SpritesKey) {
+    super(x, y, LAYERS.menuTowers);
+
+    this.sprite = sprites[key]();
 
     window.addEventListener('mousedown', this.dragHandler.bind(this));
     window.addEventListener('mouseup', this.releaseHandler.bind(this))
@@ -306,16 +281,10 @@ export class MenuTower extends BaseTower {
       }
 
       // Draw "valid" range for tower
-      ctx?.fillRect(mouseTile.x - (TILE_WIDTH * 4), mouseTile.y - (TILE_WIDTH * 4), TILE_WIDTH * 9, TILE_WIDTH * 9)
+      ctx?.fillRect(mouseTile.x - (TILE_WIDTH * 3), mouseTile.y - (TILE_WIDTH * 3), TILE_WIDTH * 7, TILE_WIDTH * 7)
 
-
-      ctx.fillStyle = "rgba(85, 255, 0, .75)";
       // Draw tower
-      ctx.fillRect(
-        mouseTile.x - TILE_WIDTH,
-        mouseTile.y - TILE_WIDTH,
-        TILE_WIDTH * 3, TILE_WIDTH * 3
-      );
+      this.sprite?.draw(ctx, mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, TOWER_WIDTH);
     }
   }
 
@@ -333,7 +302,23 @@ export class MenuTower extends BaseTower {
     if (this.dragging) {
       this.dragging = false;
       if (this._isValidPlacement) {
-        new FetcherTower(mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, this.color)
+        const x = mouseTile.x - TILE_WIDTH
+        const y = mouseTile.y - TILE_WIDTH
+        console.log(this.sprite?.type);
+        switch(this.sprite?.type) {
+          case 'kid':
+            new FetcherTower(x, y)
+            break;
+          case 'fan':
+            new FanTower(x, y)
+            break;
+          case 'vaccuum':
+            new VaccuumTower(x, y)
+            break;
+          case 'net':
+            new NetTower(x, y)
+            break;
+        }
       }
     }
   }
@@ -342,11 +327,11 @@ export class MenuTower extends BaseTower {
 class PlacedTower extends BaseTower {
   coveredTiles: Array<TileData> = [];
 
-  constructor(x: number, y: number, color: string) {
-    super(x, y, color);
+  constructor(x: number, y: number) {
+    super(x, y);
 
     const pathXY = convertCanvasXYToPathXY(x, y);
-    const coverage = {minX: pathXY.pathX - 3, maxX: pathXY.pathX + 6, minY: pathXY.pathY - 3, maxY: pathXY.pathY + 6 };
+    const coverage = {minX: pathXY.pathX - 2, maxX: pathXY.pathX + 5, minY: pathXY.pathY - 2, maxY: pathXY.pathY + 5 };
     
     for(let x = coverage.minX;x < coverage.maxX;x++){
       for(let y = coverage.minY;y < coverage.maxY;y++){
@@ -368,8 +353,10 @@ class PlacedTower extends BaseTower {
 class FetcherTower extends PlacedTower {
   fetchers: Array<Fetcher> = [];
 
-  constructor(x: number, y: number, color: string) {
-    super(x, y, color);
+  constructor(x: number, y: number) {
+    super(x, y);
+
+    this.sprite = sprites.kid();
 
     this.fetchers.push(...[
       new Fetcher(this),
@@ -377,9 +364,27 @@ class FetcherTower extends PlacedTower {
       new Fetcher(this),
     ])
   }
+}
 
-  override render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+class NetTower extends PlacedTower {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.sprite = sprites.net();
+  }
+}
+
+
+class FanTower extends PlacedTower {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.sprite = sprites.fan();
+  }
+}
+
+class VaccuumTower extends PlacedTower {
+  constructor(x: number, y: number) {
+    super(x, y);
+    this.sprite = sprites.vaccuum();
   }
 }
 
@@ -399,6 +404,7 @@ class Fetcher extends Entity {
     super(-100, -100, 0, 0, 30, 30, LAYERS.fetchers);
 
     this.parent = parent;
+    this.sprite = sprites.fetcher();
     this.x = getRandomInt(parent.x, parent.x + parent.width - this.width);
     this.y = getRandomInt(parent.y, parent.y + parent.width - this.height);
   }
@@ -438,7 +444,7 @@ class Fetcher extends Entity {
         }
 
         const chaseAngle = angleToTarget(this, this.chasing!);
-        const {x: cX, y: cY} = movePoint(this, chaseAngle, 12);
+        const {x: cX, y: cY} = movePoint(this, chaseAngle, 4);
         this.x = cX;
         this.y = cY;
 
@@ -454,7 +460,7 @@ class Fetcher extends Entity {
         }
 
         const fetchAngle = angleToTarget(this, {x: this.destX, y: this.destY});
-        const {x: fX, y: fY} = movePoint(this, fetchAngle, 8);
+        const {x: fX, y: fY} = movePoint(this, fetchAngle, 2);
         this.x = fX;
         this.y = fY;
         this.chasing!.x = this.x + 5;
@@ -479,21 +485,17 @@ class Fetcher extends Entity {
         break;
     }
 
-    // ctx.fillStyle = 'blue'
-    // ctx.fillRect(this.x, this.y, 30, 30);
-    // console.log(gameState.image);
-    // ctx.save();
-    // ctx.translate(this.x + 10, this.y)
-    // ctx.scale(-1, 1);
-    if (this.count < 8) {
-      ctx.drawImage(gameState.image!, 0, 40, 10, 10, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
-    } else if (this.count < 16) {
-      ctx.drawImage(gameState.image!, 10, 40, 10, 10, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
-      if (this.count === 15) {
-        this.count = 0;
-      }
+    switch (this.state) {
+      case FetcherStates.chasing:
+      case FetcherStates.fetching:
+        this.sprite?.draw(ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
+        break;
+      case FetcherStates.waiting:
+      default:
+        this.sprite?.draw(ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH, true)
+        // ctx.drawImage(gameState.image!, 0, 40, 10, 10, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
+        break;
     }
-    this.count++;
   }
 }
 
@@ -503,8 +505,12 @@ export class Menu extends Entity {
   }
 
   override render(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = 'blue';
+    ctx.fillStyle = COLOR_MENU_GREEN_1;
     ctx.fillRect(MENU_START_X, 0, this.width, this.height);
+    ctx.fillStyle = COLOR_MENU_GREEN_2;
+    ctx.fillRect(MENU_START_X - (TILE_WIDTH * 2), 0, TILE_WIDTH, this.height);
+    ctx.fillStyle = COLOR_MENU_GREEN_1;
+    ctx.fillRect(MENU_START_X - TILE_WIDTH, 0, TILE_WIDTH, this.height);
   }
 }
 

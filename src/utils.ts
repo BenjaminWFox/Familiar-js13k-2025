@@ -55,7 +55,7 @@ export function drawMouseTile(ctx: CanvasRenderingContext2D) {
   ctx.fillRect(mouseTile.x, mouseTile.y, TILE_WIDTH, TILE_WIDTH);
   ctx.fillStyle = 'white';
   ctx.font = "40px Arial"
-  ctx.fillText(`${mouseTile.x / TILE_WIDTH}, ${mouseTile.y / TILE_WIDTH} | ${mouseTile.x}, ${mouseTile.y}`, 2550, 75)
+  ctx.fillText(`${mouseTile.x / TILE_WIDTH}, ${mouseTile.y / TILE_WIDTH} | ${mouseTile.x}, ${mouseTile.y}`, 2625, 75)
 }
 
 /**

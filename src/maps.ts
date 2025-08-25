@@ -1,4 +1,4 @@
-import { type Tile, HEIGHT, PATH, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
+import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
 import { Critter, getDirectionFromTo, NEXT_DIR } from "./entity";
 import { gameState } from "./gameState";
 import { convertTileToMapBounds } from "./utils";
@@ -41,13 +41,6 @@ export const TILE_DATA_OBJ: Record<string, TileData> = {}
 export const getTileDataKey = (x: number, y: number) => `${x},${y}`;
 export const getTileDataEntry = (x: number, y: number) => TILE_DATA_OBJ[getTileDataKey(x, y)];
 
-// const images = {
-//   path: {x: 75},
-//   edge: {x: 50},
-//   inside: {x: 25},
-//   outside: {x: 0}
-// }
-
 const images = {
   path: {x: 30},
   edge: {x: 20},
@@ -64,18 +57,14 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
     c.width = TILE_WIDTH;
     c.height = TILE_WIDTH;
     c_ctx.imageSmoothingEnabled = false;
-    c_ctx.translate(25, 25);
+    c_ctx.translate(tileWidthAdjust, tileWidthAdjust);
     c_ctx.rotate((rotation * Math.PI) / 180);
-    // c_ctx.drawImage(image, type.x, type.y || 0, 25, 25, -30, -30, TILE_WIDTH, TILE_WIDTH)
-    c_ctx.drawImage(gameState.image!, type.x, type.y || 0, 10, 10, -25, -25, TILE_WIDTH, TILE_WIDTH)
-    // c_ctx.drawImage(gameState.image!, 0, 40, 10, 10, 0, 0, TILE_WIDTH, TILE_WIDTH)
-    
-    // c.style.transform = 'rotate(45deg)';
+    c_ctx.drawImage(gameState.image!, type.x, type.y || 0, 10, 10, -tileWidthAdjust, -tileWidthAdjust, TILE_WIDTH, TILE_WIDTH)
     ctx.drawImage(c, x, y);
   }
 
-  // ctx.fillStyle = '#cca458';
-  // ctx.fillRect(0, 0, WIDTH, HEIGHT);
+  ctx.fillStyle = COLOR_MAP_GREEN;
+  ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   // Build all TileData
   for(let y = 0; y < Y_TILES; y++) {

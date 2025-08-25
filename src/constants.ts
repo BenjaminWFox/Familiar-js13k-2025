@@ -9,15 +9,21 @@ export const LAYERS = {
   critters: 30,
   towers: 40,
   fetchers: 50,
-  fetchersCarry: 51,
+  fetchersCarry: 55,
   menu: 60,
   menuTowers: 70
 }
 
-export const MENU_START_X = WIDTH - TILE_WIDTH * 10;
+export const TOWER_WIDTH = TILE_WIDTH * 3;
+
+export const MENU_START_X = WIDTH - TILE_WIDTH * 8;
 
 export const MENU_TOWER_START_X = 0;
 export const MENU_TOWER_START_Y = 0;
+
+export const COLOR_MAP_GREEN = '#39941a';
+export const COLOR_MENU_GREEN_1 = '#26700dff';
+export const COLOR_MENU_GREEN_2 = '#164e04ff';
 
 export type Tile = [number, number];
 export type Path = Array<Tile>;

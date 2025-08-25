@@ -1,10 +1,11 @@
-import { HEIGHT, WIDTH, TILE_WIDTH } from "./constants";
+import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X } from "./constants";
 import { drawMouseTile } from './utils';
 import { drawTileMap } from "./maps";
 import { Critter, entities, Menu, MenuTower } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
+import { SpritesKey } from "./sprites";
 
 const image = new Image();
 image.src = 'path2.png';
@@ -38,21 +39,21 @@ function gameLoop(): void {
 new Critter();
 new Menu();
 
-const towersObj: Record<string, MenuTower | undefined> = {
-  fetcher: undefined,
-}
-Object.keys(towersObj).forEach((key, i) => {
-  const menuLeft = WIDTH - (TILE_WIDTH * 10);
-  const towerStartY = TILE_WIDTH * 8;
-  const towerX = menuLeft + TILE_WIDTH;
-  const towerY = (i * 4 * TILE_WIDTH) + towerStartY;
+const towers = ['kid', 'fan', 'vaccuum', 'net'];
 
-  new MenuTower(towerX, towerY, key);
+towers.forEach((key, i) => {
+  const ypos = i % 2 === 0 ? 1 : 2;
+  const xpos = i % 3 === 0 ? 0 : 4;
+
+  const towerX = MENU_START_X + (TILE_WIDTH * xpos);
+  const towerY = (4 * TILE_WIDTH) + TILE_WIDTH * ypos * 4;
+
+  new MenuTower(towerX, towerY, key as SpritesKey);
 })
 
 function render(): void {
   gameState.gameTime += 1;
-  if (gameState.gameTime % 5 === 0) {
+  if (gameState.gameTime % 60 === 0) {
     new Critter();
   }
   // if (gameState.gameTime % 2 === 0) {
