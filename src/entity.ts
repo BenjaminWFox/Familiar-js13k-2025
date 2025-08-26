@@ -202,20 +202,7 @@ export class Critter extends Entity {
       }
     }
 
-    // ctx.fillStyle = 'rgba(255, 0, 0, 1)';
-    // ctx.fillRect(this.x, this.y, this.width, this.height);
-    // const type = critterTypes[this.type];
-    this.sprite?.draw(ctx, this.x, this.y, 50);
-    // if (this.count < 8) {
-    //   ctx.drawImage(gameState.image!, this.sprite.x, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
-    // } else if (this.count < 16) {
-    //   ctx.drawImage(gameState.image!, type.x + 10, type.y, 10, 10, this.x, this.y, this.width * 2, this.height * 2);
-    //   if (this.count === 15) {
-    //     this.count = 0;
-    //   }
-    // }
-    // this.count++;
-    
+    this.sprite?.draw(ctx, this.x, this.y, 50, 50, this.caught);    
   }
 }
 

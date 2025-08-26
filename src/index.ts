@@ -35,20 +35,7 @@ function gameLoop(): void {
 // for (let i = 0; i < 5000; i++) {
 //   new Critter();
 // }
-new Critter();
-new Menu();
 
-const towers = ['kid', 'fan', 'vaccuum', 'net', 'fish', 'scratch'];
-
-towers.forEach((key, i) => {
-  // const ypos = i % 2 === 0 ? 1 : 2;
-  // const xpos = i % 3 === 0 ? 0 : 4;
-
-  const towerX = MENU_START_X;
-  const towerY = MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
-
-  new MenuTower(towerX, towerY, key as SpritesKey);
-})
 
 function render(): void {
   gameState.gameTime += 1;
@@ -82,6 +69,22 @@ function clearScreen(): void {
 
 image.onload = () => {
   gameState.image = image;
+
+  new Critter();
+  new Menu();
+
+  const towers = ['kid', 'fan', 'vaccuum', 'net', 'fish', 'scratch'];
+
+  towers.forEach((key, i) => {
+    // const ypos = i % 2 === 0 ? 1 : 2;
+    // const xpos = i % 3 === 0 ? 0 : 4;
+
+    const towerX = MENU_START_X;
+    const towerY = MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
+
+    new MenuTower(towerX, towerY, key as SpritesKey);
+  })
+
   mapCtx.imageSmoothingEnabled = false;
   ctx.imageSmoothingEnabled = false;
   registerListeners(canvas);
