@@ -24,7 +24,8 @@ export class Sprite {
     speed: number,
     width: number,
     height?: number,
-    defaultFrame?: number
+    defaultFrame?: number,
+    flippable?: boolean
   ) {
     this.type = type;
     this.x = x;
@@ -39,7 +40,7 @@ export class Sprite {
 
     for(let i = 0;i<frames;i++) {
       this.rightSprites.push(this.getSpriteForImage(this.x + (this.width * i), this.y, this.width, this.height));
-      this.leftSprites.push(this.getSpriteForImage(this.x + (this.width * i), this.y, this.width, this.height, true));
+      this.leftSprites.push(this.getSpriteForImage(this.x + (this.width * i), this.y, this.width, this.height, flippable));
     }
   }
 
@@ -88,12 +89,12 @@ export class Sprite {
 
 export type SpritesKey = keyof typeof sprites;
 export const sprites = {
-  fetcher: () => new Sprite('fetcher', 0, 10, 2, 8, 10),
-  cat: () => new Sprite('cat', 0, 20, 2, 20, 10),
-  fly: () => new Sprite('fly', 0, 30, 2, 20, 10),
-  frog: () => new Sprite('frog', 0, 40, 2, 20, 10),
-  snake: () => new Sprite('snake', 0, 50, 2, 20, 10),
-  lizard: () => new Sprite('lizard', 0, 60, 2, 20, 10),
+  fetcher: () => new Sprite('fetcher', 0, 10, 2, 8, 10, 10, 1, true),
+  cat: () => new Sprite('cat', 0, 20, 2, 20, 10, 10, 1, true),
+  fly: () => new Sprite('fly', 0, 30, 2, 20, 10, 10, 1, true),
+  frog: () => new Sprite('frog', 0, 40, 2, 20, 10, 10, 1, true),
+  snake: () => new Sprite('snake', 0, 50, 2, 20, 10, 10, 1, true),
+  lizard: () => new Sprite('lizard', 0, 60, 2, 20, 10, 10, 1, true),
   kid: () => new Sprite('kid', 20, 10, 1, 0, 30),
   fan: () => new Sprite('fan', 20, 40, 1, 0, 30),
   vaccuum: () => new Sprite('vaccuum', 20, 70, 1, 0, 30),

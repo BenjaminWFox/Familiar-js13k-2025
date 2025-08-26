@@ -23,6 +23,7 @@ export class TileData {
   x: number;
   y: number;
   isPath: boolean;
+  hasTower: boolean = false;
   fillinDir?: NEXT_DIR;
   pathIndex?: number;
   isCovered: boolean = false;

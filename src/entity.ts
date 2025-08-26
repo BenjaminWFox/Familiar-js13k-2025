@@ -216,6 +216,33 @@ export class BaseTower extends Entity {
   }
 }
 
+/**
+ * Returns `true` by default - runs the passed predicate to determine if the condition holds true - predicate should return false if not.
+ */
+function checkConditionForTowerTiles(minX: number, maxX: number, minY: number, maxY: number, predicate: (ta: number[]) => boolean): boolean {
+  let test = true;
+
+  const towerTiles = [
+    [minX, minY],
+    [minX, minY + 1],
+    [minX + 1, minY],
+    [maxX, minY],
+    [maxX, minY + 1],
+    [minX, maxY],
+    [minX + 1, maxY],
+    [maxX, maxY],
+  ]
+
+  towerTiles.forEach(tileArr => {
+    const result = predicate(tileArr);
+    if (!result) {
+      test = result;
+    }
+  })
+
+  return test;
+}
+
 export class MenuTower extends BaseTower {
   dragging: boolean = false;
 
@@ -245,20 +272,17 @@ export class MenuTower extends BaseTower {
         // Tower is outside of the game board
         this._isValidPlacement = false;
       } else {
-        const towerTiles = [
-          [expandedMinX, expandedMinY],
-          [expandedMaxX, expandedMinY],
-          [mouseTile.x / TILE_WIDTH, mouseTile.y / TILE_WIDTH],
-          [expandedMinX, expandedMaxY],
-          [expandedMaxX, expandedMaxY],
-        ]
 
-        towerTiles.forEach(tileArr => {
-          if(TILE_DATA_OBJ[tileArr.toString()].isPath) {
+        function isValidPlacement(tileArr: number[]) {
+          const tile = TILE_DATA_OBJ[tileArr.toString()];
+          if(tile.isPath || tile.hasTower) {
             // Tower is overlapping a part of the path
-            this._isValidPlacement = false;
+            return false;
           }
-        })
+          return true;
+        }
+
+        this._isValidPlacement = checkConditionForTowerTiles(expandedMinX, expandedMaxX, expandedMinY, expandedMaxY, isValidPlacement);
       }
 
       if (this._isValidPlacement) {
@@ -267,8 +291,18 @@ export class MenuTower extends BaseTower {
         ctx.fillStyle = "rgba(255, 0, 0, .33)";
       }
 
-      // Draw "valid" range for tower
-      ctx?.fillRect(mouseTile.x - (TILE_WIDTH * 3), mouseTile.y - (TILE_WIDTH * 3), TILE_WIDTH * 7, TILE_WIDTH * 7)
+      if (this.sprite?.type === 'vaccuum' || this.sprite?.type === 'fan') {
+        const tiles = this.sprite?.type === 'vaccuum' ? VaccuumTower.CoveredTiles : FanTower.CoveredTiles;
+        const mod = [...tiles].pop()!;
+        for(let i = 0;i<tiles.length;i+=2)  {
+          const xDiff = (tiles[i] * TILE_WIDTH) // tiles[i] > 0 ? (TILE_WIDTH * 3) + (tiles[i] * TILE_WIDTH) : (tiles[i] * TILE_WIDTH);
+          const yDiff = (tiles[i+1] * TILE_WIDTH) // tiles[i+1] > 0 ? (TILE_WIDTH * 3) + (tiles[i+1] * TILE_WIDTH) : (tiles[i+1] * TILE_WIDTH);;
+          ctx?.fillRect(mouseTile.x - (TILE_WIDTH * mod) + xDiff, mouseTile.y - (TILE_WIDTH * mod) + yDiff, TILE_WIDTH, TILE_WIDTH)
+        }
+      } else {
+        // Draw "valid" range for tower
+        ctx?.fillRect(mouseTile.x - (TILE_WIDTH * 3), mouseTile.y - (TILE_WIDTH * 3), TILE_WIDTH * 7, TILE_WIDTH * 7)
+      }
 
       // Draw tower
       this.sprite?.draw(ctx, mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, TOWER_WIDTH);
@@ -289,6 +323,12 @@ export class MenuTower extends BaseTower {
     if (this.dragging) {
       this.dragging = false;
       if (this._isValidPlacement) {
+        function markHasTower(tileArr: number[]) {
+          TILE_DATA_OBJ[tileArr.toString()].hasTower = true;
+          return true;
+        };
+        const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds()
+        checkConditionForTowerTiles(expandedMinX, expandedMaxX, expandedMinY, expandedMaxY, markHasTower);
         const x = mouseTile.x - TILE_WIDTH
         const y = mouseTile.y - TILE_WIDTH
         console.log(this.sprite?.type);
@@ -367,6 +407,15 @@ class NetTower extends PlacedTower {
 }
 
 class FanTower extends PlacedTower {
+  static CoveredTiles = [
+    1,-1,1,-2,1,-3,
+    3,1,4,1,5,1,
+    1,3,1,4,1,5,
+    -1,1,-2,1,-3,1,
+    1 // Drawing mod
+  ];
+  static CoverageDrawMod = 1;
+
   constructor(x: number, y: number) {
     super(x, y);
     this.sprite = sprites.fan();
@@ -374,6 +423,14 @@ class FanTower extends PlacedTower {
 }
 
 class VaccuumTower extends PlacedTower {
+  static CoveredTiles = [
+    0,0,-1,-1,-2,-2,-3,-3,
+    3,3,4,4,5,5,6,6,
+    0,3,-1,4,-2,5,-3,6,
+    3,0,4,-1,5,-2,6,-3,
+    1.5 // Drawing mod
+  ];
+
   constructor(x: number, y: number) {
     super(x, y);
     this.sprite = sprites.vaccuum();

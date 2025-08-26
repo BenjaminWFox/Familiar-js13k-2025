@@ -26,7 +26,7 @@ export const COLOR_MENU_GREEN_2 = '#164e04ff';
 export type Tile = [number, number];
 export type Path = Array<Tile>;
 
-// export const ORIGINAL_PATH: Path = [
+// export const PATH: Path = [
 //   [8, -2],
 //   [8, 0],
 //   [8, 2],

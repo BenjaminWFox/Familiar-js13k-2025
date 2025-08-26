@@ -24,19 +24,6 @@ function gameLoop(): void {
   // dt = 0;
 }
 
-// function handleInput(): void {}
-
-// function updateEntities(): void {}
-
-// function collisionDetection(): void {}
-
-// function updateCamera(): void {}
-
-// for (let i = 0; i < 5000; i++) {
-//   new Critter();
-// }
-
-
 function render(): void {
   gameState.gameTime += 1;
   if (gameState.gameTime % 60 === 0) {
@@ -76,9 +63,6 @@ image.onload = () => {
   const towers = ['kid', 'fan', 'vaccuum', 'net', 'fish', 'scratch'];
 
   towers.forEach((key, i) => {
-    // const ypos = i % 2 === 0 ? 1 : 2;
-    // const xpos = i % 3 === 0 ? 0 : 4;
-
     const towerX = MENU_START_X;
     const towerY = MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
 
