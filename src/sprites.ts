@@ -11,7 +11,16 @@ export class Sprite {
   currentFrame = 0;
   count = 0;
 
-  constructor(type: SpritesKey, x: number, y: number, frames: number, speed: number, width: number, height?: number, defaultFrame?: number) {
+  constructor(
+    type: SpritesKey,
+    x: number,
+    y: number,
+    frames: number,
+    speed: number,
+    width: number,
+    height?: number,
+    defaultFrame?: number
+  ) {
     this.type = type;
     this.x = x;
     this.y = y;
@@ -50,5 +59,7 @@ export const sprites = {
   fan: () => new Sprite('fan', 20, 40, 1, 0, 30),
   vaccuum: () => new Sprite('vaccuum', 20, 70, 1, 0, 30),
   net: () => new Sprite('net', 20, 100, 1, 0, 30),
-  witch: () => new Sprite('witch', 70, 0, 1, 0, 20),
+  witch: () => new Sprite('witch', 0, 70, 1, 0, 20),
+  fish: () => new Sprite('fish', 0, 120, 1, 1, 20),
+  scratch: () => new Sprite('scratch', 0, 100, 1, 1, 20),
 }

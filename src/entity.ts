@@ -1,4 +1,4 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MAP_GREEN, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y } from "./constants";
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites, SpritesKey } from "./sprites";
@@ -318,6 +318,12 @@ export class MenuTower extends BaseTower {
           case 'net':
             new NetTower(x, y)
             break;
+          case 'scratch':
+            new ScratchTower(x, y)
+            break;
+          case 'fish':
+            new FishTower(x, y)
+            break;
         }
       }
     }
@@ -373,7 +379,6 @@ class NetTower extends PlacedTower {
   }
 }
 
-
 class FanTower extends PlacedTower {
   constructor(x: number, y: number) {
     super(x, y);
@@ -385,6 +390,20 @@ class VaccuumTower extends PlacedTower {
   constructor(x: number, y: number) {
     super(x, y);
     this.sprite = sprites.vaccuum();
+  }
+}
+
+class ScratchTower extends PlacedTower {
+    constructor(x: number, y: number) {
+    super(x, y);
+    this.sprite = sprites.scratch();
+  }
+}
+
+class FishTower extends PlacedTower {
+    constructor(x: number, y: number) {
+    super(x, y);
+    this.sprite = sprites.fish();
   }
 }
 
@@ -501,7 +520,7 @@ class Fetcher extends Entity {
 
 export class Menu extends Entity {
   constructor() {
-    super(MENU_START_X, 0, 0, 0, TILE_WIDTH * 10, HEIGHT, LAYERS.menu);
+    super(MENU_START_X, 0, 0, 0, TILE_WIDTH * 12, HEIGHT, LAYERS.menu);
   }
 
   override render(ctx: CanvasRenderingContext2D): void {
@@ -511,6 +530,48 @@ export class Menu extends Entity {
     ctx.fillRect(MENU_START_X - (TILE_WIDTH * 2), 0, TILE_WIDTH, this.height);
     ctx.fillStyle = COLOR_MENU_GREEN_1;
     ctx.fillRect(MENU_START_X - TILE_WIDTH, 0, TILE_WIDTH, this.height);
+
+    ctx.fillStyle = 'white';
+
+    const sy = (mod: number) => MENU_TOWER_START_Y + TILE_WIDTH * mod;
+    const sx = MENU_START_X + (TILE_WIDTH * 4);
+
+    ctx.font = "60px 'Courier New'"
+    ctx.fillText(`Towers`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * 3)
+
+    ctx.font = "35px 'Courier New'"
+    ctx.fillText(`Click+Drag to place towers`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * 2)
+
+    ctx.font = "40px 'Courier New'"
+    ctx.fillText(`High-energy Kids`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * .5)
+    ctx.fillText(`Really Big Fans`, MENU_START_X, sy(4.5))
+    ctx.fillText(`Powerful Vaccuums`, MENU_START_X, sy(9.5))
+    ctx.fillText(`Guy with a Net`, MENU_START_X, sy(14.5))
+    ctx.fillText(`Fish on a Stick`, MENU_START_X, sy(19.5))
+    ctx.fillText(`Scratching Post`, MENU_START_X, sy(24.5))
+
+    ctx.font = "26px 'Courier New'";
+    ctx.fillText(`- Fast`, sx, sy(.5))
+    ctx.fillText(`- Can't catch flying`, sx, sy(1.5))
+    ctx.fillText(`- $ 500`, sx, sy(2.5))
+
+    ctx.fillText(`- Blows critters back`, sx, sy(5.5))
+    ctx.fillText(`- Doesn't catch anything`, sx, sy(6.5))
+    ctx.fillText(`- $ 500`, sx, sy(7.5))
+
+    ctx.fillText(`- Slow`, sx, sy(10.5))
+    ctx.fillText(`- Covers many angles`, sx, sy(11.5))
+    ctx.fillText(`- $ 500`, sx, sy(12.5))
+
+    ctx.fillText(`- Slow`, sx, sy(15.5))
+    ctx.fillText(`- Catches big groups`, sx, sy(16.5))
+    ctx.fillText(`- $ 500`, sx, sy(17.5))
+
+    ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
+    ctx.fillText(`- $ 100`, sx, sy(21.5))
+
+    ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
+    ctx.fillText(`- $ 350`, sx, sy(26.5))
   }
 }
 

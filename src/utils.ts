@@ -50,13 +50,13 @@ export function setMouseTile(mouseX: number, mouseY: number) {
   mouseTile.y = tileLockedY;
 }
 
-export function drawMouseTile(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = 'red';
-  ctx.fillRect(mouseTile.x, mouseTile.y, TILE_WIDTH, TILE_WIDTH);
-  ctx.fillStyle = 'white';
-  ctx.font = "40px Arial"
-  ctx.fillText(`${mouseTile.x / TILE_WIDTH}, ${mouseTile.y / TILE_WIDTH} | ${mouseTile.x}, ${mouseTile.y}`, 2625, 75)
-}
+// export function drawMouseTile(ctx: CanvasRenderingContext2D) {
+//   ctx.fillStyle = 'red';
+//   ctx.fillRect(mouseTile.x, mouseTile.y, TILE_WIDTH, TILE_WIDTH);
+//   ctx.fillStyle = 'white';
+//   ctx.font = "40px Arial"
+//   ctx.fillText(`${mouseTile.x / TILE_WIDTH}, ${mouseTile.y / TILE_WIDTH} | ${mouseTile.x}, ${mouseTile.y}`, 2625, 75)
+// }
 
 /**
  * Debug function - logs data for a tile when clicked by mouse

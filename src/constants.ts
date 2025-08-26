@@ -16,10 +16,8 @@ export const LAYERS = {
 
 export const TOWER_WIDTH = TILE_WIDTH * 3;
 
-export const MENU_START_X = WIDTH - TILE_WIDTH * 8;
-
-export const MENU_TOWER_START_X = 0;
-export const MENU_TOWER_START_Y = 0;
+export const MENU_START_X = WIDTH - TILE_WIDTH * 12;
+export const MENU_TOWER_START_Y = TILE_WIDTH * 8;
 
 export const COLOR_MAP_GREEN = '#39941a';
 export const COLOR_MENU_GREEN_1 = '#26700dff';

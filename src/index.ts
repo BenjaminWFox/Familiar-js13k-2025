@@ -1,5 +1,4 @@
-import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X } from "./constants";
-import { drawMouseTile } from './utils';
+import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y } from "./constants";
 import { drawTileMap } from "./maps";
 import { Critter, entities, Menu, MenuTower } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
@@ -39,14 +38,14 @@ function gameLoop(): void {
 new Critter();
 new Menu();
 
-const towers = ['kid', 'fan', 'vaccuum', 'net'];
+const towers = ['kid', 'fan', 'vaccuum', 'net', 'fish', 'scratch'];
 
 towers.forEach((key, i) => {
-  const ypos = i % 2 === 0 ? 1 : 2;
-  const xpos = i % 3 === 0 ? 0 : 4;
+  // const ypos = i % 2 === 0 ? 1 : 2;
+  // const xpos = i % 3 === 0 ? 0 : 4;
 
-  const towerX = MENU_START_X + (TILE_WIDTH * xpos);
-  const towerY = (4 * TILE_WIDTH) + TILE_WIDTH * ypos * 4;
+  const towerX = MENU_START_X;
+  const towerY = MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
 
   new MenuTower(towerX, towerY, key as SpritesKey);
 })
@@ -73,7 +72,7 @@ function render(): void {
   }
 
   if (hasMouseMoved) {
-    drawMouseTile(ctx);
+    // drawMouseTile(ctx);
   }
 }
 
