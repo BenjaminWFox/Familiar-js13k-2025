@@ -119,6 +119,8 @@ export class Critter extends Entity {
   lastTile: TileData | undefined;
   chased: boolean = false;
   caught: boolean = false;
+  carried: boolean = false;
+  flying: boolean = false;
 
   // assigned in constructor via `getNextDirection`
   att: number = 0;
@@ -140,7 +142,11 @@ export class Critter extends Entity {
     this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
     this.getNextDirection();
 
-    this.sprite = sprites[Critter.types[getRandomInt(0, Critter.types.length - 1)] as keyof typeof sprites]();
+    const type = Critter.types[getRandomInt(0, Critter.types.length - 1)];
+    if (type === 'fly') {
+      this.flying = true;
+    }
+    this.sprite = sprites[type as keyof typeof sprites]();
   }
 
   getNextDirection() {
@@ -150,12 +156,25 @@ export class Critter extends Entity {
       this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
   }
 
-  setCaught() {
-    this.caught = true;
+  getForcedDirection() {
+      this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
+  }
+
+  removeAutonomy() {
     this.layer = LAYERS.fetchersCarry;
     this.dx = 0;
     this.dy = 0;
     this.removeFromTile();
+  }
+
+  setCarried() {
+    this.carried = true;
+    this.removeAutonomy();
+  }
+
+  setCaught() {
+    this.caught = true;
+    this.removeAutonomy();
   }
 
   removeFromTile() {
@@ -171,16 +190,14 @@ export class Critter extends Entity {
   }
 
   override render(ctx: CanvasRenderingContext2D) {
-    if (!this.caught && !this.deleted) {
+    if (!this.carried && !this.deleted) {
       const {x, y} = movePoint(this, this.att, 2);
       this.x = x;
       this.y = y;
 
-      // ctx.fillStyle = 'yellow';
-      // ctx.fillRect(this.destX, this.destY, 5, 5)
-
       const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
       const tile = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY / TILE_WIDTH}`];
+      
       if (tile && (!this.currentTile || tile !== this.currentTile)) {
         this.removeFromTile();
         this.lastTile = this.currentTile;
@@ -191,7 +208,7 @@ export class Critter extends Entity {
       if (hitTest(this, {x: this.destX, y: this.destY, width: 10, height: 10})) {
         this.pathIndex += 1;
         
-        if (!PATH[this.nextPathIndex]) {
+        if (!PATH[this.nextPathIndex] || this.caught) {
           this.deleted = true;
 
           return;
@@ -202,7 +219,7 @@ export class Critter extends Entity {
       }
     }
 
-    this.sprite?.draw(ctx, this.x, this.y, 50, 50, this.caught);    
+    this.sprite?.draw(ctx, this.x - 25, this.y - 25, 50, 50, this.carried || this.caught);
   }
 }
 
@@ -292,12 +309,17 @@ export class MenuTower extends BaseTower {
       }
 
       if (this.sprite?.type === 'vaccuum' || this.sprite?.type === 'fan') {
+        const { tileLockedX, tileLockedY } = getTileLockedXY(mouseTile.x, mouseTile.y);
+
+        // ctx.fillStyle = 'red'
+        // ctx.fillRect(tileLockedX, tileLockedY, TILE_WIDTH, TILE_WIDTH);
+        // ctx.fillStyle = "rgba(140, 243, 248, 0.33)";
+
         const tiles = this.sprite?.type === 'vaccuum' ? VaccuumTower.CoveredTiles : FanTower.CoveredTiles;
-        const mod = [...tiles].pop()!;
         for(let i = 0;i<tiles.length;i+=2)  {
           const xDiff = (tiles[i] * TILE_WIDTH) // tiles[i] > 0 ? (TILE_WIDTH * 3) + (tiles[i] * TILE_WIDTH) : (tiles[i] * TILE_WIDTH);
           const yDiff = (tiles[i+1] * TILE_WIDTH) // tiles[i+1] > 0 ? (TILE_WIDTH * 3) + (tiles[i+1] * TILE_WIDTH) : (tiles[i+1] * TILE_WIDTH);;
-          ctx?.fillRect(mouseTile.x - (TILE_WIDTH * mod) + xDiff, mouseTile.y - (TILE_WIDTH * mod) + yDiff, TILE_WIDTH, TILE_WIDTH)
+          ctx?.fillRect(tileLockedX - (TILE_WIDTH) + xDiff, tileLockedY - (TILE_WIDTH) + yDiff, TILE_WIDTH, TILE_WIDTH)
         }
       } else {
         // Draw "valid" range for tower
@@ -394,7 +416,7 @@ class FetcherTower extends PlacedTower {
     this.fetchers.push(...[
       new Fetcher(this),
       new Fetcher(this),
-      new Fetcher(this),
+      // new Fetcher(this),
     ])
   }
 }
@@ -411,29 +433,64 @@ class FanTower extends PlacedTower {
     1,-1,1,-2,1,-3,
     3,1,4,1,5,1,
     1,3,1,4,1,5,
-    -1,1,-2,1,-3,1,
-    1 // Drawing mod
+    -1,1,-2,1,-3,1
   ];
-  static CoverageDrawMod = 1;
 
   constructor(x: number, y: number) {
     super(x, y);
     this.sprite = sprites.fan();
+    this.coveredTiles = []
+    let tiles = FanTower.CoveredTiles;
+
+    for(let i = 0;i<tiles.length;i+=2)  {
+      const {tileLockedX, tileLockedY} = getTileLockedXY(this.x + (tiles[i] * TILE_WIDTH), this.y + (tiles[i+1] * TILE_WIDTH));
+      this.coveredTiles.push(TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]);
+    }
   }
 }
 
 class VaccuumTower extends PlacedTower {
   static CoveredTiles = [
     0,0,-1,-1,-2,-2,-3,-3,
-    3,3,4,4,5,5,6,6,
-    0,3,-1,4,-2,5,-3,6,
-    3,0,4,-1,5,-2,6,-3,
-    1.5 // Drawing mod
+    2,2,3,3,4,4,5,5,
+    0,2,-1,3,-2,4,-3,5,
+    2,0,3,-1,4,-2,6,-3
   ];
+  tick = 0;
 
   constructor(x: number, y: number) {
     super(x, y);
     this.sprite = sprites.vaccuum();
+    this.coveredTiles = []
+    let tiles = VaccuumTower.CoveredTiles;
+
+    for(let i = 0;i<tiles.length;i+=2)  {
+      const {tileLockedX, tileLockedY} = getTileLockedXY(this.x + (tiles[i] * TILE_WIDTH), this.y + (tiles[i+1] * TILE_WIDTH));
+      const td = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]
+      td ? this.coveredTiles.push(td) : null;
+    }
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+
+    if (++this.tick % 120 === 0) {
+      console.log('VACCUUM!');
+      this.coveredTiles.forEach(tile => {
+        Object.values(tile?.critters).forEach(critter => {
+          console.log('GOT CRITTER', this.x + TILE_WIDTH * 1.5, this.y + TILE_WIDTH * 1.5)
+          critter.setCaught();
+          critter.destX = this.x + TILE_WIDTH * 1.5;
+          critter.destY = this.y + TILE_WIDTH * 1.5;
+          critter.getForcedDirection();
+        })
+      })
+    }
+
+    // Debugging:
+    // this.coveredTiles.forEach(tile => {
+    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+    // })
   }
 }
 
@@ -478,7 +535,7 @@ class Fetcher extends Entity {
       const critters = Object.entries(t.critters);
       if (critters.length) {
         for (const c of critters) {
-          if (!c[1].chased && !c[1].caught) {
+          if (!c[1].chased && !c[1].caught && !c[1].flying) {
             const [key, critter] = critters[0];
             delete t.critters[key];
             this.chasing = critter;
@@ -495,10 +552,8 @@ class Fetcher extends Entity {
   }
 
   override render(ctx: CanvasRenderingContext2D) {
-
     switch (this.state) {
       case FetcherStates.chasing:
-
         if (this.chasing?.deleted) {
           this.chasing = undefined;
           this.state = FetcherStates.waiting;
@@ -507,12 +562,12 @@ class Fetcher extends Entity {
         }
 
         const chaseAngle = angleToTarget(this, this.chasing!);
-        const {x: cX, y: cY} = movePoint(this, chaseAngle, 4);
+        const {x: cX, y: cY} = movePoint(this, chaseAngle, 3);
         this.x = cX;
         this.y = cY;
 
         if (hitTest(this, this.chasing!)) {
-          this.chasing!.setCaught();
+          this.chasing!.setCarried();
           this.state = FetcherStates.fetching;
         }
         break;
@@ -523,7 +578,7 @@ class Fetcher extends Entity {
         }
 
         const fetchAngle = angleToTarget(this, {x: this.destX, y: this.destY});
-        const {x: fX, y: fY} = movePoint(this, fetchAngle, 2);
+        const {x: fX, y: fY} = movePoint(this, fetchAngle, 1);
         this.x = fX;
         this.y = fY;
         this.chasing!.x = this.x + 5;
