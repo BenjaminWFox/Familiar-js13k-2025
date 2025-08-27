@@ -5,6 +5,7 @@ import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
 import { SpritesKey } from "./sprites";
+import { drawMouseTile } from "./utils";
 
 const image = new Image();
 image.src = 'path2.png';
@@ -25,7 +26,7 @@ function gameLoop(): void {
 
 function render(): void {
   gameState.gameTime += 1;
-  if (gameState.gameTime % 60 === 0) {
+  if (gameState.gameTime % 25 === 0) {
     new Critter();
   }
   // if (gameState.gameTime % 2 === 0) {
@@ -42,7 +43,7 @@ function render(): void {
 
   for (let i = 0; i < critters.length; i++) {
     if (critters[i].deleted) {
-      delete (critters[i] as Critter).currentTile?.critters[entities[i].id];
+      delete (critters[i] as Critter).currentTile?.critters[critters[i].id];
       critters.splice(i, 1);
       i--;
     }
@@ -56,7 +57,7 @@ function render(): void {
   }
 
   if (hasMouseMoved) {
-    // drawMouseTile(ctx);
+    drawMouseTile(ctx);
   }
 }
 

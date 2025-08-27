@@ -113,6 +113,7 @@ export class Entity {
 // so we'll need to track which index the critter is on
 export class Critter extends Entity {
   static types = ['frog', 'fly', 'snake', 'lizard'];
+  type: string;
   pathIndex: number;
   moveDir: NEXT_DIR | undefined;
   // Each critter has a reference to its current tile.
@@ -122,7 +123,9 @@ export class Critter extends Entity {
   chased: boolean = false;
   caught: boolean = false;
   carried: boolean = false;
+  blown: boolean = false;
   flying: boolean = false;
+  speed: number = 2;
 
   // assigned in constructor via `getNextDirection`
   att: number = 0;
@@ -142,11 +145,11 @@ export class Critter extends Entity {
     this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
     this.getNextDirection();
 
-    const type = Critter.types[getRandomInt(0, Critter.types.length - 1)];
-    if (type === 'fly') {
+    this.type = Critter.types[getRandomInt(0, Critter.types.length - 1)];
+    if (this.type === 'fly') {
       this.flying = true;
     }
-    this.sprite = sprites[type as keyof typeof sprites]();
+    this.sprite = sprites[this.type as keyof typeof sprites]();
 
     critters.push(this);
   }
@@ -174,6 +177,14 @@ export class Critter extends Entity {
     this.removeAutonomy();
   }
 
+  blownBack() {
+    const blowback = this.flying ? 4 : 2
+    this.blown = true;
+    this.speed = 6;
+    this.pathIndex = this.pathIndex < blowback ? 0 : this.pathIndex -= blowback;
+    this.getNextDirection();
+  }
+
   setCaught() {
     this.caught = true;
     this.removeAutonomy();
@@ -193,7 +204,7 @@ export class Critter extends Entity {
 
   override render(ctx: CanvasRenderingContext2D) {
     if (!this.carried && !this.deleted) {
-      const {x, y} = movePoint(this, this.att, 2);
+      const {x, y} = movePoint(this, this.att, this.speed);
       this.x = x;
       this.y = y;
 
@@ -207,7 +218,14 @@ export class Critter extends Entity {
         this.addToTile();
       }
 
-      if (hitTest(this, {x: this.destX, y: this.destY, width: 10, height: 10})) {
+      // // Debug
+      // ctx.fillRect(this.destX - 5, this.destY - 5, 10, 10)
+
+      if (hitTest(this, {x: this.destX - 5, y: this.destY - 5, width: 10, height: 10}) ||
+        (this.blown && hitTest(this, {x: this.destX - 15, y: this.destY - 15, width: 30, height: 30}))
+      ) {
+        this.blown = false;
+        this.speed = 2;
         this.pathIndex += 1;
         
         if (!PATH[this.nextPathIndex] || this.caught) {
@@ -357,7 +375,7 @@ export class MenuTower extends BaseTower {
         checkConditionForTowerTiles(expandedMinX, expandedMaxX, expandedMinY, expandedMaxY, markHasTower);
         const x = mouseTile.x - TILE_WIDTH
         const y = mouseTile.y - TILE_WIDTH
-        console.log(this.sprite?.type);
+        
         switch(this.sprite?.type) {
           case 'kid':
             new FetcherTower(x, y)
@@ -441,6 +459,7 @@ class FanTower extends PlacedTower {
     1,3,1,4,1,5,
     -1,1,-2,1,-3,1
   ];
+  tick = 0;
 
   constructor(x: number, y: number) {
     super(x, y);
@@ -450,8 +469,41 @@ class FanTower extends PlacedTower {
 
     for(let i = 0;i<tiles.length;i+=2)  {
       const {tileLockedX, tileLockedY} = getTileLockedXY(this.x + (tiles[i] * TILE_WIDTH), this.y + (tiles[i+1] * TILE_WIDTH));
-      this.coveredTiles.push(TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]);
+      const td = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]
+      td ? this.coveredTiles.push(td) : null;
     }
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+    if (++this.tick % 30 === 0) {
+    
+      const destX = this.x + TILE_WIDTH * 1.5;
+      const destY = this.y + TILE_WIDTH * 1.5;
+      
+      this.coveredTiles.forEach(tile => {
+        const amt = getRandomInt(2, 4);
+        for (let i = 0;i < amt;i++) {
+          new Particle(
+            destX,
+            destY,
+            getRandomInt(tile.x * TILE_WIDTH, tile.x * TILE_WIDTH + TILE_WIDTH),
+            getRandomInt(tile.y * TILE_WIDTH, tile.y * TILE_WIDTH + TILE_WIDTH),
+          );
+        }
+
+        Object.values(tile?.critters).forEach(critter => {
+          if (critter.type !== 'snake' && !critter.blown) {
+            critter.blownBack();
+          }
+        })
+      })
+    }
+
+    // Debugging:
+    // this.coveredTiles.forEach(tile => {
+    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+    // })
   }
 }
 
@@ -474,7 +526,8 @@ class Particle extends Entity {
     ctx.fillStyle = '#dedede';
     ctx.fillRect(this.x, this.y, 6, 6);
 
-    if(hitTest(this, {x: this.destX - 10, y: this.destY - 10, width: 20, height: 20})) {
+    // ctx.fillRect(this.destX - 10, this.destY - 10, 20, 20);
+    if(hitTest(this, {x: this.destX - 10, y: this.destY - 10, width: 25, height: 25})) {
       this.deleted = true;
       return;
     }
@@ -699,11 +752,11 @@ export class Menu extends Entity {
 
     ctx.font = "26px 'Courier New'";
     ctx.fillText(`- Fast`, sx, sy(.5))
-    ctx.fillText(`- Can't catch flying`, sx, sy(1.5))
+    ctx.fillText(`- Cant catch flying`, sx, sy(1.5))
     ctx.fillText(`- $ 500`, sx, sy(2.5))
 
     ctx.fillText(`- Blows critters back`, sx, sy(5.5))
-    ctx.fillText(`- Doesn't catch anything`, sx, sy(6.5))
+    ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
     ctx.fillText(`- $ 500`, sx, sy(7.5))
 
     ctx.fillText(`- Slow`, sx, sy(10.5))
