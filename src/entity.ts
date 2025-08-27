@@ -73,6 +73,8 @@ export class Entity {
   layer: number;
   count: number = 0;
   sprite?: Sprite;
+  destX: number = 0;
+  destY: number = 0;
 
   constructor(x: number, y: number, dx = 0, dy = 0, width = 0, height = 0, layer = LAYERS.base) {
     this.id = ++Entity.ENTITY_ID;
@@ -90,8 +92,8 @@ export class Entity {
     this.width = width;
     this.height = height;
     // Extend to allow passing in constructor
-    entities.push(this);
-    entities.sort((e1, e2) => e1.layer - e2.layer)
+    // entities.push(this);
+    // entities.sort((e1, e2) => e1.layer - e2.layer)
   }
 
   distance(other: Entity): number {
@@ -124,8 +126,6 @@ export class Critter extends Entity {
 
   // assigned in constructor via `getNextDirection`
   att: number = 0;
-  destX: number = 0;
-  destY: number = 0;
 
   get nextPathIndex() { return this.pathIndex + 1 }
 
@@ -147,6 +147,8 @@ export class Critter extends Entity {
       this.flying = true;
     }
     this.sprite = sprites[type as keyof typeof sprites]();
+
+    critters.push(this);
   }
 
   getNextDirection() {
@@ -269,7 +271,9 @@ export class MenuTower extends BaseTower {
     this.sprite = sprites[key]();
 
     window.addEventListener('mousedown', this.dragHandler.bind(this));
-    window.addEventListener('mouseup', this.releaseHandler.bind(this))
+    window.addEventListener('mouseup', this.releaseHandler.bind(this));
+
+    menuTowers.push(this);
   }
 
   _isValidPlacement = true;
@@ -398,6 +402,8 @@ class PlacedTower extends BaseTower {
     }
     // Sort so that furthest tiles is first in the list
     this.coveredTiles.sort((a, b) => b.pathIndex! - a.pathIndex!)
+
+    towers.push(this);
   }
 
   override render(ctx: CanvasRenderingContext2D) {
@@ -449,12 +455,42 @@ class FanTower extends PlacedTower {
   }
 }
 
+class Particle extends Entity {
+  att: number = 0;
+  speed: number = getRandomInt(5, 10);
+
+  constructor(x: number, y: number, destX: number, destY: number) {
+    super(x, y)
+
+    this.destX = destX;
+    this.destY = destY;
+
+    this.att = angleToTarget({x, y}, {x: destX, y: destY});
+
+    particles.push(this);
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = '#dedede';
+    ctx.fillRect(this.x, this.y, 6, 6);
+
+    if(hitTest(this, {x: this.destX - 10, y: this.destY - 10, width: 20, height: 20})) {
+      this.deleted = true;
+      return;
+    }
+
+    const {x, y} = movePoint(this, this.att, this.speed);
+    this.x = x;
+    this.y = y;
+  }
+}
+
 class VaccuumTower extends PlacedTower {
   static CoveredTiles = [
     0,0,-1,-1,-2,-2,-3,-3,
     2,2,3,3,4,4,5,5,
     0,2,-1,3,-2,4,-3,5,
-    2,0,3,-1,4,-2,6,-3
+    2,0,3,-1,4,-2,5,-3
   ];
   tick = 0;
 
@@ -473,15 +509,26 @@ class VaccuumTower extends PlacedTower {
 
   render(ctx: CanvasRenderingContext2D) {
     super.render(ctx);
-
+    
     if (++this.tick % 120 === 0) {
-      console.log('VACCUUM!');
+      const destX = this.x + TILE_WIDTH * 1.5;
+      const destY = this.y + TILE_WIDTH * 1.5;
+
       this.coveredTiles.forEach(tile => {
+        const amt = getRandomInt(2, 4);
+        for (let i = 0;i < amt;i++) {
+          new Particle(
+            getRandomInt(tile.x * TILE_WIDTH, tile.x * TILE_WIDTH + TILE_WIDTH),
+            getRandomInt(tile.y * TILE_WIDTH, tile.y * TILE_WIDTH + TILE_WIDTH),
+            destX,
+            destY
+          );
+        }
+
         Object.values(tile?.critters).forEach(critter => {
-          console.log('GOT CRITTER', this.x + TILE_WIDTH * 1.5, this.y + TILE_WIDTH * 1.5)
           critter.setCaught();
-          critter.destX = this.x + TILE_WIDTH * 1.5;
-          critter.destY = this.y + TILE_WIDTH * 1.5;
+          critter.destX = destX;
+          critter.destY = destY;
           critter.getForcedDirection();
         })
       })
@@ -517,8 +564,6 @@ class Fetcher extends Entity {
   parent: PlacedTower;
   chasing?: Critter;
   state: FetcherStates = FetcherStates.waiting;
-  destX: number = 0;
-  destY: number = 0;
 
   constructor(parent: PlacedTower) {
     super(-100, -100, 0, 0, 30, 30, LAYERS.fetchers);
@@ -527,6 +572,8 @@ class Fetcher extends Entity {
     this.sprite = sprites.fetcher();
     this.x = getRandomInt(parent.x, parent.x + parent.width - this.width);
     this.y = getRandomInt(parent.y, parent.y + parent.width - this.height);
+
+    fetchers.push(this);
   }
 
   search() {
@@ -620,6 +667,7 @@ class Fetcher extends Entity {
 export class Menu extends Entity {
   constructor() {
     super(MENU_START_X, 0, 0, 0, TILE_WIDTH * 12, HEIGHT, LAYERS.menu);
+    menus.push(this);
   }
 
   override render(ctx: CanvasRenderingContext2D): void {
@@ -676,3 +724,9 @@ export class Menu extends Entity {
 
 // All entities
 export const entities: Entity[] = [];
+export const critters: Critter[] = [];
+export const towers: PlacedTower[] = [];
+export const menuTowers: MenuTower[] = [];
+export const fetchers: Fetcher[] = [];
+export const menus: Menu[] = [];
+export const particles: Particle[] = [];

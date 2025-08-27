@@ -1,6 +1,6 @@
 import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y } from "./constants";
 import { drawTileMap } from "./maps";
-import { Critter, entities, Menu, MenuTower } from "./entity";
+import { Critter, critters, entities, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
@@ -17,7 +17,6 @@ image.src = 'path2.png';
 // function gameLoop(newTime: number): void {
 function gameLoop(): void {
   requestAnimationFrame(gameLoop);
-
   clearScreen();
   render();
   // windowTime = newTime;
@@ -33,15 +32,26 @@ function render(): void {
   //   new Critter();
   // }
 
-  entities.forEach(e => e.render(ctx));
+  // entities.forEach(e => e.render(ctx));
+  critters.forEach(e => e.render(ctx));
+  particles.forEach(e => e.render(ctx));
+  towers.forEach(e => e.render(ctx));
+  fetchers.forEach(e => e.render(ctx));
+  menus.forEach(e => e.render(ctx));
+  menuTowers.forEach(e => e.render(ctx));
 
-  for (let i = 0; i < entities.length; i++) {
-    if (entities[i].deleted) {
-      if ((entities[i] as Critter).currentTile) {
-        delete (entities[i] as Critter).currentTile?.critters[entities[i].id];
-        entities.splice(i, 1);
-        i--;
-      }
+  for (let i = 0; i < critters.length; i++) {
+    if (critters[i].deleted) {
+      delete (critters[i] as Critter).currentTile?.critters[entities[i].id];
+      critters.splice(i, 1);
+      i--;
+    }
+  }
+
+  for (let i = 0; i < particles.length; i++) {
+    if (particles[i].deleted) {
+      particles.splice(i, 1);
+      i--;
     }
   }
 
