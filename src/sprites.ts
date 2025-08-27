@@ -1,3 +1,4 @@
+import { STRINGS } from "./constants";
 import { gameState } from "./gameState";
 
 export class Sprite {
@@ -8,7 +9,7 @@ export class Sprite {
   width: number;
   height: number;
   defaultFrame: number;
-  type: SpritesKey;
+  type: string;
   currentFrame = 0;
   count = 0;
   leftSprites: Array<HTMLCanvasElement> = [];
@@ -17,7 +18,7 @@ export class Sprite {
   lastX?: number;
 
   constructor(
-    type: SpritesKey,
+    type: string,
     x: number,
     y: number,
     frames: number,
@@ -87,19 +88,18 @@ export class Sprite {
   }
 }
 
-export type SpritesKey = keyof typeof sprites;
 export const sprites = {
-  fetcher: () => new Sprite('fetcher', 0, 10, 2, 8, 10, 10, 1, true),
-  cat: () => new Sprite('cat', 0, 20, 2, 20, 10, 10, 1, true),
-  fly: () => new Sprite('fly', 0, 30, 2, 20, 10, 10, 1, true),
-  frog: () => new Sprite('frog', 0, 40, 2, 20, 10, 10, 1, true),
-  snake: () => new Sprite('snake', 0, 50, 2, 20, 10, 10, 1, true),
-  lizard: () => new Sprite('lizard', 0, 60, 2, 20, 10, 10, 1, true),
-  kid: () => new Sprite('kid', 20, 10, 1, 0, 30),
-  fan: () => new Sprite('fan', 20, 40, 1, 0, 30),
-  vaccuum: () => new Sprite('vaccuum', 20, 70, 1, 0, 30),
-  net: () => new Sprite('net', 20, 100, 1, 0, 30),
-  witch: () => new Sprite('witch', 0, 70, 1, 0, 20),
-  fish: () => new Sprite('fish', 0, 120, 1, 1, 20),
-  scratch: () => new Sprite('scratch', 0, 100, 1, 1, 20),
+  [STRINGS.cat]: () => new Sprite(STRINGS.cat, 0, 20, 2, 20, 10, 10, 1, true),
+  [STRINGS.fly]: () => new Sprite(STRINGS.fly, 0, 30, 2, 20, 10, 10, 1, true),
+  [STRINGS.frog]: () => new Sprite(STRINGS.frog, 0, 40, 2, 20, 10, 10, 1, true),
+  [STRINGS.snake]: () => new Sprite(STRINGS.snake, 0, 50, 2, 20, 10, 10, 1, true),
+  [STRINGS.lizard]: () => new Sprite(STRINGS.lizard, 0, 60, 2, 20, 10, 10, 1, true),
+  [STRINGS.kid]: () => new Sprite(STRINGS.kid, 20, 10, 1, 0, 30),
+  [STRINGS.fan]: () => new Sprite(STRINGS.fan, 20, 40, 1, 0, 30),
+  [STRINGS.vaccuum]: () => new Sprite(STRINGS.vaccuum, 20, 70, 1, 0, 30),
+  [STRINGS.net]: () => new Sprite(STRINGS.net, 20, 100, 1, 0, 30),
+  [STRINGS.witch]: () => new Sprite(STRINGS.witch, 0, 70, 1, 0, 20),
+  [STRINGS.fish]: () => new Sprite(STRINGS.fish, 0, 120, 1, 1, 20),
+  [STRINGS.scratch]: () => new Sprite(STRINGS.scratch, 0, 100, 1, 1, 20),
+  [STRINGS.fetcher]: () => new Sprite(STRINGS.fetcher, 0, 10, 2, 8, 10, 10, 1, true),
 }

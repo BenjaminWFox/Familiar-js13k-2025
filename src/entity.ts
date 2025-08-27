@@ -1,7 +1,7 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS } from "./constants";
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
-import { Sprite, sprites, SpritesKey } from "./sprites";
+import { Sprite, sprites } from "./sprites";
 import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
@@ -112,7 +112,7 @@ export class Entity {
 // When arriving at that point, then we need to get the *next* point
 // so we'll need to track which index the critter is on
 export class Critter extends Entity {
-  static types = ['frog', 'fly', 'snake', 'lizard'];
+  static types = [STRINGS.frog, STRINGS.fly, STRINGS.lizard, STRINGS.snake];
   type: string;
   pathIndex: number;
   moveDir: NEXT_DIR | undefined;
@@ -145,11 +145,15 @@ export class Critter extends Entity {
     this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
     this.getNextDirection();
 
-    this.type = Critter.types[getRandomInt(0, Critter.types.length - 1)];
-    if (this.type === 'fly') {
+    const rng = getRandomInt(0, Critter.types.length - 1);
+    const type = Critter.types[rng];
+
+    if (type === 'fly') {
       this.flying = true;
     }
-    this.sprite = sprites[this.type as keyof typeof sprites]();
+    // @ts-ignore
+    this.sprite = sprites[type]();
+    this.type = type;
 
     critters.push(this);
   }
@@ -283,7 +287,7 @@ function checkConditionForTowerTiles(minX: number, maxX: number, minY: number, m
 export class MenuTower extends BaseTower {
   dragging: boolean = false;
 
-  constructor(x: number, y: number, key: SpritesKey) {
+  constructor(x: number, y: number, key: string) {
     super(x, y, LAYERS.menuTowers);
 
     this.sprite = sprites[key]();
@@ -377,22 +381,22 @@ export class MenuTower extends BaseTower {
         const y = mouseTile.y - TILE_WIDTH
         
         switch(this.sprite?.type) {
-          case 'kid':
+          case STRINGS.kid:
             new FetcherTower(x, y)
             break;
-          case 'fan':
+          case STRINGS.fan:
             new FanTower(x, y)
             break;
-          case 'vaccuum':
+          case STRINGS.vaccuum:
             new VaccuumTower(x, y)
             break;
-          case 'net':
+          case STRINGS.net:
             new NetTower(x, y)
             break;
-          case 'scratch':
+          case STRINGS.scratch:
             new ScratchTower(x, y)
             break;
-          case 'fish':
+          case STRINGS.fish:
             new FishTower(x, y)
             break;
         }
@@ -435,7 +439,7 @@ class FetcherTower extends PlacedTower {
   constructor(x: number, y: number) {
     super(x, y);
 
-    this.sprite = sprites.kid();
+    this.sprite = sprites[STRINGS.kid]();
 
     this.fetchers.push(...[
       new Fetcher(this),
@@ -448,7 +452,7 @@ class FetcherTower extends PlacedTower {
 class NetTower extends PlacedTower {
   constructor(x: number, y: number) {
     super(x, y);
-    this.sprite = sprites.net();
+    this.sprite = sprites[STRINGS.net]();
   }
 }
 
@@ -463,7 +467,7 @@ class FanTower extends PlacedTower {
 
   constructor(x: number, y: number) {
     super(x, y);
-    this.sprite = sprites.fan();
+    this.sprite = sprites[STRINGS.fan]();
     this.coveredTiles = []
     let tiles = FanTower.CoveredTiles;
 
@@ -493,7 +497,7 @@ class FanTower extends PlacedTower {
         }
 
         Object.values(tile?.critters).forEach(critter => {
-          if (critter.type !== 'snake' && !critter.blown) {
+          if (critter.type !== STRINGS.snake && !critter.blown) {
             critter.blownBack();
           }
         })
@@ -549,7 +553,7 @@ class VaccuumTower extends PlacedTower {
 
   constructor(x: number, y: number) {
     super(x, y);
-    this.sprite = sprites.vaccuum();
+    this.sprite = sprites[STRINGS.vaccuum]();
     this.coveredTiles = []
     let tiles = VaccuumTower.CoveredTiles;
 
@@ -597,14 +601,14 @@ class VaccuumTower extends PlacedTower {
 class ScratchTower extends PlacedTower {
     constructor(x: number, y: number) {
     super(x, y);
-    this.sprite = sprites.scratch();
+    this.sprite = sprites[STRINGS.vaccuum]();
   }
 }
 
 class FishTower extends PlacedTower {
     constructor(x: number, y: number) {
     super(x, y);
-    this.sprite = sprites.fish();
+    this.sprite = sprites[STRINGS.fish]();
   }
 }
 
@@ -622,7 +626,8 @@ class Fetcher extends Entity {
     super(-100, -100, 0, 0, 30, 30, LAYERS.fetchers);
 
     this.parent = parent;
-    this.sprite = sprites.fetcher();
+    console.log(sprites, STRINGS.fetcher, sprites[STRINGS.fetcher]);
+    this.sprite = sprites[STRINGS.fetcher]();
     this.x = getRandomInt(parent.x, parent.x + parent.width - this.width);
     this.y = getRandomInt(parent.y, parent.y + parent.width - this.height);
 

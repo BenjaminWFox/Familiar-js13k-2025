@@ -26,6 +26,22 @@ export const COLOR_MENU_GREEN_2 = '#164e04ff';
 export type Tile = [number, number];
 export type Path = Array<Tile>;
 
+export const STRINGS = {
+  fetcher: 'fetcher',
+  cat: 'cat',
+  fly: 'fly',
+  frog: 'frog',
+  snake: 'snake',
+  lizard: 'lizard',
+  kid: 'kid',
+  fan: 'fan',
+  vaccuum: 'vaccuum',
+  net: 'net',
+  witch: 'witch',
+  fish: 'fish',
+  scratch: 'scratch',
+}
+
 // export const PATH: Path = [
 //   [8, -2],
 //   [8, 0],

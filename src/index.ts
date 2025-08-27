@@ -1,10 +1,9 @@
-import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y } from "./constants";
+import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS } from "./constants";
 import { drawTileMap } from "./maps";
-import { Critter, critters, entities, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
+import { Critter, critters, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
-import { SpritesKey } from "./sprites";
 import { drawMouseTile } from "./utils";
 
 const image = new Image();
@@ -71,13 +70,13 @@ image.onload = () => {
   new Critter();
   new Menu();
 
-  const towers = ['kid', 'fan', 'vaccuum', 'net', 'fish', 'scratch'];
+  const towers = [STRINGS.kid, STRINGS.fan, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch];
 
   towers.forEach((key, i) => {
     const towerX = MENU_START_X;
     const towerY = MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
 
-    new MenuTower(towerX, towerY, key as SpritesKey);
+    new MenuTower(towerX, towerY, key);
   })
 
   mapCtx.imageSmoothingEnabled = false;
