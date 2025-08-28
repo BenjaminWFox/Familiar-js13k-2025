@@ -566,8 +566,8 @@ class Particle extends Entity {
     this.isCircle = isCircle;
 
     if (isCircle) {
-      this.radius = getRandomInt(90, 200);
-      this.angle = getRandomInt(0, 360)
+      this.radius = getRandomInt(90, 220);
+      this.angle = 0 // getRandomInt(0, 360)
     }
 
     this.att = angleToTarget({x, y}, {x: destX, y: destY});
@@ -576,9 +576,6 @@ class Particle extends Entity {
   }
 
   render(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = '#dedede';
-    ctx.fillRect(this.x, this.y, 6, 6);
-
     if (this.isCircle) {
       this.x = this.cx + this.radius * Math.cos(this.angle)
       this.y = this.cy + this.radius * Math.sin(this.angle)
@@ -586,7 +583,7 @@ class Particle extends Entity {
         this.sX = this.x;
         this.sY = this.y;
       }
-      if (this.time > 25) {
+      if (this.angle > 2 * Math.PI) {
           this.deleted = true;
           return;
       }
@@ -604,6 +601,9 @@ class Particle extends Entity {
       this.x = x;
       this.y = y;      
     }
+        ctx.fillStyle = '#dedede';
+    ctx.fillRect(this.x, this.y, 6, 6);
+
   }
 }
 
@@ -638,28 +638,27 @@ class Catcher extends Entity {
 }
 
 class NetTower extends TileCoveringTower {
+  cX: number;
+  cY: number;
+
   constructor(x: number, y: number) {
     super(x, y, getSquareTilesCovered(-3, 6));
     this.sprite = sprites[STRINGS.net]();
+    this.cX = this.x + TILE_WIDTH * 1.5;
+    this.cY = this.y + TILE_WIDTH * 1.5;
     // new Catcher(this.x + TOWER_WIDTH, this.y + TOWER_WIDTH)
-
-    const cx = this.x + TILE_WIDTH * 1.5;
-    const cy = this.y + TILE_WIDTH * 1.5;
-    this.coveredTiles.forEach((tile) => {
-      // ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
-      // i === 1 ? new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, cx, cy) : null;
-      new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, cx, cy)
-    })
   }
 
   render(ctx: CanvasRenderingContext2D) {
     super.render(ctx);
 
-        // Debugging:
-    // this.coveredTiles.forEach(tile => {
-    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
-    // })
-
+    if (gameState.gameTime % 180 === 0) {
+      this.coveredTiles.forEach((tile) => {
+        // ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+        // i === 1 ? new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, cx, cy) : null;
+        new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, this.cX, this.cY)
+      })
+    }
   }
 }
 
@@ -752,10 +751,10 @@ class VaccuumTower extends TileCoveringTower {
     }
 
     // Debugging:
-    this.coveredTiles.forEach(tile => {
-      ctx.fillStyle = 'rgba(255, 255, 255, .25)'
-      ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
-    })
+    // this.coveredTiles.forEach(tile => {
+    //   ctx.fillStyle = 'rgba(255, 255, 255, .25)'
+    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+    // })
   }
 }
 

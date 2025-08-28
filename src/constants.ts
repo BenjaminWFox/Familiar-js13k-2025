@@ -28,6 +28,7 @@ export type Path = Array<Tile>;
 
 export const STRINGS = {
   fetcher: 'fetcher',
+  catcher: 'catcher',
   cat: 'cat',
   fly: 'fly',
   frog: 'frog',
