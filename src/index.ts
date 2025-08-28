@@ -1,6 +1,6 @@
 import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS } from "./constants";
 import { drawTileMap } from "./maps";
-import { Critter, critters, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
+import { Cat, cats, Critter, critters, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
@@ -26,7 +26,10 @@ function gameLoop(): void {
 function render(): void {
   gameState.gameTime += 1;
   if (gameState.gameTime % 25 === 0) {
-    new Critter();
+    // new Critter();
+  }
+  if (gameState.gameTime % 100 === 0) {
+    new Cat();
   }
   // if (gameState.gameTime % 2 === 0) {
   //   new Critter();
@@ -34,6 +37,7 @@ function render(): void {
 
   // entities.forEach(e => e.render(ctx));
   critters.forEach(e => e.render(ctx));
+  cats.forEach(e => e.render(ctx));
   particles.forEach(e => e.render(ctx));
   towers.forEach(e => e.render(ctx));
   fetchers.forEach(e => e.render(ctx));
@@ -67,8 +71,9 @@ function clearScreen(): void {
 image.onload = () => {
   gameState.image = image;
 
-  new Critter();
+  // new Critter();
   new Menu();
+  new Cat();
 
   const towers = [STRINGS.kid, STRINGS.fan, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch];
 

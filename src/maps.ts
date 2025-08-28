@@ -1,5 +1,5 @@
 import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
-import { Critter, getDirectionFromTo, NEXT_DIR } from "./entity";
+import { Animal, getDirectionFromTo, NEXT_DIR, TileCoveringTower } from "./entity";
 import { gameState } from "./gameState";
 import { convertTileToMapBounds } from "./utils";
 
@@ -26,8 +26,8 @@ export class TileData {
   hasTower: boolean = false;
   fillinDir?: NEXT_DIR;
   pathIndex?: number;
-  isCovered: boolean = false;
-  critters: Record<string, Critter> = {};
+  towersCoveringTile: TileCoveringTower[] = [];
+  critters: Record<string, Animal> = {};
   imageRotation: number = 0;
 
   constructor(x: number, y: number, isPath: boolean = false, pathIndex?: number) {

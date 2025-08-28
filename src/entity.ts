@@ -107,35 +107,30 @@ export class Entity {
   render(_: CanvasRenderingContext2D) {};
 }
 
-// When creating the class, we need to get the next point in line
-// Then we need to know when the create is at that next point
-// When arriving at that point, then we need to get the *next* point
-// so we'll need to track which index the critter is on
-export class Critter extends Entity {
-  static types = [STRINGS.frog, STRINGS.fly, STRINGS.lizard, STRINGS.snake];
-  type: string;
+export class Animal extends Entity {
+  baseSpeed: number = 2;
   pathIndex: number;
+  flying: boolean = false;
   moveDir: NEXT_DIR | undefined;
-  // Each critter has a reference to its current tile.
-  // The currentTile will have a reference (`critters`) to all critters within
-  currentTile: TileData | undefined;
-  lastTile: TileData | undefined;
-  chased: boolean = false;
+  speed: number;
   caught: boolean = false;
+  currentTile: TileData | undefined;
+  chased: boolean = false;
   carried: boolean = false;
   blown: boolean = false;
-  flying: boolean = false;
-  speed: number = 2;
+  type?: string;
 
   // assigned in constructor via `getNextDirection`
   att: number = 0;
 
-  get nextPathIndex() { return this.pathIndex + 1 }
+  // Each critter has a reference to its current tile.
+  // The currentTile will have a reference (`critters`) to all critters within
+  lastTile: TileData | undefined;
 
   constructor() {
     super(0, 0, 0, 0, 20, 20, LAYERS.critters);
-
     this.pathIndex = 0;
+    this.speed = this.baseSpeed;
     this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
     // this.moveDir = angleToTarget()
     
@@ -144,6 +139,99 @@ export class Critter extends Entity {
     this.x = getRandomInt(directionalMinX, directionalMaxX - this.width);
     this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
     this.getNextDirection();
+  }
+
+  get nextPathIndex() { return this.pathIndex + 1 }
+
+  getNextDirection() {
+      const { directionalMinX, directionalMaxX, directionalMinY, directionalMaxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
+      this.destX = getRandomInt(directionalMinX, directionalMaxX - this.width);
+      this.destY = getRandomInt(directionalMinY, directionalMaxY - this.height);
+      this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
+  }
+
+  removeFromTile() {
+    if (this.currentTile) {
+      delete this.currentTile.critters[this.id]
+    }
+  }
+
+  addToTile() {
+    if (this.currentTile) {
+      this.currentTile.critters[this.id] = this;
+    }
+  }
+
+  setCaught() {
+    this.caught = true;
+    this.removeAutonomy();
+  }
+
+  removeAutonomy() {
+    this.layer = LAYERS.fetchersCarry;
+    this.dx = 0;
+    this.dy = 0;
+    this.removeFromTile();
+  }
+
+  getForcedDirection() {
+      this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
+  }
+
+  get canMove() {
+    return !this.caught && !this.carried;
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    if (this.canMove) {
+      const {x, y} = movePoint(this, this.att, this.speed);
+      this.x = x;
+      this.y = y;
+
+            
+      if (hitTest(this, {x: this.destX - 5, y: this.destY - 5, width: 10, height: 10}) ||
+        (this.blown && hitTest(this, {x: this.destX - 15, y: this.destY - 15, width: 30, height: 30}))
+      ) {
+        this.blown = false;
+        this.speed = this.baseSpeed;
+        this.pathIndex += 1;
+        
+        if (!PATH[this.nextPathIndex] || this.caught) {
+          this.deleted = true;
+
+          return;
+        }
+
+        this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
+        this.getNextDirection();
+      }
+
+      const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
+      const tile = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY / TILE_WIDTH}`];
+      
+      if (tile && (!this.currentTile || tile !== this.currentTile)) {
+        this.removeFromTile();
+        this.lastTile = this.currentTile;
+        this.currentTile = tile;
+        this.addToTile();
+      }
+    }
+
+    this.sprite?.draw(ctx, this.x - 25, this.y - 25, 50, 50, this.carried || this.caught);
+  }
+}
+
+// When creating the class, we need to get the next point in line
+// Then we need to know when the create is at that next point
+// When arriving at that point, then we need to get the *next* point
+// so we'll need to track which index the critter is on
+export class Critter extends Animal {
+  static types = [STRINGS.frog, STRINGS.fly, STRINGS.lizard, STRINGS.snake];
+  type: string;
+  baseSpeed: number = 3;
+
+  constructor() {
+    super();
 
     const rng = getRandomInt(0, Critter.types.length - 1);
     const type = Critter.types[rng];
@@ -156,24 +244,6 @@ export class Critter extends Entity {
     this.type = type;
 
     critters.push(this);
-  }
-
-  getNextDirection() {
-      const { directionalMinX, directionalMaxX, directionalMinY, directionalMaxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
-      this.destX = getRandomInt(directionalMinX, directionalMaxX - this.width);
-      this.destY = getRandomInt(directionalMinY, directionalMaxY - this.height);
-      this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
-  }
-
-  getForcedDirection() {
-      this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
-  }
-
-  removeAutonomy() {
-    this.layer = LAYERS.fetchersCarry;
-    this.dx = 0;
-    this.dy = 0;
-    this.removeFromTile();
   }
 
   setCarried() {
@@ -189,61 +259,49 @@ export class Critter extends Entity {
     this.getNextDirection();
   }
 
-  setCaught() {
-    this.caught = true;
-    this.removeAutonomy();
-  }
-
-  removeFromTile() {
-    if (this.currentTile) {
-      delete this.currentTile.critters[this.id]
-    }
-  }
-
-  addToTile() {
-    if (this.currentTile) {
-      this.currentTile.critters[this.id] = this;
-    }
+  get canMove() {
+    return !this.carried && !this.deleted;
   }
 
   override render(ctx: CanvasRenderingContext2D) {
-    if (!this.carried && !this.deleted) {
-      const {x, y} = movePoint(this, this.att, this.speed);
-      this.x = x;
-      this.y = y;
+    super.render(ctx);
 
-      const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
-      const tile = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY / TILE_WIDTH}`];
-      
-      if (tile && (!this.currentTile || tile !== this.currentTile)) {
-        this.removeFromTile();
-        this.lastTile = this.currentTile;
-        this.currentTile = tile;
-        this.addToTile();
-      }
-
+    if (this.canMove) {
       // // Debug
       // ctx.fillRect(this.destX - 5, this.destY - 5, 10, 10)
+    }
+  }
+}
 
-      if (hitTest(this, {x: this.destX - 5, y: this.destY - 5, width: 10, height: 10}) ||
-        (this.blown && hitTest(this, {x: this.destX - 15, y: this.destY - 15, width: 30, height: 30}))
-      ) {
-        this.blown = false;
-        this.speed = 2;
-        this.pathIndex += 1;
-        
-        if (!PATH[this.nextPathIndex] || this.caught) {
-          this.deleted = true;
+export class Cat extends Animal {
+  baseSpeed: number = 6;
+  caughtBy?: ScratchTower | FishTower;
 
-          return;
+  constructor() {
+    super();
+    this.sprite = sprites[STRINGS.cat]();
+    this.speed = this.baseSpeed;
+    cats.push(this);
+  }
+
+  override render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+
+    if (!this.caught) {
+      // console.log(this.currentTile?.towersCoveringTile?.sprite?.type);
+      const catTowers = (this.currentTile?.towersCoveringTile as CatCatchingTower[])?.filter(t => t.sprite?.type === STRINGS.scratch || t.sprite?.type === STRINGS.fish)!;
+      if (catTowers) {
+        for (const tower of catTowers) {
+          console.log(tower.maxCats, tower.caughtCats.length)
+          if (tower.caughtCats.length < tower.maxCats) {
+            this.caughtBy = tower;
+            this.caught = true;
+            tower.catch(this);
+            break;
+          }
         }
-
-        this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
-        this.getNextDirection();
       }
     }
-
-    this.sprite?.draw(ctx, this.x - 25, this.y - 25, 50, 50, this.carried || this.caught);
   }
 }
 
@@ -371,7 +429,7 @@ export class MenuTower extends BaseTower {
     if (this.dragging) {
       this.dragging = false;
       if (this._isValidPlacement) {
-        function markHasTower(tileArr: number[]) {
+        const markHasTower = (tileArr: number[]) => {
           TILE_DATA_OBJ[tileArr.toString()].hasTower = true;
           return true;
         };
@@ -456,61 +514,6 @@ class NetTower extends PlacedTower {
   }
 }
 
-class FanTower extends PlacedTower {
-  static CoveredTiles = [
-    1,-1,1,-2,1,-3,
-    3,1,4,1,5,1,
-    1,3,1,4,1,5,
-    -1,1,-2,1,-3,1
-  ];
-  tick = 0;
-
-  constructor(x: number, y: number) {
-    super(x, y);
-    this.sprite = sprites[STRINGS.fan]();
-    this.coveredTiles = []
-    let tiles = FanTower.CoveredTiles;
-
-    for(let i = 0;i<tiles.length;i+=2)  {
-      const {tileLockedX, tileLockedY} = getTileLockedXY(this.x + (tiles[i] * TILE_WIDTH), this.y + (tiles[i+1] * TILE_WIDTH));
-      const td = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]
-      td ? this.coveredTiles.push(td) : null;
-    }
-  }
-
-  render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
-    if (++this.tick % 30 === 0) {
-    
-      const destX = this.x + TILE_WIDTH * 1.5;
-      const destY = this.y + TILE_WIDTH * 1.5;
-      
-      this.coveredTiles.forEach(tile => {
-        const amt = getRandomInt(2, 4);
-        for (let i = 0;i < amt;i++) {
-          new Particle(
-            destX,
-            destY,
-            getRandomInt(tile.x * TILE_WIDTH, tile.x * TILE_WIDTH + TILE_WIDTH),
-            getRandomInt(tile.y * TILE_WIDTH, tile.y * TILE_WIDTH + TILE_WIDTH),
-          );
-        }
-
-        Object.values(tile?.critters).forEach(critter => {
-          if (critter.type !== STRINGS.snake && !critter.blown) {
-            critter.blownBack();
-          }
-        })
-      })
-    }
-
-    // Debugging:
-    // this.coveredTiles.forEach(tile => {
-    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
-    // })
-  }
-}
-
 class Particle extends Entity {
   att: number = 0;
   speed: number = getRandomInt(5, 10);
@@ -542,7 +545,72 @@ class Particle extends Entity {
   }
 }
 
-class VaccuumTower extends PlacedTower {
+export class TileCoveringTower extends PlacedTower {
+  constructor(x: number, y: number, tilesCovered: number[]) {
+    super(x, y);
+    this.coveredTiles = []
+    let tiles = tilesCovered;
+
+    for(let i = 0;i<tiles.length;i+=2)  {
+      const {tileLockedX, tileLockedY} = getTileLockedXY(this.x + (tiles[i] * TILE_WIDTH), this.y + (tiles[i+1] * TILE_WIDTH));
+      const td = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]
+      if (td) {
+        console.log('td/tct', td, td.towersCoveringTile);
+        this.coveredTiles.push(td)
+        td.towersCoveringTile.push(this);
+      }
+    }
+  }
+}
+
+class FanTower extends TileCoveringTower {
+  static CoveredTiles = [
+    1,-1,1,-2,1,-3,
+    3,1,4,1,5,1,
+    1,3,1,4,1,5,
+    -1,1,-2,1,-3,1
+  ];
+  tick = 0;
+
+  constructor(x: number, y: number) {
+    super(x, y, FanTower.CoveredTiles);
+    this.sprite = sprites[STRINGS.fan]();
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+    if (++this.tick % 30 === 0) {
+    
+      const destX = this.x + TILE_WIDTH * 1.5;
+      const destY = this.y + TILE_WIDTH * 1.5;
+      
+      this.coveredTiles.forEach(tile => {
+        const amt = getRandomInt(2, 4);
+        for (let i = 0;i < amt;i++) {
+          new Particle(
+            destX,
+            destY,
+            getRandomInt(tile.x * TILE_WIDTH, tile.x * TILE_WIDTH + TILE_WIDTH),
+            getRandomInt(tile.y * TILE_WIDTH, tile.y * TILE_WIDTH + TILE_WIDTH),
+          );
+        }
+
+        Object.values(tile?.critters).forEach(critter => {
+          if ((critter as Critter).type !== STRINGS.snake && !critter.blown) {
+            (critter as Critter).blownBack();
+          }
+        })
+      })
+    }
+
+    // Debugging:
+    // this.coveredTiles.forEach(tile => {
+    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+    // })
+  }
+}
+
+class VaccuumTower extends TileCoveringTower {
   static CoveredTiles = [
     0,0,-1,-1,-2,-2,-3,-3,
     2,2,3,3,4,4,5,5,
@@ -552,16 +620,8 @@ class VaccuumTower extends PlacedTower {
   tick = 0;
 
   constructor(x: number, y: number) {
-    super(x, y);
+    super(x, y, VaccuumTower.CoveredTiles);
     this.sprite = sprites[STRINGS.vaccuum]();
-    this.coveredTiles = []
-    let tiles = VaccuumTower.CoveredTiles;
-
-    for(let i = 0;i<tiles.length;i+=2)  {
-      const {tileLockedX, tileLockedY} = getTileLockedXY(this.x + (tiles[i] * TILE_WIDTH), this.y + (tiles[i+1] * TILE_WIDTH));
-      const td = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]
-      td ? this.coveredTiles.push(td) : null;
-    }
   }
 
   render(ctx: CanvasRenderingContext2D) {
@@ -592,22 +652,53 @@ class VaccuumTower extends PlacedTower {
     }
 
     // Debugging:
-    // this.coveredTiles.forEach(tile => {
-    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
-    // })
+    this.coveredTiles.forEach(tile => {
+      ctx.fillStyle = 'rgba(255, 255, 255, .25)'
+      ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+    })
   }
 }
 
-class ScratchTower extends PlacedTower {
-    constructor(x: number, y: number) {
-    super(x, y);
-    this.sprite = sprites[STRINGS.vaccuum]();
+const catTowerTilesCovered = () => {
+  let arr = [];
+  for (let i = -2;i < 5;i++) {
+    for (let j = -2;j < 5;j++) {
+      arr.push(i, j);
+    }
+  }
+  return arr;
+}
+
+class CatCatchingTower extends TileCoveringTower {
+  maxCats;
+  caughtCats: Cat[] = [];
+
+  constructor(x: number, y: number, maxCats: number) {
+    super(x, y, catTowerTilesCovered())
+    this.maxCats = maxCats;
+  }
+
+  catch(c: Cat) {
+    this.caughtCats.push(c);
+  }
+
+  release() {
+    this.caughtCats.forEach(c => {
+      c.caught = false;
+    })
   }
 }
 
-class FishTower extends PlacedTower {
-    constructor(x: number, y: number) {
-    super(x, y);
+class ScratchTower extends CatCatchingTower {
+  constructor(x: number, y: number) {
+    super(x, y, 4);
+    this.sprite = sprites[STRINGS.scratch]();
+  }
+}
+
+class FishTower extends CatCatchingTower {
+  constructor(x: number, y: number) {
+    super(x, y, 1);
     this.sprite = sprites[STRINGS.fish]();
   }
 }
@@ -617,7 +708,10 @@ enum FetcherStates {
   waiting,
   fetching,
 }
+
 class Fetcher extends Entity {
+  chaseSpeed = 4;
+  carrySpeed = 2;
   parent: PlacedTower;
   chasing?: Critter;
   state: FetcherStates = FetcherStates.waiting;
@@ -626,7 +720,6 @@ class Fetcher extends Entity {
     super(-100, -100, 0, 0, 30, 30, LAYERS.fetchers);
 
     this.parent = parent;
-    console.log(sprites, STRINGS.fetcher, sprites[STRINGS.fetcher]);
     this.sprite = sprites[STRINGS.fetcher]();
     this.x = getRandomInt(parent.x, parent.x + parent.width - this.width);
     this.y = getRandomInt(parent.y, parent.y + parent.width - this.height);
@@ -643,7 +736,7 @@ class Fetcher extends Entity {
           if (!c[1].chased && !c[1].caught && !c[1].flying) {
             const [key, critter] = critters[0];
             delete t.critters[key];
-            this.chasing = critter;
+            this.chasing = critter as Critter;
             critter.chased = true;
             this.state = FetcherStates.chasing;
             break;
@@ -667,7 +760,7 @@ class Fetcher extends Entity {
         }
 
         const chaseAngle = angleToTarget(this, this.chasing!);
-        const {x: cX, y: cY} = movePoint(this, chaseAngle, 3);
+        const {x: cX, y: cY} = movePoint(this, chaseAngle, this.chaseSpeed);
         this.x = cX;
         this.y = cY;
 
@@ -683,7 +776,7 @@ class Fetcher extends Entity {
         }
 
         const fetchAngle = angleToTarget(this, {x: this.destX, y: this.destY});
-        const {x: fX, y: fY} = movePoint(this, fetchAngle, 1);
+        const {x: fX, y: fY} = movePoint(this, fetchAngle, this.carrySpeed);
         this.x = fX;
         this.y = fY;
         this.chasing!.x = this.x + 5;
@@ -783,6 +876,7 @@ export class Menu extends Entity {
 // All entities
 export const entities: Entity[] = [];
 export const critters: Critter[] = [];
+export const cats: Cat[] = [];
 export const towers: PlacedTower[] = [];
 export const menuTowers: MenuTower[] = [];
 export const fetchers: Fetcher[] = [];
