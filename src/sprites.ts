@@ -102,4 +102,5 @@ export const sprites = {
   [STRINGS.fish]: () => new Sprite(STRINGS.fish, 0, 120, 1, 1, 20),
   [STRINGS.scratch]: () => new Sprite(STRINGS.scratch, 0, 100, 1, 1, 20),
   [STRINGS.fetcher]: () => new Sprite(STRINGS.fetcher, 0, 10, 2, 8, 10, 10, 1, true),
+  [STRINGS.catcher]: () => new Sprite(STRINGS.catcher, 40, 0, 1, 0, 10),
 }

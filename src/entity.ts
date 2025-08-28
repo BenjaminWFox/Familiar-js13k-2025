@@ -114,6 +114,7 @@ export class Animal extends Entity {
   moveDir: NEXT_DIR | undefined;
   speed: number;
   caught: boolean = false;
+  distracted: boolean = false;
   currentTile: TileData | undefined;
   chased: boolean = false;
   carried: boolean = false;
@@ -179,6 +180,7 @@ export class Animal extends Entity {
   }
 
   get canMove() {
+    console.log('cm? 1')
     return !this.caught && !this.carried;
   }
 
@@ -187,8 +189,7 @@ export class Animal extends Entity {
       const {x, y} = movePoint(this, this.att, this.speed);
       this.x = x;
       this.y = y;
-
-            
+        
       if (hitTest(this, {x: this.destX - 5, y: this.destY - 5, width: 10, height: 10}) ||
         (this.blown && hitTest(this, {x: this.destX - 15, y: this.destY - 15, width: 30, height: 30}))
       ) {
@@ -217,7 +218,7 @@ export class Animal extends Entity {
       }
     }
 
-    this.sprite?.draw(ctx, this.x - 25, this.y - 25, 50, 50, this.carried || this.caught);
+    this.sprite?.draw(ctx, this.x - 25, this.y - 25, 50, 50, this.carried || (this.caught && !this.distracted));
   }
 }
 
@@ -275,7 +276,9 @@ export class Critter extends Animal {
 
 export class Cat extends Animal {
   baseSpeed: number = 6;
+  playing: boolean = false;
   caughtBy?: ScratchTower | FishTower;
+  nextPlay: number = 0;
 
   constructor() {
     super();
@@ -284,34 +287,52 @@ export class Cat extends Animal {
     cats.push(this);
   }
 
+  override get canMove(): boolean {
+    return !this.playing;
+  }
+
   override render(ctx: CanvasRenderingContext2D) {
     super.render(ctx);
 
-    if (!this.caught) {
-      // console.log(this.currentTile?.towersCoveringTile?.sprite?.type);
+    if (!this.distracted) {
       const catTowers = (this.currentTile?.towersCoveringTile as CatCatchingTower[])?.filter(t => t.sprite?.type === STRINGS.scratch || t.sprite?.type === STRINGS.fish)!;
       if (catTowers) {
         for (const tower of catTowers) {
-          console.log(tower.maxCats, tower.caughtCats.length)
           if (tower.caughtCats.length < tower.maxCats) {
             this.caughtBy = tower;
             this.caught = true;
+            this.distracted = true
             tower.catch(this);
+
+            this.destX = getRandomInt(tower.x, tower.x + TOWER_WIDTH);
+            this.destY = getRandomInt(tower.y, tower.y + TOWER_WIDTH);
+            this.getForcedDirection();
             break;
           }
         }
       }
+    } else if (!this.playing) {
+      if(hitTest(this, {x: this.destX - 10, y: this.destY - 10, width: 20, height: 20})) {
+        this.nextPlay = getRandomInt(20, 60);
+        this.playing = true;
+      }
+    } else if (this.playing && gameState.gameTime % this.nextPlay === 0) {
+        this.destX = getRandomInt(this.caughtBy!.x, this.caughtBy!.x + TOWER_WIDTH);
+        this.destY = getRandomInt(this.caughtBy!.y, this.caughtBy!.y + TOWER_WIDTH);
+        this.getForcedDirection();
+        this.nextPlay = getRandomInt(20, 60);
+        this.playing = false;
     }
   }
 }
 
 export class BaseTower extends Entity {
   constructor(x: number, y: number, layer = LAYERS.towers) {
-    super(x, y, 0, 0, TILE_WIDTH * 3, TILE_WIDTH * 3, layer)
+    super(x, y, 0, 0, TOWER_WIDTH, TOWER_WIDTH, layer)
   }
 
   override render(ctx: CanvasRenderingContext2D) {
-    this.sprite?.draw(ctx, this.x, this.y, TILE_WIDTH * 3)
+    this.sprite?.draw(ctx, this.x, this.y, TOWER_WIDTH)
   }
 }
 
@@ -401,13 +422,15 @@ export class MenuTower extends BaseTower {
 
         const tiles = this.sprite?.type === 'vaccuum' ? VaccuumTower.CoveredTiles : FanTower.CoveredTiles;
         for(let i = 0;i<tiles.length;i+=2)  {
-          const xDiff = (tiles[i] * TILE_WIDTH) // tiles[i] > 0 ? (TILE_WIDTH * 3) + (tiles[i] * TILE_WIDTH) : (tiles[i] * TILE_WIDTH);
-          const yDiff = (tiles[i+1] * TILE_WIDTH) // tiles[i+1] > 0 ? (TILE_WIDTH * 3) + (tiles[i+1] * TILE_WIDTH) : (tiles[i+1] * TILE_WIDTH);;
+          const xDiff = (tiles[i] * TILE_WIDTH) // tiles[i] > 0 ? (TOWER_WIDTH) + (tiles[i] * TILE_WIDTH) : (tiles[i] * TILE_WIDTH);
+          const yDiff = (tiles[i+1] * TILE_WIDTH) // tiles[i+1] > 0 ? (TOWER_WIDTH) + (tiles[i+1] * TILE_WIDTH) : (tiles[i+1] * TILE_WIDTH);;
           ctx?.fillRect(tileLockedX - (TILE_WIDTH) + xDiff, tileLockedY - (TILE_WIDTH) + yDiff, TILE_WIDTH, TILE_WIDTH)
         }
+      } else if (this.sprite?.type === 'net') {
+        ctx?.fillRect(mouseTile.x - (TOWER_WIDTH + TILE_WIDTH), mouseTile.y - (TOWER_WIDTH + TILE_WIDTH), TILE_WIDTH * 9, TILE_WIDTH * 9)
       } else {
         // Draw "valid" range for tower
-        ctx?.fillRect(mouseTile.x - (TILE_WIDTH * 3), mouseTile.y - (TILE_WIDTH * 3), TILE_WIDTH * 7, TILE_WIDTH * 7)
+        ctx?.fillRect(mouseTile.x - (TOWER_WIDTH), mouseTile.y - (TOWER_WIDTH), TILE_WIDTH * 7, TILE_WIDTH * 7)
       }
 
       // Draw tower
@@ -507,22 +530,45 @@ class FetcherTower extends PlacedTower {
   }
 }
 
-class NetTower extends PlacedTower {
-  constructor(x: number, y: number) {
-    super(x, y);
-    this.sprite = sprites[STRINGS.net]();
+const getSquareTilesCovered = (min: number, max: number) => {
+  let arr = [];
+  for (let i = min;i < max;i++) {
+    for (let j = min;j < max;j++) {
+      const skip = i >= 0 && i <=2 && j >=0 && j <= 2;
+      if (!skip) {
+        arr.push(i, j);
+      }
+    }
   }
+  return arr;
 }
 
 class Particle extends Entity {
   att: number = 0;
+  isCircle: boolean = false;
   speed: number = getRandomInt(5, 10);
+  cx: number = 0;
+  cy: number = 0;
+  angle: number = 0;
+  radius: number = 0;
+  time: number = 0;
+  sX: number = 0;
+  sY: number = 0;
 
-  constructor(x: number, y: number, destX: number, destY: number) {
+
+  constructor(x: number, y: number, destX: number, destY: number, isCircle = false, cx?: number, cy?: number) {
     super(x, y)
 
     this.destX = destX;
     this.destY = destY;
+    this.cx = cx || 0;
+    this.cy = cy || 0;
+    this.isCircle = isCircle;
+
+    if (isCircle) {
+      this.radius = getRandomInt(90, 200);
+      this.angle = getRandomInt(0, 360)
+    }
 
     this.att = angleToTarget({x, y}, {x: destX, y: destY});
 
@@ -533,15 +579,31 @@ class Particle extends Entity {
     ctx.fillStyle = '#dedede';
     ctx.fillRect(this.x, this.y, 6, 6);
 
-    // ctx.fillRect(this.destX - 10, this.destY - 10, 20, 20);
-    if(hitTest(this, {x: this.destX - 10, y: this.destY - 10, width: 25, height: 25})) {
-      this.deleted = true;
-      return;
-    }
+    if (this.isCircle) {
+      this.x = this.cx + this.radius * Math.cos(this.angle)
+      this.y = this.cy + this.radius * Math.sin(this.angle)
+      if (this.time === 0) {
+        this.sX = this.x;
+        this.sY = this.y;
+      }
+      if (this.time > 25) {
+          this.deleted = true;
+          return;
+      }
+      this.angle += .1
+      this.time += 1;
+      // console.log(Math.round(this.x), Math.round(this.y), this.angle);
+    } else {
+      // ctx.fillRect(this.destX - 10, this.destY - 10, 20, 20);
+      if(hitTest(this, {x: this.destX - 10, y: this.destY - 10, width: 25, height: 25})) {
+        this.deleted = true;
+        return;
+      }
 
-    const {x, y} = movePoint(this, this.att, this.speed);
-    this.x = x;
-    this.y = y;
+      const {x, y} = movePoint(this, this.att, this.speed);
+      this.x = x;
+      this.y = y;      
+    }
   }
 }
 
@@ -555,11 +617,49 @@ export class TileCoveringTower extends PlacedTower {
       const {tileLockedX, tileLockedY} = getTileLockedXY(this.x + (tiles[i] * TILE_WIDTH), this.y + (tiles[i+1] * TILE_WIDTH));
       const td = TILE_DATA_OBJ[`${tileLockedX / TILE_WIDTH},${tileLockedY/TILE_WIDTH}`]
       if (td) {
-        console.log('td/tct', td, td.towersCoveringTile);
         this.coveredTiles.push(td)
         td.towersCoveringTile.push(this);
       }
     }
+  }
+}
+
+class Catcher extends Entity {
+  constructor(x: number, y: number) {
+    super(x, y);
+
+    this.sprite = sprites[STRINGS.catcher]();
+    catchers.push(this);
+  }
+
+  render(ctx: CanvasRenderingContext2D): void {
+    this.sprite?.draw(ctx, this.x, this.y, TOWER_WIDTH * .5, TOWER_WIDTH * .5);
+  }
+}
+
+class NetTower extends TileCoveringTower {
+  constructor(x: number, y: number) {
+    super(x, y, getSquareTilesCovered(-3, 6));
+    this.sprite = sprites[STRINGS.net]();
+    // new Catcher(this.x + TOWER_WIDTH, this.y + TOWER_WIDTH)
+
+    const cx = this.x + TILE_WIDTH * 1.5;
+    const cy = this.y + TILE_WIDTH * 1.5;
+    this.coveredTiles.forEach((tile) => {
+      // ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+      // i === 1 ? new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, cx, cy) : null;
+      new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, cx, cy)
+    })
+  }
+
+  render(ctx: CanvasRenderingContext2D) {
+    super.render(ctx);
+
+        // Debugging:
+    // this.coveredTiles.forEach(tile => {
+    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+    // })
+
   }
 }
 
@@ -659,22 +759,13 @@ class VaccuumTower extends TileCoveringTower {
   }
 }
 
-const catTowerTilesCovered = () => {
-  let arr = [];
-  for (let i = -2;i < 5;i++) {
-    for (let j = -2;j < 5;j++) {
-      arr.push(i, j);
-    }
-  }
-  return arr;
-}
 
 class CatCatchingTower extends TileCoveringTower {
   maxCats;
   caughtCats: Cat[] = [];
 
   constructor(x: number, y: number, maxCats: number) {
-    super(x, y, catTowerTilesCovered())
+    super(x, y, getSquareTilesCovered(-2, 5))
     this.maxCats = maxCats;
   }
 
@@ -684,7 +775,7 @@ class CatCatchingTower extends TileCoveringTower {
 
   release() {
     this.caughtCats.forEach(c => {
-      c.caught = false;
+      c.distracted = false;
     })
   }
 }
@@ -835,7 +926,7 @@ export class Menu extends Entity {
     const sx = MENU_START_X + (TILE_WIDTH * 4);
 
     ctx.font = "60px 'Courier New'"
-    ctx.fillText(`Towers`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * 3)
+    ctx.fillText(`Towers`, MENU_START_X, MENU_TOWER_START_Y - TOWER_WIDTH)
 
     ctx.font = "35px 'Courier New'"
     ctx.fillText(`Click+Drag to place towers`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * 2)
@@ -862,7 +953,7 @@ export class Menu extends Entity {
     ctx.fillText(`- $ 500`, sx, sy(12.5))
 
     ctx.fillText(`- Slow`, sx, sy(15.5))
-    ctx.fillText(`- Catches big groups`, sx, sy(16.5))
+    ctx.fillText(`- Catches 10 critters`, sx, sy(16.5))
     ctx.fillText(`- $ 500`, sx, sy(17.5))
 
     ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
@@ -882,3 +973,4 @@ export const menuTowers: MenuTower[] = [];
 export const fetchers: Fetcher[] = [];
 export const menus: Menu[] = [];
 export const particles: Particle[] = [];
+export const catchers: Catcher[] = [];

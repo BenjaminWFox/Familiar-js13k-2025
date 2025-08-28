@@ -1,6 +1,6 @@
 import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS } from "./constants";
 import { drawTileMap } from "./maps";
-import { Cat, cats, Critter, critters, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
+import { Cat, catchers, cats, Critter, critters, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState } from "./gameState";
@@ -23,6 +23,14 @@ function gameLoop(): void {
   // dt = 0;
 }
 
+// function drawNet(x, y) {
+//   ctx.fillStyle = 'white';
+//   ctx.fillRect(x, y, 20, 6)
+//   ctx.fillRect(x + 40, y + 30, 6, 20)
+//   ctx.fillRect(x, y + 70, 20, 6)
+//   ctx.fillRect(x - 25, y + 30, 6, 20)
+// }
+
 function render(): void {
   gameState.gameTime += 1;
   if (gameState.gameTime % 25 === 0) {
@@ -41,6 +49,7 @@ function render(): void {
   particles.forEach(e => e.render(ctx));
   towers.forEach(e => e.render(ctx));
   fetchers.forEach(e => e.render(ctx));
+  catchers.forEach(e => e.render(ctx));
   menus.forEach(e => e.render(ctx));
   menuTowers.forEach(e => e.render(ctx));
 
@@ -58,6 +67,8 @@ function render(): void {
       i--;
     }
   }
+
+  // drawNet(700, 700);
 
   if (hasMouseMoved) {
     drawMouseTile(ctx);
