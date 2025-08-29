@@ -551,12 +551,15 @@ class Particle extends Entity {
   cy: number = 0;
   angle: number = 0;
   radius: number = 0;
+  oRadius: number = 0;
   time: number = 0;
   sX: number = 0;
   sY: number = 0;
+  isKey: boolean = false;
+  carrying: Array<Animal> = [];
 
 
-  constructor(x: number, y: number, destX: number, destY: number, isCircle = false, cx?: number, cy?: number) {
+  constructor(x: number, y: number, destX: number, destY: number, isCircle = false, cx?: number, cy?: number, r?: number, isKey: boolean = false) {
     super(x, y)
 
     this.destX = destX;
@@ -564,9 +567,11 @@ class Particle extends Entity {
     this.cx = cx || 0;
     this.cy = cy || 0;
     this.isCircle = isCircle;
+    this.isKey = isKey;
 
     if (isCircle) {
-      this.radius = getRandomInt(90, 220);
+      this.radius = r || 0 // getRandomInt(90, 220);
+      this.oRadius = this.radius;
       this.angle = 0 // getRandomInt(0, 360)
     }
 
@@ -584,11 +589,56 @@ class Particle extends Entity {
         this.sY = this.y;
       }
       if (this.angle > 2 * Math.PI) {
-          this.deleted = true;
-          return;
+        this.carrying.forEach(c => {
+          c.deleted = true;
+        })
+
+        this.deleted = true;
+        return;
       }
-      this.angle += .1
+      this.angle += .15
       this.time += 1;
+
+      if (this.isKey) {
+        const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y)
+        const ct = getTileDataEntry(tileLockedX / TILE_WIDTH, tileLockedY / TILE_WIDTH);
+        const critters = Object.values(ct.critters);
+        if (critters.length) {
+          critters.forEach((c: Animal) => {
+            if (c.type === STRINGS.fly || c.type === STRINGS.frog) {
+              c.carried = true;
+              c.setCaught()
+              this.carrying.push(c);
+            }
+          })
+        }
+        const degrees = this.angle * (300/Math.PI);
+        if (
+          this.radius === this.oRadius &&
+          (
+            (degrees > 35 && degrees < 55) ||
+            (degrees > 125 && degrees < 140) ||
+            (degrees > 215 && degrees < 235) ||
+            (degrees > 305 && degrees < 325)
+          )) {
+          this.radius += 40;
+        } else if (
+          this.radius !== this.oRadius &&
+          (
+            (degrees < 35 || degrees > 55) &&
+            (degrees < 125 || degrees > 140) &&
+            (degrees < 215 || degrees > 235) &&
+            (degrees < 305 || degrees > 325)
+          )
+        ) {
+          this.radius = this.oRadius;
+        }
+        
+        this.carrying.forEach(c => {
+          c.x = this.x;
+          c.y = this.y;
+        })
+      }
       // console.log(Math.round(this.x), Math.round(this.y), this.angle);
     } else {
       // ctx.fillRect(this.destX - 10, this.destY - 10, 20, 20);
@@ -601,7 +651,8 @@ class Particle extends Entity {
       this.x = x;
       this.y = y;      
     }
-        ctx.fillStyle = '#dedede';
+    
+    ctx.fillStyle = '#dedede';
     ctx.fillRect(this.x, this.y, 6, 6);
 
   }
@@ -640,6 +691,8 @@ class Catcher extends Entity {
 class NetTower extends TileCoveringTower {
   cX: number;
   cY: number;
+  swipeTime: number = 0;
+  keyPoints: Record<string, TileData> = {};
 
   constructor(x: number, y: number) {
     super(x, y, getSquareTilesCovered(-3, 6));
@@ -647,18 +700,48 @@ class NetTower extends TileCoveringTower {
     this.cX = this.x + TILE_WIDTH * 1.5;
     this.cY = this.y + TILE_WIDTH * 1.5;
     // new Catcher(this.x + TOWER_WIDTH, this.y + TOWER_WIDTH)
+    this.coveredTiles.forEach((tile) => {
+      if (
+        this.y + TILE_WIDTH <= tile.y * TILE_WIDTH &&
+        this.y + (TILE_WIDTH * 2) > tile.y * TILE_WIDTH &&
+        this.x + TOWER_WIDTH <= tile.x * TILE_WIDTH
+      ) {
+        this.keyPoints[`${tile.x},${tile.y}`] = tile;
+      }
+    })
   }
 
   render(ctx: CanvasRenderingContext2D) {
     super.render(ctx);
 
-    if (gameState.gameTime % 180 === 0) {
+    if (this.swipeTime % 180 === 0) {
       this.coveredTiles.forEach((tile) => {
+        let isKey = false;
+        let  r = getRandomInt(90, 220);
+        if (this.keyPoints[`${tile.x},${tile.y}`]) {
+          isKey = true;
+        r = 
+          tile.x * TILE_WIDTH === this.x + TOWER_WIDTH ? 124 :
+          tile.x * TILE_WIDTH === this.x + TOWER_WIDTH + TILE_WIDTH ? 174 : 224
+        }
+        new Particle(
+          tile.x * TILE_WIDTH + 25,
+          tile.y * TILE_WIDTH,
+          this.x * TILE_WIDTH * 1.5,
+          this.y * TILE_WIDTH * 1.5,
+          true, this.cX, this.cY, r, isKey);
         // ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
         // i === 1 ? new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, cx, cy) : null;
-        new Particle(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, this.x * TILE_WIDTH * 1.5, this.y * TILE_WIDTH * 1.5, true, this.cX, this.cY)
       })
+
+      this.keyPoints
     }
+    // Debugging:
+    // this.coveredTiles.forEach(tile => {
+    //   ctx.fillStyle = 'rgba(255, 255, 255, .25)'
+    //   ctx.fillRect(tile.x * TILE_WIDTH, tile.y * TILE_WIDTH, TILE_WIDTH, TILE_WIDTH);
+    // })
+    ++this.swipeTime;
   }
 }
 
@@ -951,8 +1034,8 @@ export class Menu extends Entity {
     ctx.fillText(`- Covers many angles`, sx, sy(11.5))
     ctx.fillText(`- $ 500`, sx, sy(12.5))
 
-    ctx.fillText(`- Slow`, sx, sy(15.5))
-    ctx.fillText(`- Catches 10 critters`, sx, sy(16.5))
+    ctx.fillText(`- Very Slow`, sx, sy(15.5))
+    ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
     ctx.fillText(`- $ 500`, sx, sy(17.5))
 
     ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))

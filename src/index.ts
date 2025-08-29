@@ -34,10 +34,10 @@ function gameLoop(): void {
 function render(): void {
   gameState.gameTime += 1;
   if (gameState.gameTime % 25 === 0) {
-    // new Critter();
+    new Critter();
   }
   if (gameState.gameTime % 100 === 0) {
-    new Cat();
+    // new Cat();
   }
   // if (gameState.gameTime % 2 === 0) {
   //   new Critter();
@@ -82,7 +82,7 @@ function clearScreen(): void {
 image.onload = () => {
   gameState.image = image;
 
-  // new Critter();
+  new Critter();
   new Menu();
   new Cat();
 
