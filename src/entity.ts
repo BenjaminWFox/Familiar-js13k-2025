@@ -2,7 +2,7 @@ import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_G
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites } from "./sprites";
-import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, translateXYMouseToCanvas } from "./utils";
+import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -104,7 +104,7 @@ export class Entity {
 
   }
 
-  render(_: CanvasRenderingContext2D) {};
+  render() {};
 }
 
 export class Animal extends Entity {
@@ -184,7 +184,7 @@ export class Animal extends Entity {
     return !this.caught && !this.carried;
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  render() {
     if (this.canMove) {
       const {x, y} = movePoint(this, this.att, this.speed);
       this.x = x;
@@ -218,7 +218,7 @@ export class Animal extends Entity {
       }
     }
 
-    this.sprite?.draw(ctx, this.x - 25, this.y - 25, 50, 50, this.carried || (this.caught && !this.distracted));
+    this.sprite?.draw(gameState.ctx, this.x - 25, this.y - 25, 50, 50, this.carried || (this.caught && !this.distracted));
   }
 }
 
@@ -264,8 +264,8 @@ export class Critter extends Animal {
     return !this.carried && !this.deleted;
   }
 
-  override render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  override render() {
+    super.render();
 
     if (this.canMove) {
       // // Debug
@@ -291,8 +291,8 @@ export class Cat extends Animal {
     return !this.playing;
   }
 
-  override render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  override render() {
+    super.render();
 
     if (!this.distracted) {
       const catTowers = (this.currentTile?.towersCoveringTile as CatCatchingTower[])?.filter(t => t.sprite?.type === STRINGS.scratch || t.sprite?.type === STRINGS.fish)!;
@@ -331,8 +331,8 @@ export class BaseTower extends Entity {
     super(x, y, 0, 0, TOWER_WIDTH, TOWER_WIDTH, layer)
   }
 
-  override render(ctx: CanvasRenderingContext2D) {
-    this.sprite?.draw(ctx, this.x, this.y, TOWER_WIDTH)
+  override render() {
+    this.sprite?.draw(gameState.ctx, this.x, this.y, TOWER_WIDTH)
   }
 }
 
@@ -379,8 +379,8 @@ export class MenuTower extends BaseTower {
 
   _isValidPlacement = true;
 
-  override render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  override render() {
+    super.render();
 
     if (this.dragging) {
       this._isValidPlacement = true;
@@ -408,9 +408,9 @@ export class MenuTower extends BaseTower {
       }
 
       if (this._isValidPlacement) {
-        ctx.fillStyle = "rgba(140, 243, 248, 0.33)";
+        gameState.ctx.fillStyle = "rgba(140, 243, 248, 0.33)";
       } else {
-        ctx.fillStyle = "rgba(255, 0, 0, .33)";
+        gameState.ctx.fillStyle = "rgba(255, 0, 0, .33)";
       }
 
       if (this.sprite?.type === 'vaccuum' || this.sprite?.type === 'fan') {
@@ -424,17 +424,17 @@ export class MenuTower extends BaseTower {
         for(let i = 0;i<tiles.length;i+=2)  {
           const xDiff = (tiles[i] * TILE_WIDTH) // tiles[i] > 0 ? (TOWER_WIDTH) + (tiles[i] * TILE_WIDTH) : (tiles[i] * TILE_WIDTH);
           const yDiff = (tiles[i+1] * TILE_WIDTH) // tiles[i+1] > 0 ? (TOWER_WIDTH) + (tiles[i+1] * TILE_WIDTH) : (tiles[i+1] * TILE_WIDTH);;
-          ctx?.fillRect(tileLockedX - (TILE_WIDTH) + xDiff, tileLockedY - (TILE_WIDTH) + yDiff, TILE_WIDTH, TILE_WIDTH)
+          gameState.ctx?.fillRect(tileLockedX - (TILE_WIDTH) + xDiff, tileLockedY - (TILE_WIDTH) + yDiff, TILE_WIDTH, TILE_WIDTH)
         }
       } else if (this.sprite?.type === 'net') {
-        ctx?.fillRect(mouseTile.x - (TOWER_WIDTH + TILE_WIDTH), mouseTile.y - (TOWER_WIDTH + TILE_WIDTH), TILE_WIDTH * 9, TILE_WIDTH * 9)
+        gameState.ctx?.fillRect(mouseTile.x - (TOWER_WIDTH + TILE_WIDTH), mouseTile.y - (TOWER_WIDTH + TILE_WIDTH), TILE_WIDTH * 9, TILE_WIDTH * 9)
       } else {
         // Draw "valid" range for tower
-        ctx?.fillRect(mouseTile.x - (TOWER_WIDTH), mouseTile.y - (TOWER_WIDTH), TILE_WIDTH * 7, TILE_WIDTH * 7)
+        gameState.ctx?.fillRect(mouseTile.x - (TOWER_WIDTH), mouseTile.y - (TOWER_WIDTH), TILE_WIDTH * 7, TILE_WIDTH * 7)
       }
 
       // Draw tower
-      this.sprite?.draw(ctx, mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, TOWER_WIDTH);
+      this.sprite?.draw(gameState.ctx, mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, TOWER_WIDTH);
     }
   }
 
@@ -509,8 +509,8 @@ class PlacedTower extends BaseTower {
     towers.push(this);
   }
 
-  override render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  override render() {
+    super.render();
   }
 }
 
@@ -580,7 +580,7 @@ class Particle extends Entity {
     particles.push(this);
   }
 
-  render(ctx: CanvasRenderingContext2D) {
+  render() {
     if (this.isCircle) {
       this.x = this.cx + this.radius * Math.cos(this.angle)
       this.y = this.cy + this.radius * Math.sin(this.angle)
@@ -652,8 +652,8 @@ class Particle extends Entity {
       this.y = y;      
     }
     
-    ctx.fillStyle = '#dedede';
-    ctx.fillRect(this.x, this.y, 6, 6);
+    gameState.ctx.fillStyle = '#dedede';
+    gameState.ctx.fillRect(this.x, this.y, 6, 6);
 
   }
 }
@@ -683,8 +683,8 @@ class Catcher extends Entity {
     catchers.push(this);
   }
 
-  render(ctx: CanvasRenderingContext2D): void {
-    this.sprite?.draw(ctx, this.x, this.y, TOWER_WIDTH * .5, TOWER_WIDTH * .5);
+  render(): void {
+    this.sprite?.draw(gameState.ctx, this.x, this.y, TOWER_WIDTH * .5, TOWER_WIDTH * .5);
   }
 }
 
@@ -711,8 +711,8 @@ class NetTower extends TileCoveringTower {
     })
   }
 
-  render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  render() {
+    super.render();
 
     if (this.swipeTime % 180 === 0) {
       this.coveredTiles.forEach((tile) => {
@@ -759,8 +759,8 @@ class FanTower extends TileCoveringTower {
     this.sprite = sprites[STRINGS.fan]();
   }
 
-  render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  render() {
+    super.render();
     if (++this.tick % 30 === 0) {
     
       const destX = this.x + TILE_WIDTH * 1.5;
@@ -806,8 +806,8 @@ class VaccuumTower extends TileCoveringTower {
     this.sprite = sprites[STRINGS.vaccuum]();
   }
 
-  render(ctx: CanvasRenderingContext2D) {
-    super.render(ctx);
+  render() {
+    super.render();
     
     if (++this.tick % 120 === 0) {
       const destX = this.x + TILE_WIDTH * 1.5;
@@ -922,7 +922,7 @@ class Fetcher extends Entity {
     }
   }
 
-  override render(ctx: CanvasRenderingContext2D) {
+  override render() {
     switch (this.state) {
       case FetcherStates.chasing:
         if (this.chasing?.deleted) {
@@ -977,11 +977,11 @@ class Fetcher extends Entity {
     switch (this.state) {
       case FetcherStates.chasing:
       case FetcherStates.fetching:
-        this.sprite?.draw(ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
+        this.sprite?.draw(gameState.ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
         break;
       case FetcherStates.waiting:
       default:
-        this.sprite?.draw(ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH, true)
+        this.sprite?.draw(gameState.ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH, true)
         // ctx.drawImage(gameState.image!, 0, 40, 10, 10, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
         break;
     }
@@ -994,7 +994,11 @@ export class Menu extends Entity {
     menus.push(this);
   }
 
-  override render(ctx: CanvasRenderingContext2D): void {
+  override render(): void {
+    const ctx = gameState.ctx
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
     ctx.fillStyle = COLOR_MENU_GREEN_1;
     ctx.fillRect(MENU_START_X, 0, this.width, this.height);
     ctx.fillStyle = COLOR_MENU_GREEN_2;
@@ -1007,10 +1011,10 @@ export class Menu extends Entity {
     const sy = (mod: number) => MENU_TOWER_START_Y + TILE_WIDTH * mod;
     const sx = MENU_START_X + (TILE_WIDTH * 4);
 
-    ctx.font = "60px 'Courier New'"
+    setFont(60)
     ctx.fillText(`Towers`, MENU_START_X, MENU_TOWER_START_Y - TOWER_WIDTH)
 
-    ctx.font = "35px 'Courier New'"
+    setFont(35);
     ctx.fillText(`Click+Drag to place towers`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * 2)
 
     ctx.font = "40px 'Courier New'"
@@ -1021,7 +1025,7 @@ export class Menu extends Entity {
     ctx.fillText(`Fish on a Stick`, MENU_START_X, sy(19.5))
     ctx.fillText(`Scratching Post`, MENU_START_X, sy(24.5))
 
-    ctx.font = "26px 'Courier New'";
+    setFont(26);
     ctx.fillText(`- Fast`, sx, sy(.5))
     ctx.fillText(`- Cant catch flying`, sx, sy(1.5))
     ctx.fillText(`- $ 500`, sx, sy(2.5))

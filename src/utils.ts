@@ -1,5 +1,6 @@
 import { WIDTH, TILE_WIDTH, type Tile } from "./constants";
 import { Entity, NEXT_DIR } from "./entity";
+import { gameState } from "./gameState";
 import { TILE_DATA_OBJ } from "./maps";
 
 let scale = 1;
@@ -28,6 +29,10 @@ export function translateXYMouseToCanvas(mouseX: number, mouseY: number) {
 export const mouseTile = {
   x: 0,
   y: 0,
+}
+
+export const setFont = (size: number) => {
+  gameState.ctx.font = `${size}px 'Courier New'`;
 }
 
 /**
