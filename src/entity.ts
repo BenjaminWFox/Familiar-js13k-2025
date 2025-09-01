@@ -110,13 +110,12 @@ export class Entity {
 export class Witch extends Entity {
   constructor() {
     const [x, y] = PATH[PATH.length - 1];
-    super((x - 3) * TILE_WIDTH + 20, (y - 4) * TILE_WIDTH + 20)
+    super((x - 4) * TILE_WIDTH + 20, (y - 4) * TILE_WIDTH + 20)
     this.sprite = sprites[STRINGS.witch]();
     witches.push(this);
   }
 
   render(): void {
-    console.log('Witch!')
     this.sprite?.draw(gameState.ctx, this.x, this.y, TILE_WIDTH * 3, TILE_WIDTH * 5)
   }
 }
@@ -194,7 +193,6 @@ export class Animal extends Entity {
   }
 
   get canMove() {
-    console.log('cm? 1')
     return !this.caught && !this.carried;
   }
 
@@ -211,13 +209,10 @@ export class Animal extends Entity {
         this.speed = this.baseSpeed;
         this.pathIndex += 1;
         
-        if (!PATH[this.nextPathIndex] || this.caught) {
-          console.log('Escaped', typeof this);
+        if (!PATH[this.nextPathIndex + 1] || this.caught) {
           if (!this.type) {
-            console.log('Cat escape')
             gameState.addEscaped(10)
           } else {
-            console.log('Regular escape')
             gameState.addEscaped(1)
           }
           this.deleted = true;

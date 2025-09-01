@@ -9,6 +9,7 @@ export class Button extends Entity {
   listening: boolean = false;
   callback: () => void;
   eventCallback: () => void;
+  font: number = 100;
   
   constructor(
     x: number,
@@ -43,7 +44,7 @@ export class Button extends Entity {
     gameState.ctx.strokeStyle = 'white'
     gameState.ctx.lineWidth = 5
     gameState.ctx.strokeRect(this.x, this.y, this.width, this.height);
-    setFont(100);
+    setFont(this.font);
     gameState.ctx.textAlign = 'center';
     gameState.ctx.textBaseline = 'middle';
     gameState.ctx.fillText(this.text, this.x + this.width * .5, this.y + this.height * .5, this.width)
@@ -88,7 +89,10 @@ export const startBtn = new Button(
   150,
   'START', () => {
     selectWave.removeListener(true);
-  console.log('click'); gameState.state = SCENES.playing 
+    console.log('click'); gameState.state = SCENES.playing 
+    setTimeout(() => {
+      gameState.state = SCENES.dialog;
+    }, 500)
 })
 
 export const selectWave = new Button(
@@ -98,7 +102,6 @@ export const selectWave = new Button(
   150,
   'WAVE 1',
   () => {
-    console.log('select wave');
     for(let i = 1;i <= gameState.waves;i++) {
         const add = i > 9 ? 50 * (i - 9 - .5) : 0;
       const xOffset = 200 * (i - 1);
@@ -111,3 +114,18 @@ export const selectWave = new Button(
   },
   false
 )
+
+export const okButton = new Button(1650, 1100, 200, 100, 'Okay',
+  () => {
+      gameState.state = SCENES.playing;
+    }
+)
+
+export const cancelButton = new Button(450, 1100, 200, 100, 'Cancel',
+  () => {
+      gameState.state = SCENES.playing;
+    }
+)
+
+okButton.font = 50;
+cancelButton.font = 50;

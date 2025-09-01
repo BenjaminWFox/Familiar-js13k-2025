@@ -6,7 +6,7 @@ import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
 import { drawMouseTile, setFont } from "./utils";
 import { sprites } from "./sprites";
-import { selectWave, startBtn } from "./button";
+import { cancelButton, closeButton, okButton, selectWave, startBtn } from "./button";
 
 const image = new Image();
 image.src = 'path2.png';
@@ -20,7 +20,9 @@ image.src = 'path2.png';
 function gameLoop(): void {
   if (!gameState.paused) {
     requestAnimationFrame(gameLoop);
-    clearScreen();
+    if (gameState.state !== SCENES.dialog) {
+      clearScreen();
+    }
     render();
   }
 }
@@ -105,6 +107,17 @@ function render(): void {
 
     gameState.waveSelectBtns.forEach(e => e.render());
     purgeDeleted(gameState.waveSelectBtns);
+  } else if (gameState.state === SCENES.dialog) {
+    gameState.showDialog([
+      'Oh no! The witch is making her brew...',
+      'Dont let her catch critters to fill her cauldron.',
+      '',
+      'Place towers along the path to catch critters!',
+      'Catching critters earns you $ to build more towers.',
+      '',
+      'Get some "High-energy Kids" out there now!',
+      'Tower coverage shows in light blue when placing.'
+    ], okButton)
   }
 
   if (hasMouseMoved) {
