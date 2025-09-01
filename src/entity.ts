@@ -1,4 +1,4 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET } from "./constants";
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites } from "./sprites";
@@ -107,6 +107,20 @@ export class Entity {
   render() {};
 }
 
+export class Witch extends Entity {
+  constructor() {
+    const [x, y] = PATH[PATH.length - 1];
+    super((x - 3) * TILE_WIDTH + 20, (y - 4) * TILE_WIDTH + 20)
+    this.sprite = sprites[STRINGS.witch]();
+    witches.push(this);
+  }
+
+  render(): void {
+    console.log('Witch!')
+    this.sprite?.draw(gameState.ctx, this.x, this.y, TILE_WIDTH * 3, TILE_WIDTH * 5)
+  }
+}
+
 export class Animal extends Entity {
   baseSpeed: number = 2;
   pathIndex: number;
@@ -198,6 +212,13 @@ export class Animal extends Entity {
         this.pathIndex += 1;
         
         if (!PATH[this.nextPathIndex] || this.caught) {
+          console.log('Escaped', typeof this);
+          if (this.type === 'cat') {
+            console.log('Cat escape')
+            gameState.addEscaped(10)
+          } else {
+            gameState.addEscaped(1)
+          }
           this.deleted = true;
 
           return;
@@ -1007,18 +1028,31 @@ export class Menu extends Entity {
     ctx.fillRect(MENU_START_X - TILE_WIDTH, 0, TILE_WIDTH, this.height);
 
     ctx.fillStyle = 'white';
+    setFont(40)
+    ctx.fillText(`${gameState.escaped} / 100 Critters`, MENU_START_X, 100)
+    // ctx.fillText('100', MENU_START_X + 480, 100)
+    setFont(50)
+    ctx.strokeStyle = 'white'
+    ctx.fillText('Witches Cauldron', MENU_START_X, 50)
+    ctx.strokeRect(MENU_START_X, 125, 550, 50);
+    ctx.fillRect(MENU_START_X, 125, 550 * (gameState.escaped / 100), 50);
 
-    const sy = (mod: number) => MENU_TOWER_START_Y + TILE_WIDTH * mod;
+    // setFont(50)
+
+    ctx.fillText(`Wave: ${gameState.wave} / 13`, MENU_START_X, 240)
+
+    ctx.fillText(`Cash: $${gameState.cash}`, MENU_START_X, 330)
+
+    const sy = (mod: number) => MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + TILE_WIDTH * mod;
     const sx = MENU_START_X + (TILE_WIDTH * 4);
 
-    setFont(60)
-    ctx.fillText(`Towers`, MENU_START_X, MENU_TOWER_START_Y - TOWER_WIDTH)
+    ctx.fillText(`Towers`, MENU_START_X, sy(-3))
 
     setFont(35);
-    ctx.fillText(`Click+Drag to place towers`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * 2)
+    ctx.fillText(`Click+Drag to place towers`, MENU_START_X, sy(-2))
 
     ctx.font = "40px 'Courier New'"
-    ctx.fillText(`High-energy Kids`, MENU_START_X, MENU_TOWER_START_Y - TILE_WIDTH * .5)
+    ctx.fillText(`High-energy Kids`, MENU_START_X, sy(-.5))
     ctx.fillText(`Really Big Fans`, MENU_START_X, sy(4.5))
     ctx.fillText(`Powerful Vaccuums`, MENU_START_X, sy(9.5))
     ctx.fillText(`Guy with a Net`, MENU_START_X, sy(14.5))
@@ -1060,3 +1094,4 @@ export const fetchers: Fetcher[] = [];
 export const menus: Menu[] = [];
 export const particles: Particle[] = [];
 export const catchers: Catcher[] = [];
+export const witches: Witch[] = [];

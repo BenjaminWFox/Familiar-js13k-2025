@@ -1,12 +1,12 @@
-import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS } from "./constants";
+import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET } from "./constants";
 import { drawTileMap } from "./maps";
-import { Cat, catchers, cats, Critter, critters, Entity, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers } from "./entity";
+import { Cat, catchers, cats, Critter, critters, Entity, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers, Witch, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
 import { drawMouseTile, setFont } from "./utils";
 import { sprites } from "./sprites";
-import { Button, selectWave, startBtn } from "./button";
+import { selectWave, startBtn } from "./button";
 
 const image = new Image();
 image.src = 'path2.png';
@@ -69,6 +69,7 @@ function render(): void {
     towers.forEach(e => e.render());
     fetchers.forEach(e => e.render());
     catchers.forEach(e => e.render());
+    witches.forEach(e => e.render());
     menus.forEach(e => e.render());
     menuTowers.forEach(e => e.render());
 
@@ -103,22 +104,6 @@ function render(): void {
 
     gameState.waveSelectBtns.forEach(e => e.render());
     purgeDeleted(gameState.waveSelectBtns);
-
-    // for(let i = 1;i <= gameState.waves;i++) {
-    //   const add = i > 9 ? 50 * (i - 9 - .5) : 0;
-    //   const xOffset = 200 * (i - 1);
-    //   const x = -550 + selectWave.x + xOffset + add;
-
-    //   // const b = new Button(x, selectWave.y - 125, 150, 150, `${i}`, () => gameState.wave = i);
-
-    //   // ctx.fillStyle = 'green'
-    //   // ctx.fillRect(x, selectWave.y - 200, 150, 150);
-    //   // ctx.fillStyle = 'white'
-    //   // ctx.strokeRect(x, selectWave.y - 200, 150, 150);
-    //   // ctx.textAlign = 'center'
-    //   // ctx.textBaseline = 'middle';
-    //   // ctx.fillText(`${i}`, x + 75, selectWave.y - 125)
-    // }
   }
 
   if (hasMouseMoved) {
@@ -136,12 +121,13 @@ image.onload = () => {
   new Critter();
   new Menu();
   new Cat();
+  new Witch();
 
   const towers = [STRINGS.kid, STRINGS.fan, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch];
 
   towers.forEach((key, i) => {
     const towerX = MENU_START_X;
-    const towerY = MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
+    const towerY = MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
 
     new MenuTower(towerX, towerY, key);
   })

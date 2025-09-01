@@ -80,7 +80,7 @@ export class Sprite {
         this.currentFrame++
       }
     }
-    
+
     const s = isPaused ? this.rightSprites[0] : left ? this.leftSprites[this.currentFrame] : this.rightSprites[this.currentFrame];
     ctx.drawImage(s, 0, 0, this.width, this.height, x, y, width || this.width, height || width || this.width);
 
