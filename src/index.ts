@@ -6,7 +6,7 @@ import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
 import { drawMouseTile, setFont } from "./utils";
 import { sprites } from "./sprites";
-import { cancelButton, closeButton, okButton, selectWave, startBtn } from "./button";
+import { okButton, selectWave, startBtn } from "./button";
 
 const image = new Image();
 image.src = 'path2.png';

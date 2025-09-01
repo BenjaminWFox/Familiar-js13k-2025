@@ -1,5 +1,5 @@
 import { canvas, ctx } from "./elements";
-import { Button, okButton } from "./button";
+import { Button } from "./button";
 import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 import { setFont } from "./utils";
 
@@ -45,7 +45,7 @@ class GameState {
   }
 
   dialogShowing = false;
-  showDialog(text: string[], okButton: any, closeButton?: any) {
+  showDialog(text: string[], okButton: Button, closeButton?: Button) {
     if (!this.dialogShowing) {
       this.dialogShowing = true;
       ctx.fillStyle = 'rgba(255, 255, 255, .25)'
