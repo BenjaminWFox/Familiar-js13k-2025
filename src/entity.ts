@@ -213,10 +213,11 @@ export class Animal extends Entity {
         
         if (!PATH[this.nextPathIndex] || this.caught) {
           console.log('Escaped', typeof this);
-          if (this.type === 'cat') {
+          if (!this.type) {
             console.log('Cat escape')
             gameState.addEscaped(10)
           } else {
+            console.log('Regular escape')
             gameState.addEscaped(1)
           }
           this.deleted = true;

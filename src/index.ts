@@ -81,6 +81,7 @@ function render(): void {
     //   }
     // }
     purgeDeleted<Critter>(critters, deleteCritter);
+    purgeDeleted(cats);
     purgeDeleted(particles);
     // for (let i = 0; i < particles.length; i++) {
     //   if (particles[i].deleted) {
