@@ -71,10 +71,9 @@ function wave1Event (this: WaveData, gameState: GameState) {
     new Cat();
     this.complete = true;
     gameState.showDialog(
-      ['Oh no, a black cat!!', '',
-        'A black cat counts for 10 critters!', '',
-        'Add a tower to distract it!', '', '',
-        'You can click a tower to sell it for extra cash.'
+      ['Oh no, a black cat!! It counts as 10 critters!', '',
+        'Add a Fish on a Stick to distract it!', '',
+        'Click a tower to sell it for extra cash if needed.'
       ]);
   }
 }
@@ -82,10 +81,10 @@ function wave1Event (this: WaveData, gameState: GameState) {
 function wave2Event (this: WaveData, gameState: GameState) {
   if (gameState.waveTime === 150) {
     gameState.showDialog([
-      'FLIIIES!',
-      'The kids cant catch flies.',
-      '',
-      'Send out the guy with the net!',
+      'FLIIIES!', '',
+      'The kids cant catch flies.', '',
+      'Send out the guy with the net!', '',
+      'Watch out for Black Cats and snakes...',
     ])
   }
   if (gameState.waveTime === 600) {

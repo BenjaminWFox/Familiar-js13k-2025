@@ -865,8 +865,8 @@ class FanTower extends TileCoveringTower {
 
         Object.values(tile?.critters).forEach(critter => {
           const c = critter as Critter;
-          if (c.type && c.type !== STRINGS.cat && c.type !== STRINGS.snake && !c.blown) {
-            (critter as Critter).blownBack();
+          if (c.type && c.type !== STRINGS.cat && c.type !== STRINGS.snake && !c.blown && !c.caught) {
+            c.blownBack();
           }
         })
       })
