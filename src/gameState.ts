@@ -132,10 +132,6 @@ export class GameState {
   }
 }
 
-const wave1Events = () => {
-
-}
-
 const gameState = new GameState();
 
 export { gameState }

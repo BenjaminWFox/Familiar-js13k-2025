@@ -38,7 +38,7 @@ class WaveData {
   }
 }
 
-function defaultWaveEvent (this: WaveData, gs: GameState) {
+function defaultWaveEvent (this: WaveData, _: GameState) {
   this.complete = true;
 }
 
@@ -50,7 +50,7 @@ function wave1Event (this: WaveData, gameState: GameState) {
     gameState.showDialog(
       ['Oh no, a black cat!!', '',
         'A black cat counts for 10 critters!', '',
-        'Add a tower to distract it!', '',
+        'Add a tower to distract it!', '', '',
         'You can click a tower to sell it for extra cash.'
       ]);
   }
