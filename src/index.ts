@@ -1,5 +1,5 @@
 import { HEIGHT, WIDTH, STRINGS, } from "./constants";
-import { cashes, catchers, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, witches } from "./entity";
+import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
@@ -61,7 +61,7 @@ function render(): void {
     particles.forEach(e => e.render());
     towers.forEach(e => e.render());
     fetchers.forEach(e => e.render());
-    catchers.forEach(e => e.render());
+    // catchers.forEach(e => e.render());
     witches.forEach(e => e.render());
     menus.forEach(e => e.render());
     menuTowers.forEach(e => e.render());

@@ -1,6 +1,7 @@
 import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
+// import { playSong } from "./music";
 import { Sprite, sprites } from "./sprites";
 import { angleToTarget, canAffordTower, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getPriceForAffordability, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
@@ -485,7 +486,7 @@ export class MenuTower extends BaseTower {
   dragHandler(e: MouseEvent) {
     const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
 
-    if (!this.dragging && (canAffordTower(this.cost) || DEBUG.ignoreTowerCost)) {
+    if (!this.dragging && (canAffordTower(this.cost) || DEBUG.ignoreTowerCost) && gameState.state === SCENES.playing) {
       if (this.x < canvasX && this.x + this.width > canvasX && this.y < canvasY && this.y + this.height > canvasY) {
         this.dragging = true;
       }
@@ -741,18 +742,18 @@ export class TileCoveringTower extends PlacedTower {
   }
 }
 
-class Catcher extends Entity {
-  constructor(x: number, y: number) {
-    super(x, y);
+// class Catcher extends Entity {
+//   constructor(x: number, y: number) {
+//     super(x, y);
 
-    this.sprite = sprites[STRINGS.catcher]();
-    catchers.push(this);
-  }
+//     this.sprite = sprites[STRINGS.catcher]();
+//     catchers.push(this);
+//   }
 
-  render(): void {
-    this.sprite?.draw(gameState.ctx, this.x, this.y, TOWER_WIDTH * .5, TOWER_WIDTH * .5);
-  }
-}
+//   render(): void {
+//     this.sprite?.draw(gameState.ctx, this.x, this.y, TOWER_WIDTH * .5, TOWER_WIDTH * .5);
+//   }
+// }
 
 class FetcherTower extends TileCoveringTower {
   fetchers: Array<Fetcher> = [];
@@ -786,7 +787,6 @@ class NetTower extends TileCoveringTower {
     this.sprite = sprites[STRINGS.net]();
     this.cX = this.x + TILE_WIDTH * 1.5;
     this.cY = this.y + TILE_WIDTH * 1.5;
-    // new Catcher(this.x + TOWER_WIDTH, this.y + TOWER_WIDTH)
     this.coveredTiles.forEach((tile) => {
       if (
         this.y + TILE_WIDTH <= tile.y * TILE_WIDTH &&
@@ -1095,9 +1095,9 @@ class Fetcher extends Entity {
 function addMenuTowers() {
   const towers = [
     STRINGS.kid,
+    STRINGS.net,
     STRINGS.fan,
     STRINGS.vaccuum,
-    STRINGS.net,
     STRINGS.fish,
     STRINGS.scratch
   ];
@@ -1165,14 +1165,24 @@ export class Menu extends Entity {
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(2.5))
     }
 
+    if (gameState.waveData.allowedTowers.includes(STRINGS.net)) {
+      setFont(40, 'white');
+      ctx.fillText(`Guy with a Net`, MENU_START_X, sy(4.5))
+      setFont(26);
+      ctx.fillText(`- Very Slow`, sx, sy(5.5))
+      ctx.fillText(`- Catches flies & frogs`, sx, sy(6.5))
+      price = TOWER_COST[STRINGS.net];
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(7.5))
+    }
+
     if (gameState.waveData.allowedTowers.includes(STRINGS.fan)) {
       setFont(40, 'white');
-      ctx.fillText(`Really Big Fans`, MENU_START_X, sy(4.5))
+      ctx.fillText(`Really Big Fans`, MENU_START_X, sy(14.5))
       setFont(26);
-      ctx.fillText(`- Blows critters back`, sx, sy(5.5))
-      ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
+      ctx.fillText(`- Blows critters back`, sx, sy(15.5))
+      ctx.fillText(`- Cant blow snakes`, sx, sy(16.5))
       price = TOWER_COST[STRINGS.fan];
-      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(7.5))
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(17.5))
     }
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.vaccuum)) {
@@ -1183,16 +1193,6 @@ export class Menu extends Entity {
       ctx.fillText(`- Covers many angles`, sx, sy(11.5))
       price = TOWER_COST[STRINGS.vaccuum];
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(12.5))
-    }
-
-    if (gameState.waveData.allowedTowers.includes(STRINGS.net)) {
-      setFont(40, 'white');
-      ctx.fillText(`Guy with a Net`, MENU_START_X, sy(14.5))
-      setFont(26);
-      ctx.fillText(`- Very Slow`, sx, sy(15.5))
-      ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
-      price = TOWER_COST[STRINGS.net];
-      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(17.5))
     }
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.fish)) {
@@ -1345,6 +1345,7 @@ export const startBtn = new Button(
   400,
   150,
   'START', () => {
+    // playSong();
     gameState.startWave();
     selectWave.removeListener(true);
     gameState.setState(SCENES.playing);
@@ -1399,6 +1400,6 @@ export const menuTowers: MenuTower[] = [];
 export const fetchers: Fetcher[] = [];
 export const menus: Menu[] = [];
 export const particles: Particle[] = [];
-export const catchers: Catcher[] = [];
+// export const catchers: Catcher[] = [];
 export const witches: Witch[] = [];
 export const cashes: Witch[] = [];

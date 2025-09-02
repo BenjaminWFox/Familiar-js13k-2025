@@ -12,8 +12,9 @@ class WaveData {
   spawnFrequency: number;
   startingCash: number;
 
-  complete: boolean = false;
   waveEvent: (gs: GameState) => void;
+
+  complete: boolean = false;
 
   constructor(
     allowedTowers: string[],
@@ -36,6 +37,10 @@ class WaveData {
     this.startingCash = startingCash;
     this.waveEvent = waveEvent.bind(this);
   }
+
+  restart() {
+    this.complete = false;
+  }
 }
 
 function defaultWaveEvent (this: WaveData, _: GameState) {
@@ -56,7 +61,12 @@ function wave1Event (this: WaveData, gameState: GameState) {
     ])
   }
 
-  if (!this.complete && gameState.waveSpawns >= this.maxSpawns && critters.length === 0 && cats.length === 0) {
+  if (
+    !this.complete &&
+    gameState.waveSpawns >= this.maxSpawns &&
+    critters.length === 0 &&
+    cats.length === 0
+  ) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
     new Cat();
     this.complete = true;
@@ -78,7 +88,7 @@ function wave2Event (this: WaveData, gameState: GameState) {
       'Send out the guy with the net!',
     ])
   }
-  if (gameState.waveTime === 240) {
+  if (gameState.waveTime === 600) {
     this.allowedCritters.push(STRINGS.snake);
   }
   if (gameState.waveTime === 1200) {
@@ -88,7 +98,7 @@ function wave2Event (this: WaveData, gameState: GameState) {
 }
 
 export const WAVE_DATA = {
-  1: new WaveData(
+  1: () => new WaveData(
     [STRINGS.kid],
     [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
     false,
@@ -99,7 +109,7 @@ export const WAVE_DATA = {
     300,
     wave1Event
   ),
-  2: new WaveData(
+  2: () => new WaveData(
     [STRINGS.kid, STRINGS.net, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly],
     false,

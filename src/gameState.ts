@@ -1,6 +1,6 @@
 import { TOTAL_WAVES, WAVE_DATA } from "./waves";
 import { canvas, ctx, mapCtx } from "./elements";
-import { Button, cashes, cats, Critter, critters, dialog, selectWave, startBtn, towers, Witch, witches } from "./entity";
+import { Button, cashes, cats, Critter, critters, dialog, particles, selectWave, startBtn, towers, Witch, witches } from "./entity";
 import { drawTileMap } from "./maps";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 // import { setFont } from "./utils";
@@ -70,19 +70,21 @@ export class GameState {
     dialog.hasRendered = false;
   }
 
+  _waveData = WAVE_DATA[1]();
   get waveData() {
-    return WAVE_DATA[this.wave as keyof typeof WAVE_DATA];
+    return this._waveData;
   }
 
   startWave() {
     /** For debug **/
-      this.wave = 2;
-      this.setState(SCENES.playing);
+      // this.wave = 2;
+      // this.setState(SCENES.playing);
     /** For debug **/
-
+    this._waveData = WAVE_DATA[this.wave as keyof typeof WAVE_DATA]();
     this.clearBoard();
     this.ended = false;
     this.cash = this.waveData.startingCash;
+    this.waveData.restart();
     this.waveTime = 0;
     this.escaped = 0;
     this.waveSpawns = 0;
@@ -98,6 +100,7 @@ export class GameState {
     cats.forEach(c => c.deleted = true);
     witches.forEach(w => w.deleted = true);
     critters.forEach(c => c.deleted = true);
+    particles.forEach(p => p.deleted = true);
   }
 
   nextWave() {
