@@ -45,12 +45,12 @@ export const STRINGS = {
 }
 
 export const TOWER_COST = {
-  kid: 150,
-  fan: 50,
-  vaccuum: 100,
-  net: 300,
-  fish: 100,
-  scratch: 250,
+  [STRINGS.kid]: 150,
+  [STRINGS.fan]: 50,
+  [STRINGS.vaccuum]: 100,
+  [STRINGS.net]: 300,
+  [STRINGS.fish]: 100,
+  [STRINGS.scratch]: 250,
 }
 
 // export const PATH: Path = [

@@ -1,5 +1,5 @@
 import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH } from "./constants";
-import { gameState } from "./gameState";
+import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites } from "./sprites";
 import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
@@ -323,6 +323,11 @@ export class Cat extends Animal {
 
   override get canMove(): boolean {
     return !this.playing;
+  }
+
+  restoreAutonomy(): void {
+    this.playing = false;
+    super.restoreAutonomy();
   }
 
   override render() {
@@ -1137,25 +1142,25 @@ export class Menu extends Entity {
     setFont(26);
     ctx.fillText(`- Fast`, sx, sy(.5))
     ctx.fillText(`- Cant catch flying`, sx, sy(1.5))
-    ctx.fillText(`- $ ${TOWER_COST.kid}`, sx, sy(2.5))
+    ctx.fillText(`- $ ${TOWER_COST[STRINGS.kid]}`, sx, sy(2.5))
 
     ctx.fillText(`- Blows critters back`, sx, sy(5.5))
     ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
-    ctx.fillText(`- $ ${TOWER_COST.fan}`, sx, sy(7.5))
+    ctx.fillText(`- $ ${TOWER_COST[STRINGS.fan]}`, sx, sy(7.5))
 
     ctx.fillText(`- Slow`, sx, sy(10.5))
     ctx.fillText(`- Covers many angles`, sx, sy(11.5))
-    ctx.fillText(`- $ ${TOWER_COST.vaccuum}`, sx, sy(12.5))
+    ctx.fillText(`- $ ${TOWER_COST[STRINGS.vaccuum]}`, sx, sy(12.5))
 
     ctx.fillText(`- Very Slow`, sx, sy(15.5))
     ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
-    ctx.fillText(`- $ ${TOWER_COST.net}`, sx, sy(17.5))
+    ctx.fillText(`- $ ${TOWER_COST[STRINGS.net]}`, sx, sy(17.5))
 
     ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
-    ctx.fillText(`- $ ${TOWER_COST.fish}`, sx, sy(21.5))
+    ctx.fillText(`- $ ${TOWER_COST[STRINGS.fish]}`, sx, sy(21.5))
 
     ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
-    ctx.fillText(`- $ ${TOWER_COST.scratch}`, sx, sy(26.5))
+    ctx.fillText(`- $ ${TOWER_COST[STRINGS.scratch]}`, sx, sy(26.5))
   }
 }
 
@@ -1289,6 +1294,7 @@ export const startBtn = new Button(
   150,
   'START', () => {
     selectWave.removeListener(true);
+    gameState.state = SCENES.playing;
     setTimeout(() => {
       gameState.showDialog([
       'Oh no! The witch is making her brew...',
