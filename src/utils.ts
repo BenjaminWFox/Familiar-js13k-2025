@@ -31,8 +31,27 @@ export const mouseTile = {
   y: 0,
 }
 
+export const canAffordTower = (p: number) => {
+  return p <= gameState.cash
+}
 export const setFont = (size: number) => {
   gameState.ctx.font = `${size}px 'Courier New'`;
+}
+export const getPriceForAffordability = (p: number) => {
+  if (canAffordTower(p)) {
+    gameState.ctx.fillStyle = 'white';
+    return `- $ ${p}`;
+  } else {
+    gameState.ctx.fillStyle = '#ffb607';
+    return `- $ ${p} (unaffordable))`;
+  }
+}
+export const setColorForPrice = (p: number) => {
+  if (canAffordTower(p)) {
+    gameState.ctx.fillStyle = 'white';
+  } else {
+    gameState.ctx.fillStyle = '#ffb607';
+  }
 }
 
 /**

@@ -60,11 +60,7 @@ function render(): void {
     if (gameState.gameTime % 100 === 0) {
       // new Cat();
     }
-    // if (gameState.gameTime % 2 === 0) {
-    //   new Critter();
-    // }
-
-    // entities.forEach(e => e.render(ctx));
+    
     critters.forEach(e => e.render());
     cats.forEach(e => e.render());
     particles.forEach(e => e.render());
@@ -76,25 +72,12 @@ function render(): void {
     menuTowers.forEach(e => e.render());
     cashes.forEach(e => e.render());
 
-    // for (let i = 0; i < critters.length; i++) {
-    //   if (critters[i].deleted) {
-    //     delete (critters[i] as Critter).currentTile?.critters[critters[i].id];
-    //     critters.splice(i, 1);
-    //     i--;
-    //   }
-    // }
     purgeDeleted<Critter>(critters, deleteCritter);
     purgeDeleted(cats);
     purgeDeleted(particles);
     purgeDeleted(cashes);
     purgeDeleted(towers);
     purgeDeleted(fetchers);
-    // for (let i = 0; i < particles.length; i++) {
-    //   if (particles[i].deleted) {
-    //     particles.splice(i, 1);
-    //     i--;
-    //   }
-    // }
 
   } else if (gameState.state === SCENES.start) {
     ctx.fillStyle = 'green'
@@ -126,6 +109,7 @@ function clearScreen(): void {
 
 image.onload = () => {
   gameState.image = image;
+  gameState.setState(SCENES.playing);
 
   new Critter();
   new Menu();

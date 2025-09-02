@@ -1,8 +1,8 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites } from "./sprites";
-import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
+import { angleToTarget, canAffordTower, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getPriceForAffordability, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -482,7 +482,7 @@ export class MenuTower extends BaseTower {
   dragHandler(e: MouseEvent) {
     const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
 
-    if (!this.dragging) {
+    if (!this.dragging && (canAffordTower(this.cost) || DEBUG.ignoreTowerCost)) {
       if (this.x < canvasX && this.x + this.width > canvasX && this.y < canvasY && this.y + this.height > canvasY) {
         this.dragging = true;
       }
@@ -493,11 +493,6 @@ export class MenuTower extends BaseTower {
     if (this.dragging) {
       this.dragging = false;
       if (this._isValidPlacement) {
-        // const markHasTower = () => {
-        //   return true;
-        // };
-        // const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds()
-        // checkConditionForTowerTiles(expandedMinX, expandedMaxX, expandedMinY, expandedMaxY, markHasTower);
         const x = mouseTile.x - TILE_WIDTH
         const y = mouseTile.y - TILE_WIDTH
         
@@ -533,6 +528,7 @@ export class PlacedTower extends BaseTower {
     super(x, y);
 
     this.cost = TOWER_COST[type as keyof typeof TOWER_COST];
+    gameState.cash -= this.cost;
 
     const { pathX, pathY } = convertCanvasXYToPathXY(x, y);
 
@@ -993,7 +989,7 @@ class Fetcher extends Entity {
   }
 
   remove() {
-    if (this.state === FetcherStates.fetching) {
+    if (this.state === FetcherStates.fetching || this.chasing) {
       this.chasing?.restoreAutonomy();
     }
     this.state = FetcherStates.waiting;
@@ -1005,15 +1001,17 @@ class Fetcher extends Entity {
       // All covered tiles
       const critters = Object.entries(t.critters);
       if (critters.length) {
+        let i = 0;
         for (const c of critters) {
           if (!c[1].chased && !c[1].caught && !c[1].flying) {
-            const [key, critter] = critters[0];
+            const [key, critter] = critters[i];
             delete t.critters[key];
             this.chasing = critter as Critter;
             critter.chased = true;
             this.state = FetcherStates.chasing;
             break;
           }
+          i++
         }
       }
       if (this.state === FetcherStates.chasing) {
@@ -1025,6 +1023,7 @@ class Fetcher extends Entity {
   override render() {
     switch (this.state) {
       case FetcherStates.chasing:
+        // Thing we are chasing is no longer chasable
         if (this.chasing?.deleted || this.chasing?.distracted) {
           this.chasing = undefined;
           this.state = FetcherStates.waiting;
@@ -1041,6 +1040,7 @@ class Fetcher extends Entity {
           this.chasing!.setCarried();
           this.state = FetcherStates.fetching;
         }
+
         break;
       case FetcherStates.fetching:
         if (this.destX === 0) {
@@ -1125,6 +1125,7 @@ export class Menu extends Entity {
 
     const sy = (mod: number) => MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + TILE_WIDTH * mod;
     const sx = MENU_START_X + (TILE_WIDTH * 4);
+    let price = 0;
 
     ctx.fillText(`Towers`, MENU_START_X, sy(-3))
 
@@ -1141,26 +1142,39 @@ export class Menu extends Entity {
 
     setFont(26);
     ctx.fillText(`- Fast`, sx, sy(.5))
-    ctx.fillText(`- Cant catch flying`, sx, sy(1.5))
-    ctx.fillText(`- $ ${TOWER_COST[STRINGS.kid]}`, sx, sy(2.5))
+    ctx.fillText(`- Cant catch flies`, sx, sy(1.5))
 
     ctx.fillText(`- Blows critters back`, sx, sy(5.5))
     ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
-    ctx.fillText(`- $ ${TOWER_COST[STRINGS.fan]}`, sx, sy(7.5))
 
     ctx.fillText(`- Slow`, sx, sy(10.5))
     ctx.fillText(`- Covers many angles`, sx, sy(11.5))
-    ctx.fillText(`- $ ${TOWER_COST[STRINGS.vaccuum]}`, sx, sy(12.5))
 
     ctx.fillText(`- Very Slow`, sx, sy(15.5))
     ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
-    ctx.fillText(`- $ ${TOWER_COST[STRINGS.net]}`, sx, sy(17.5))
 
     ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
-    ctx.fillText(`- $ ${TOWER_COST[STRINGS.fish]}`, sx, sy(21.5))
 
     ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
-    ctx.fillText(`- $ ${TOWER_COST[STRINGS.scratch]}`, sx, sy(26.5))
+
+    setFont(30)
+    price = TOWER_COST[STRINGS.kid];
+    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(2.5))
+    price = TOWER_COST[STRINGS.fan];
+    // setColorForPrice(price);
+    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(7.5))
+    price = TOWER_COST[STRINGS.vaccuum];
+    // setColorForPrice(price);
+    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(12.5))
+    price = TOWER_COST[STRINGS.net];
+    // setColorForPrice(price);
+    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(17.5))
+    price = TOWER_COST[STRINGS.fish];
+    // setColorForPrice(price);
+    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(21.5))
+    price = TOWER_COST[STRINGS.scratch];
+    // setColorForPrice(price);
+    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(26.5))
   }
 }
 
@@ -1227,9 +1241,7 @@ export class Button extends Entity {
     this.text = text;
     this.callback = onclick;
     this.removeOnClick = removeOnClick;
-    this.eventCallback = this.hitTest.bind(this)
-
-    this.addListener();
+    this.eventCallback = this.hitTest.bind(this);
   }
 
   render(dynamicText?: string) {
@@ -1253,6 +1265,7 @@ export class Button extends Entity {
   }
 
   hitTest() {
+    console.log('Testing...')
     if (dialog.hasRendered && gameState.mouseDownAt < dialog.openedAt) {
       return;
     }
@@ -1294,7 +1307,7 @@ export const startBtn = new Button(
   150,
   'START', () => {
     selectWave.removeListener(true);
-    gameState.state = SCENES.playing;
+    gameState.setState(SCENES.playing);
     setTimeout(() => {
       gameState.showDialog([
       'Oh no! The witch is making her brew...',
@@ -1320,10 +1333,12 @@ export const selectWave = new Button(
         const add = i > 9 ? 50 * (i - 9 - .5) : 0;
       const xOffset = 200 * (i - 1);
       const x = -550 + selectWave.x + xOffset + add;
-      gameState.waveSelectBtns.push(new Button(x, selectWave.y - 200, 150, 150, `${i}`, () => {
+      const waveBtn = new Button(x, selectWave.y - 200, 150, 150, `${i}`, () => {
         gameState.wave = i;
         gameState.waveSelectBtns.forEach(e => e.setDeleted());
-      }));
+      })
+      waveBtn.addListener();
+      gameState.waveSelectBtns.push(waveBtn);
     }
   },
   false

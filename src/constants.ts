@@ -14,6 +14,10 @@ export const LAYERS = {
   menuTowers: 70
 }
 
+export const DEBUG = {
+  ignoreTowerCost: true
+}
+
 export const TOWER_WIDTH = TILE_WIDTH * 3;
 
 export const MENU_START_X = WIDTH - TILE_WIDTH * 12;

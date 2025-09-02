@@ -1,5 +1,5 @@
 import { canvas, ctx } from "./elements";
-import { Button, dialog } from "./entity";
+import { Button, dialog, selectWave, startBtn } from "./entity";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 // import { setFont } from "./utils";
 
@@ -17,7 +17,7 @@ class GameState {
   gameTime: number = 0;
   image: HTMLImageElement | undefined;
   paused: boolean = false;
-  state: SCENES = SCENES.start;
+  state?: SCENES = undefined;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   wave: number = 1;
@@ -34,6 +34,19 @@ class GameState {
     this.closeDialog();
   }
 
+  setState(scene: SCENES) {
+    switch(scene) {
+      case SCENES.start:
+        startBtn.addListener();
+        selectWave.addListener();
+        this.state = scene;
+      break;
+      case SCENES.playing:
+        this.state = scene;
+      break;
+    }
+  }
+
   constructor() {
     this.canvas = canvas
     this.ctx = ctx;
@@ -46,7 +59,7 @@ class GameState {
   }
 
   closeDialog(scene: SCENES = SCENES.playing) {
-    this.state = scene;
+    this.setState(scene);
     this.dialogShowing = false;
     dialog.hasRendered = false;
   }
