@@ -1,5 +1,5 @@
 import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
-import { Animal, getDirectionFromTo, NEXT_DIR, TileCoveringTower } from "./entity";
+import { Animal, getDirectionFromTo, NEXT_DIR, PlacedTower, TileCoveringTower } from "./entity";
 import { gameState } from "./gameState";
 import { convertTileToMapBounds } from "./utils";
 
@@ -24,6 +24,7 @@ export class TileData {
   y: number;
   isPath: boolean;
   hasTower: boolean = false;
+  towerAtTile?: PlacedTower;
   fillinDir?: NEXT_DIR;
   pathIndex?: number;
   towersCoveringTile: TileCoveringTower[] = [];

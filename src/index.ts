@@ -1,6 +1,6 @@
 import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET } from "./constants";
 import { drawTileMap } from "./maps";
-import { Cat, catchers, cats, Critter, critters, Entity, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers, Witch, witches } from "./entity";
+import { cashes, Cat, catchers, cats, Critter, critters, Entity, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers, Witch, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
@@ -74,6 +74,7 @@ function render(): void {
     witches.forEach(e => e.render());
     menus.forEach(e => e.render());
     menuTowers.forEach(e => e.render());
+    cashes.forEach(e => e.render());
 
     // for (let i = 0; i < critters.length; i++) {
     //   if (critters[i].deleted) {
@@ -85,6 +86,7 @@ function render(): void {
     purgeDeleted<Critter>(critters, deleteCritter);
     purgeDeleted(cats);
     purgeDeleted(particles);
+    purgeDeleted(cashes);
     // for (let i = 0; i < particles.length; i++) {
     //   if (particles[i].deleted) {
     //     particles.splice(i, 1);
@@ -137,7 +139,14 @@ image.onload = () => {
   new Cat();
   new Witch();
 
-  const towers = [STRINGS.kid, STRINGS.fan, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch];
+  const towers = [
+    STRINGS.kid,
+    STRINGS.fan,
+    STRINGS.vaccuum,
+    STRINGS.net,
+    STRINGS.fish,
+    STRINGS.scratch
+  ];
 
   towers.forEach((key, i) => {
     const towerX = MENU_START_X;

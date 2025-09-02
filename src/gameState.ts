@@ -26,7 +26,7 @@ class GameState {
   gameTime: number = 0;
   image: HTMLImageElement | undefined;
   paused: boolean = false;
-  state: SCENES = SCENES.start;
+  state: SCENES = SCENES.playing;
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   wave: number = 1;

@@ -67,7 +67,8 @@ export function drawMouseTile(ctx: CanvasRenderingContext2D) {
  * Debug function - logs data for a tile when clicked by mouse
  */
 export function mouseHitTest() {
-  console.log('Tile', TILE_DATA_OBJ[`${mouseTile.x / TILE_WIDTH},${mouseTile.y / TILE_WIDTH}`]);
+  const tile = TILE_DATA_OBJ[`${mouseTile.x / TILE_WIDTH},${mouseTile.y / TILE_WIDTH}`];
+  console.log('Tile', tile, tile.towerAtTile);
   // console.log('Data', entities);
 }
 

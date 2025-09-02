@@ -99,8 +99,8 @@ export const sprites = {
   [STRINGS.vaccuum]: () => new Sprite(STRINGS.vaccuum, 20, 70, 1, 0, 30),
   [STRINGS.net]: () => new Sprite(STRINGS.net, 20, 100, 1, 0, 30),
   [STRINGS.witch]: () => new Sprite(STRINGS.witch, 0, 130, 2, 20, 20, 30),
-  [STRINGS.fish]: () => new Sprite(STRINGS.fish, 0, 120, 1, 1, 20),
-  [STRINGS.scratch]: () => new Sprite(STRINGS.scratch, 0, 100, 1, 1, 20),
+  [STRINGS.fish]: () => new Sprite(STRINGS.fish, 0, 90, 1, 1, 20),
+  [STRINGS.scratch]: () => new Sprite(STRINGS.scratch, 0, 70, 1, 1, 20),
   [STRINGS.fetcher]: () => new Sprite(STRINGS.fetcher, 0, 10, 2, 8, 10, 10, 1, true),
   [STRINGS.catcher]: () => new Sprite(STRINGS.catcher, 40, 0, 1, 0, 10),
 }

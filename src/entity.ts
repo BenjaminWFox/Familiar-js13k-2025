@@ -1,4 +1,4 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST } from "./constants";
 import { gameState } from "./gameState";
 import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites } from "./sprites";
@@ -177,6 +177,8 @@ export class Animal extends Entity {
   }
 
   setCaught() {
+    new Cash(this.x, this.y);
+    gameState.cash += 10;
     this.caught = true;
     this.removeAutonomy();
   }
@@ -201,19 +203,26 @@ export class Animal extends Entity {
       const {x, y} = movePoint(this, this.att, this.speed);
       this.x = x;
       this.y = y;
-        
+
       if (hitTest(this, {x: this.destX - 5, y: this.destY - 5, width: 10, height: 10}) ||
         (this.blown && hitTest(this, {x: this.destX - 15, y: this.destY - 15, width: 30, height: 30}))
       ) {
         this.blown = false;
         this.speed = this.baseSpeed;
+
+        if (this.distracted) {
+          return;
+        }
+
         this.pathIndex += 1;
         
         if (!PATH[this.nextPathIndex + 1] || this.caught) {
-          if (!this.type) {
-            gameState.addEscaped(10)
-          } else {
-            gameState.addEscaped(1)
+          if (!this.caught) {
+            if (!this.type) {
+              gameState.addEscaped(10)
+            } else {
+              gameState.addEscaped(1)
+            }
           }
           this.deleted = true;
 
@@ -317,7 +326,6 @@ export class Cat extends Animal {
         for (const tower of catTowers) {
           if (tower.caughtCats.length < tower.maxCats) {
             this.caughtBy = tower;
-            this.caught = true;
             this.distracted = true
             tower.catch(this);
 
@@ -344,6 +352,8 @@ export class Cat extends Animal {
 }
 
 export class BaseTower extends Entity {
+  cost: number = 0;
+
   constructor(x: number, y: number, layer = LAYERS.towers) {
     super(x, y, 0, 0, TOWER_WIDTH, TOWER_WIDTH, layer)
   }
@@ -387,6 +397,7 @@ export class MenuTower extends BaseTower {
     super(x, y, LAYERS.menuTowers);
 
     this.sprite = sprites[key]();
+    this.cost = TOWER_COST[key as keyof typeof TOWER_COST];
 
     window.addEventListener('mousedown', this.dragHandler.bind(this));
     window.addEventListener('mouseup', this.releaseHandler.bind(this));
@@ -470,6 +481,7 @@ export class MenuTower extends BaseTower {
       this.dragging = false;
       if (this._isValidPlacement) {
         const markHasTower = (tileArr: number[]) => {
+          console.log('This?', this);
           TILE_DATA_OBJ[tileArr.toString()].hasTower = true;
           return true;
         };
@@ -503,47 +515,42 @@ export class MenuTower extends BaseTower {
   }
 }
 
-class PlacedTower extends BaseTower {
+export class PlacedTower extends BaseTower {
   coveredTiles: Array<TileData> = [];
 
-  constructor(x: number, y: number) {
+  constructor(x: number, y: number, type: string) {
     super(x, y);
 
-    const pathXY = convertCanvasXYToPathXY(x, y);
-    const coverage = {minX: pathXY.pathX - 2, maxX: pathXY.pathX + 5, minY: pathXY.pathY - 2, maxY: pathXY.pathY + 5 };
-    
-    for(let x = coverage.minX;x < coverage.maxX;x++){
-      for(let y = coverage.minY;y < coverage.maxY;y++){
+    this.cost = TOWER_COST[type as keyof typeof TOWER_COST];
+
+    const { pathX, pathY } = convertCanvasXYToPathXY(x, y);
+
+    for (let x = pathX;x <= pathX + 2;x++) {
+      for (let y = pathY;y <= pathY + 2;y++) {
         const tileData = getTileDataEntry(x, y);
-        if (tileData?.isPath) {
-          this.coveredTiles.push(tileData);
-        }
+        tileData.towerAtTile = this;
       }
     }
+
+    // const pathXY = convertCanvasXYToPathXY(x, y);
+    // const coverage = {minX: pathXY.pathX - 2, maxX: pathXY.pathX + 5, minY: pathXY.pathY - 2, maxY: pathXY.pathY + 5 };
+
+    // for(let x = coverage.minX;x < coverage.maxX;x++){
+    //   for(let y = coverage.minY;y < coverage.maxY;y++) {
+    //     const tileData = getTileDataEntry(x, y);
+    //     if (tileData?.isPath) {
+    //       this.coveredTiles.push(tileData);
+    //     }
+    //   }
+    // }
     // Sort so that furthest tiles is first in the list
-    this.coveredTiles.sort((a, b) => b.pathIndex! - a.pathIndex!)
+    // this.coveredTiles.sort((a, b) => b.pathIndex! - a.pathIndex!)
 
     towers.push(this);
   }
 
   override render() {
     super.render();
-  }
-}
-
-class FetcherTower extends PlacedTower {
-  fetchers: Array<Fetcher> = [];
-
-  constructor(x: number, y: number) {
-    super(x, y);
-
-    this.sprite = sprites[STRINGS.kid]();
-
-    this.fetchers.push(...[
-      new Fetcher(this),
-      new Fetcher(this),
-      // new Fetcher(this),
-    ])
   }
 }
 
@@ -574,7 +581,6 @@ class Particle extends Entity {
   sY: number = 0;
   isKey: boolean = false;
   carrying: Array<Animal> = [];
-
 
   constructor(x: number, y: number, destX: number, destY: number, isCircle = false, cx?: number, cy?: number, r?: number, isKey: boolean = false) {
     super(x, y)
@@ -619,16 +625,19 @@ class Particle extends Entity {
       if (this.isKey) {
         const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y)
         const ct = getTileDataEntry(tileLockedX / TILE_WIDTH, tileLockedY / TILE_WIDTH);
-        const critters = Object.values(ct.critters);
-        if (critters.length) {
-          critters.forEach((c: Animal) => {
-            if (c.type === STRINGS.fly || c.type === STRINGS.frog) {
-              c.carried = true;
-              c.setCaught()
-              this.carrying.push(c);
-            }
-          })
+        if (ct) {
+          const critters = Object.values(ct.critters);
+          if (critters.length) {
+            critters.forEach((c: Animal) => {
+              if (c.type === STRINGS.fly || c.type === STRINGS.frog) {
+                c.carried = true;
+                c.setCaught();
+                this.carrying.push(c);
+              }
+            })
+          }
         }
+
         const degrees = this.angle * (300/Math.PI);
         if (
           this.radius === this.oRadius &&
@@ -675,9 +684,35 @@ class Particle extends Entity {
   }
 }
 
-export class TileCoveringTower extends PlacedTower {
-  constructor(x: number, y: number, tilesCovered: number[]) {
+export class Cash extends Entity {
+  lifespan: number = 0;
+  opacity: number = 1;
+
+  constructor(x: number, y: number) {
     super(x, y);
+    cashes.push(this);
+  }
+
+  render() {
+    setFont(30);
+    gameState.ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+    gameState.ctx.fillText('$', this.x, this.y);
+
+    if (this.lifespan > 30) {
+      this.opacity -= .01;
+    }
+    if (this.opacity <= 0) {
+      this.deleted = true;
+    }
+
+    this.y -= 1;
+    this.lifespan++;
+  }
+}
+
+export class TileCoveringTower extends PlacedTower {
+  constructor(x: number, y: number, tilesCovered: number[], type: string) {
+    super(x, y, type);
     this.coveredTiles = []
     let tiles = tilesCovered;
 
@@ -689,6 +724,7 @@ export class TileCoveringTower extends PlacedTower {
         td.towersCoveringTile.push(this);
       }
     }
+    this.coveredTiles.sort((a, b) => b.pathIndex! - a.pathIndex!)
   }
 }
 
@@ -705,6 +741,22 @@ class Catcher extends Entity {
   }
 }
 
+class FetcherTower extends TileCoveringTower {
+  fetchers: Array<Fetcher> = [];
+
+  constructor(x: number, y: number) {
+    super(x, y, getSquareTilesCovered(-2, 5), STRINGS.fetcher);
+
+    this.sprite = sprites[STRINGS.kid]();
+
+    this.fetchers.push(...[
+      new Fetcher(this),
+      new Fetcher(this),
+      // new Fetcher(this),
+    ])
+  }
+}
+
 class NetTower extends TileCoveringTower {
   cX: number;
   cY: number;
@@ -712,7 +764,7 @@ class NetTower extends TileCoveringTower {
   keyPoints: Record<string, TileData> = {};
 
   constructor(x: number, y: number) {
-    super(x, y, getSquareTilesCovered(-3, 6));
+    super(x, y, getSquareTilesCovered(-3, 6), STRINGS.net);
     this.sprite = sprites[STRINGS.net]();
     this.cX = this.x + TILE_WIDTH * 1.5;
     this.cY = this.y + TILE_WIDTH * 1.5;
@@ -772,7 +824,7 @@ class FanTower extends TileCoveringTower {
   tick = 0;
 
   constructor(x: number, y: number) {
-    super(x, y, FanTower.CoveredTiles);
+    super(x, y, FanTower.CoveredTiles, STRINGS.fan);
     this.sprite = sprites[STRINGS.fan]();
   }
 
@@ -819,7 +871,7 @@ class VaccuumTower extends TileCoveringTower {
   tick = 0;
 
   constructor(x: number, y: number) {
-    super(x, y, VaccuumTower.CoveredTiles);
+    super(x, y, VaccuumTower.CoveredTiles, STRINGS.vaccuum);
     this.sprite = sprites[STRINGS.vaccuum]();
   }
 
@@ -858,13 +910,12 @@ class VaccuumTower extends TileCoveringTower {
   }
 }
 
-
 class CatCatchingTower extends TileCoveringTower {
   maxCats;
   caughtCats: Cat[] = [];
 
-  constructor(x: number, y: number, maxCats: number) {
-    super(x, y, getSquareTilesCovered(-2, 5))
+  constructor(x: number, y: number, maxCats: number, type: string) {
+    super(x, y, getSquareTilesCovered(-2, 5), type)
     this.maxCats = maxCats;
   }
 
@@ -881,14 +932,14 @@ class CatCatchingTower extends TileCoveringTower {
 
 class ScratchTower extends CatCatchingTower {
   constructor(x: number, y: number) {
-    super(x, y, 4);
+    super(x, y, 4, STRINGS.scratch);
     this.sprite = sprites[STRINGS.scratch]();
   }
 }
 
 class FishTower extends CatCatchingTower {
   constructor(x: number, y: number) {
-    super(x, y, 1);
+    super(x, y, 1, STRINGS.fish);
     this.sprite = sprites[STRINGS.fish]();
   }
 }
@@ -979,6 +1030,7 @@ class Fetcher extends Entity {
           this.destX = 0;
           this.destY = 0;
           this.state = FetcherStates.waiting
+          this.chasing!.setCaught();
           this.chasing!.deleted = true;
           this.chasing = undefined;
         }
@@ -1058,25 +1110,25 @@ export class Menu extends Entity {
     setFont(26);
     ctx.fillText(`- Fast`, sx, sy(.5))
     ctx.fillText(`- Cant catch flying`, sx, sy(1.5))
-    ctx.fillText(`- $ 500`, sx, sy(2.5))
+    ctx.fillText(`- $ ${TOWER_COST.kid}`, sx, sy(2.5))
 
     ctx.fillText(`- Blows critters back`, sx, sy(5.5))
     ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
-    ctx.fillText(`- $ 500`, sx, sy(7.5))
+    ctx.fillText(`- $ ${TOWER_COST.fan}`, sx, sy(7.5))
 
     ctx.fillText(`- Slow`, sx, sy(10.5))
     ctx.fillText(`- Covers many angles`, sx, sy(11.5))
-    ctx.fillText(`- $ 500`, sx, sy(12.5))
+    ctx.fillText(`- $ ${TOWER_COST.vaccuum}`, sx, sy(12.5))
 
     ctx.fillText(`- Very Slow`, sx, sy(15.5))
     ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
-    ctx.fillText(`- $ 500`, sx, sy(17.5))
+    ctx.fillText(`- $ ${TOWER_COST.net}`, sx, sy(17.5))
 
     ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
-    ctx.fillText(`- $ 100`, sx, sy(21.5))
+    ctx.fillText(`- $ ${TOWER_COST.fish}`, sx, sy(21.5))
 
     ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
-    ctx.fillText(`- $ 350`, sx, sy(26.5))
+    ctx.fillText(`- $ ${TOWER_COST.scratch}`, sx, sy(26.5))
   }
 }
 
@@ -1091,3 +1143,4 @@ export const menus: Menu[] = [];
 export const particles: Particle[] = [];
 export const catchers: Catcher[] = [];
 export const witches: Witch[] = [];
+export const cashes: Witch[] = [];
