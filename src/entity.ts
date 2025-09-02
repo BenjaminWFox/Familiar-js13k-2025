@@ -846,7 +846,6 @@ class FanTower extends TileCoveringTower {
   render() {
     super.render();
     if (++this.tick % 30 === 0) {
-    
       const destX = this.x + TILE_WIDTH * 1.5;
       const destY = this.y + TILE_WIDTH * 1.5;
       
@@ -862,7 +861,8 @@ class FanTower extends TileCoveringTower {
         }
 
         Object.values(tile?.critters).forEach(critter => {
-          if ((critter as Critter).type !== STRINGS.snake && !critter.blown) {
+          const c = critter as Critter;
+          if (c.type !== STRINGS.cat && c.type !== STRINGS.snake && !c.blown) {
             (critter as Critter).blownBack();
           }
         })
@@ -1140,41 +1140,40 @@ export class Menu extends Entity {
     ctx.fillText(`Fish on a Stick`, MENU_START_X, sy(19.5))
     ctx.fillText(`Scratching Post`, MENU_START_X, sy(24.5))
 
+
     setFont(26);
     ctx.fillText(`- Fast`, sx, sy(.5))
     ctx.fillText(`- Cant catch flies`, sx, sy(1.5))
-
-    ctx.fillText(`- Blows critters back`, sx, sy(5.5))
-    ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
-
-    ctx.fillText(`- Slow`, sx, sy(10.5))
-    ctx.fillText(`- Covers many angles`, sx, sy(11.5))
-
-    ctx.fillText(`- Very Slow`, sx, sy(15.5))
-    ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
-
-    ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
-
-    ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
-
-    setFont(30)
     price = TOWER_COST[STRINGS.kid];
     ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(2.5))
+
+    setFont(26);
+    ctx.fillText(`- Blows critters back`, sx, sy(5.5))
+    ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
     price = TOWER_COST[STRINGS.fan];
-    // setColorForPrice(price);
     ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(7.5))
+
+    setFont(26);
+    ctx.fillText(`- Slow`, sx, sy(10.5))
+    ctx.fillText(`- Covers many angles`, sx, sy(11.5))
     price = TOWER_COST[STRINGS.vaccuum];
-    // setColorForPrice(price);
     ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(12.5))
+
+    setFont(26);
+    ctx.fillText(`- Very Slow`, sx, sy(15.5))
+    ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
     price = TOWER_COST[STRINGS.net];
-    // setColorForPrice(price);
     ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(17.5))
+
+    setFont(26);
+    ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
     price = TOWER_COST[STRINGS.fish];
-    // setColorForPrice(price);
     ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(21.5))
+
+    setFont(26);
+    ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
     price = TOWER_COST[STRINGS.scratch];
-    // setColorForPrice(price);
-    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(26.5))
+    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(26.5))    
   }
 }
 

@@ -38,6 +38,7 @@ export const setFont = (size: number) => {
   gameState.ctx.font = `${size}px 'Courier New'`;
 }
 export const getPriceForAffordability = (p: number) => {
+  setFont(30);
   if (canAffordTower(p)) {
     gameState.ctx.fillStyle = 'white';
     return `- $ ${p}`;
