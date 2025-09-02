@@ -1039,7 +1039,7 @@ class Fetcher extends Entity {
         this.x = cX;
         this.y = cY;
 
-        if (hitTest(this, this.chasing!)) {
+        if (hitTest(this, this.chasing!) && this.chasing?.type) {
           this.chasing!.setCarried();
           this.state = FetcherStates.fetching;
         }

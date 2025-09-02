@@ -73,6 +73,7 @@ function render(): void {
     purgeDeleted(cashes);
     purgeDeleted(towers);
     purgeDeleted(fetchers);
+    purgeDeleted(witches);
 
   } else if (gameState.state === SCENES.start) {
     ctx.fillStyle = 'green'

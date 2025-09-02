@@ -1,6 +1,6 @@
 import { TOTAL_WAVES, WAVE_DATA } from "./waves";
 import { canvas, ctx, mapCtx } from "./elements";
-import { Button, cashes, cats, Critter, critters, dialog, selectWave, startBtn, towers, Witch } from "./entity";
+import { Button, cashes, cats, Critter, critters, dialog, selectWave, startBtn, towers, Witch, witches } from "./entity";
 import { drawTileMap } from "./maps";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 // import { setFont } from "./utils";
@@ -13,7 +13,7 @@ export enum SCENES {
   dialog,
 }
 
-class GameState {
+export class GameState {
   mouseDownAt: number = 0;
   waves = 13;
   gameTime: number = 0;
@@ -87,12 +87,15 @@ class GameState {
     this.wave += 1;
     towers.forEach(t => t.sell());
     cashes.forEach(c => c.deleted = true);
+    cats.forEach(c => c.deleted = true);
+    witches.forEach(w => w.deleted = true);
     this.startWave();
   }
 
   runWave() {
     // Finish wave
-    if (this.waveSpawns >= this.waveData.maxSpawns && critters.length === 0 && cats.length === 0) {
+    this.waveData.waveEvent(this);
+    if (this.waveData.complete && this.waveSpawns >= this.waveData.maxSpawns && critters.length === 0 && cats.every(c => c.distracted)) {
       console.log('WAVE COMPLETE');
       const msg = [`Wave ${this.wave} complete!`, ''];
       if (this.wave < TOTAL_WAVES) {
@@ -100,7 +103,9 @@ class GameState {
       } else if (this.wave === TOTAL_WAVES) {
         msg.push(`You did it! The Witches Cauldron was never filled!`);
       }
-      this.showDialog(msg, () => this.nextWave())
+      setTimeout(() => {
+        this.showDialog(msg, () => this.nextWave())
+      }, 2000);
     }
 
     // Spawn Critters
@@ -125,6 +130,10 @@ class GameState {
       this.dialogShowing = true;
     }
   }
+}
+
+const wave1Events = () => {
+
 }
 
 const gameState = new GameState();

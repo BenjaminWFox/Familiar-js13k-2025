@@ -1,4 +1,6 @@
 import { Path, PATH_1, PATH_2, STRINGS } from "./constants";
+import { Cat, cats, critters } from "./entity";
+import { GameState } from "./gameState";
 
 class WaveData {
   allowedTowers: string[] = [];
@@ -10,6 +12,9 @@ class WaveData {
   spawnFrequency: number;
   startingCash: number;
 
+  complete: boolean = false;
+  waveEvent: (gs: GameState) => void;
+
   constructor(
     allowedTowers: string[],
     allowedCritters: string[],
@@ -19,6 +24,7 @@ class WaveData {
     lives: number,
     spawnFrequency: number,
     startingCash: number,
+    waveEvent: (gs: GameState) => void = defaultWaveEvent
 ) {
     this.allowedTowers = allowedTowers;
     this.allowedCritters = allowedCritters;
@@ -28,6 +34,25 @@ class WaveData {
     this.lives = lives;
     this.spawnFrequency = spawnFrequency;
     this.startingCash = startingCash;
+    this.waveEvent = waveEvent.bind(this);
+  }
+}
+
+function defaultWaveEvent (this: WaveData, gs: GameState) {
+  this.complete = true;
+}
+
+function wave1Event (this: WaveData, gameState: GameState) {
+  if (gameState.waveSpawns >= this.maxSpawns && critters.length === 0 && cats.length === 0) {
+    this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
+    new Cat();
+    this.complete = true;
+    gameState.showDialog(
+      ['Oh no, a black cat!!', '',
+        'A black cat counts for 10 critters!', '',
+        'Add a tower to distract it!', '',
+        'You can click a tower to sell it for extra cash.'
+      ]);
   }
 }
 
@@ -40,7 +65,8 @@ export const WAVE_DATA = {
     2,
     10,
     40,
-    300
+    300,
+    wave1Event
   ),
   2: new WaveData(
     [STRINGS.kid],
