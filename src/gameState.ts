@@ -1,3 +1,4 @@
+import { WAVE_DATA } from "./constants";
 import { canvas, ctx } from "./elements";
 import { Button, dialog, selectWave, startBtn } from "./entity";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
@@ -62,6 +63,10 @@ class GameState {
     this.setState(scene);
     this.dialogShowing = false;
     dialog.hasRendered = false;
+  }
+
+  get waveData() {
+    return WAVE_DATA[this.wave as keyof typeof WAVE_DATA];
   }
 
   dialogShowing = false;

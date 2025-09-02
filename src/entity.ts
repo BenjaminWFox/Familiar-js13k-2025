@@ -1,4 +1,4 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG } from "./constants";
+import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites } from "./sprites";
@@ -109,7 +109,7 @@ export class Entity {
 
 export class Witch extends Entity {
   constructor() {
-    const [x, y] = PATH[PATH.length - 1];
+    const [x, y] = gameState.waveData.path[gameState.waveData.path.length - 1];
     super((x - 4) * TILE_WIDTH + 20, (y - 4) * TILE_WIDTH + 20)
     this.sprite = sprites[STRINGS.witch]();
     witches.push(this);
@@ -145,10 +145,10 @@ export class Animal extends Entity {
     super(0, 0, 0, 0, 20, 20, LAYERS.critters);
     this.pathIndex = 0;
     this.speed = this.baseSpeed;
-    this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
+    this.moveDir = getDirectionFromTo(gameState.waveData.path[this.pathIndex], gameState.waveData.path[this.nextPathIndex]);
     // this.moveDir = angleToTarget()
     
-    const { directionalMinX, directionalMaxX, directionalMaxY, directionalMinY } = convertTileToMapBounds(PATH[this.pathIndex], this.moveDir);
+    const { directionalMinX, directionalMaxX, directionalMaxY, directionalMinY } = convertTileToMapBounds(gameState.waveData.path[this.pathIndex], this.moveDir);
     
     this.x = getRandomInt(directionalMinX, directionalMaxX - this.width);
     this.y = getRandomInt(directionalMinY, directionalMaxY - this.height);
@@ -158,7 +158,7 @@ export class Animal extends Entity {
   get nextPathIndex() { return this.pathIndex + 1 }
 
   getNextDirection() {
-      const { directionalMinX, directionalMaxX, directionalMinY, directionalMaxY } = convertTileToMapBounds(PATH[this.nextPathIndex], this.moveDir);
+      const { directionalMinX, directionalMaxX, directionalMinY, directionalMaxY } = convertTileToMapBounds(gameState.waveData.path[this.nextPathIndex], this.moveDir);
       this.destX = getRandomInt(directionalMinX, directionalMaxX - this.width);
       this.destY = getRandomInt(directionalMinY, directionalMaxY - this.height);
       this.att = angleToTarget({x: this.x, y: this.y}, {x: this.destX, y: this.destY});
@@ -224,7 +224,7 @@ export class Animal extends Entity {
 
         this.pathIndex += 1;
         
-        if (!PATH[this.nextPathIndex + 1] || this.caught) {
+        if (!gameState.waveData.path[this.nextPathIndex + 1] || this.caught) {
           if (!this.caught) {
             if (!this.type) {
               gameState.addEscaped(10)
@@ -237,7 +237,7 @@ export class Animal extends Entity {
           return;
         }
 
-        this.moveDir = getDirectionFromTo(PATH[this.pathIndex], PATH[this.nextPathIndex]);
+        this.moveDir = getDirectionFromTo(gameState.waveData.path[this.pathIndex], gameState.waveData.path[this.nextPathIndex]);
         this.getNextDirection();
       }
 
@@ -268,8 +268,8 @@ export class Critter extends Animal {
   constructor() {
     super();
 
-    const rng = getRandomInt(0, Critter.types.length - 1);
-    const type = Critter.types[rng];
+    const rng = getRandomInt(0, gameState.waveData.allowedCritters.length - 1);
+    const type = gameState.waveData.allowedCritters[rng];
 
     if (type === 'fly') {
       this.flying = true;
@@ -421,6 +421,9 @@ export class MenuTower extends BaseTower {
   _isValidPlacement = true;
 
   override render() {
+    if (!gameState.waveData.allowedTowers.includes(this.sprite?.type || '')) {
+      return;
+    }
     super.render();
 
     if (this.dragging) {
@@ -893,7 +896,7 @@ class VaccuumTower extends TileCoveringTower {
   render() {
     super.render();
     
-    if (++this.tick % 120 === 0) {
+    if (++this.tick % 90 === 0) {
       const destX = this.x + TILE_WIDTH * 1.5;
       const destY = this.y + TILE_WIDTH * 1.5;
 
@@ -1132,48 +1135,63 @@ export class Menu extends Entity {
     setFont(35);
     ctx.fillText(`Click+Drag to place towers`, MENU_START_X, sy(-2))
 
-    ctx.font = "40px 'Courier New'"
-    ctx.fillText(`High-energy Kids`, MENU_START_X, sy(-.5))
-    ctx.fillText(`Really Big Fans`, MENU_START_X, sy(4.5))
-    ctx.fillText(`Powerful Vaccuums`, MENU_START_X, sy(9.5))
-    ctx.fillText(`Guy with a Net`, MENU_START_X, sy(14.5))
-    ctx.fillText(`Fish on a Stick`, MENU_START_X, sy(19.5))
-    ctx.fillText(`Scratching Post`, MENU_START_X, sy(24.5))
+    if (gameState.waveData.allowedTowers.includes(STRINGS.kid)) {
+      setFont(40);
+      ctx.fillText(`High-energy Kids`, MENU_START_X, sy(-.5))
+      setFont(26);
+      ctx.fillText(`- Fast`, sx, sy(.5))
+      ctx.fillText(`- Cant catch flies`, sx, sy(1.5))
+      price = TOWER_COST[STRINGS.kid];
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(2.5))
+    }
 
+    if (gameState.waveData.allowedTowers.includes(STRINGS.fan)) {
+      setFont(40, 'white');
+      ctx.fillText(`Really Big Fans`, MENU_START_X, sy(4.5))
+      setFont(26);
+      ctx.fillText(`- Blows critters back`, sx, sy(5.5))
+      ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
+      price = TOWER_COST[STRINGS.fan];
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(7.5))
+    }
 
-    setFont(26);
-    ctx.fillText(`- Fast`, sx, sy(.5))
-    ctx.fillText(`- Cant catch flies`, sx, sy(1.5))
-    price = TOWER_COST[STRINGS.kid];
-    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(2.5))
+    if (gameState.waveData.allowedTowers.includes(STRINGS.vaccuum)) {
+      setFont(40, 'white');
+      ctx.fillText(`Powerful Vaccuums`, MENU_START_X, sy(9.5))
+      setFont(26);
+      ctx.fillText(`- Slow`, sx, sy(10.5))
+      ctx.fillText(`- Covers many angles`, sx, sy(11.5))
+      price = TOWER_COST[STRINGS.vaccuum];
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(12.5))
+    }
 
-    setFont(26);
-    ctx.fillText(`- Blows critters back`, sx, sy(5.5))
-    ctx.fillText(`- Cant blow snakes`, sx, sy(6.5))
-    price = TOWER_COST[STRINGS.fan];
-    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(7.5))
+    if (gameState.waveData.allowedTowers.includes(STRINGS.net)) {
+      setFont(40, 'white');
+      ctx.fillText(`Guy with a Net`, MENU_START_X, sy(14.5))
+      setFont(26);
+      ctx.fillText(`- Very Slow`, sx, sy(15.5))
+      ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
+      price = TOWER_COST[STRINGS.net];
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(17.5))
+    }
 
-    setFont(26);
-    ctx.fillText(`- Slow`, sx, sy(10.5))
-    ctx.fillText(`- Covers many angles`, sx, sy(11.5))
-    price = TOWER_COST[STRINGS.vaccuum];
-    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(12.5))
+    if (gameState.waveData.allowedTowers.includes(STRINGS.fish)) {
+      setFont(40, 'white');
+      ctx.fillText(`Fish on a Stick`, MENU_START_X, sy(19.5))
+      setFont(26);
+      ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
+      price = TOWER_COST[STRINGS.fish];
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(21.5))
+    }
 
-    setFont(26);
-    ctx.fillText(`- Very Slow`, sx, sy(15.5))
-    ctx.fillText(`- Catches flies & frogs`, sx, sy(16.5))
-    price = TOWER_COST[STRINGS.net];
-    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(17.5))
-
-    setFont(26);
-    ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
-    price = TOWER_COST[STRINGS.fish];
-    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(21.5))
-
-    setFont(26);
-    ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
-    price = TOWER_COST[STRINGS.scratch];
-    ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(26.5))    
+    if (gameState.waveData.allowedTowers.includes(STRINGS.scratch)) {
+      setFont(40, 'white');
+      ctx.fillText(`Scratching Post`, MENU_START_X, sy(24.5))
+      setFont(26);
+      ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
+      price = TOWER_COST[STRINGS.scratch];
+      ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(26.5))    
+    }
   }
 }
 

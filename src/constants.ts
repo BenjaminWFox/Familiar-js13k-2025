@@ -57,6 +57,33 @@ export const TOWER_COST = {
   [STRINGS.scratch]: 250,
 }
 
+export const PATH_1: Path = [
+  [0, 22],
+  [2, 22],
+  [4, 22],
+  [6, 22],
+  [8, 22],
+  [10, 22],
+  [12, 22],
+  [14, 22],
+  [16, 22],
+  [18, 22],
+  [20, 22],
+  [22, 22],
+  [24, 22],
+  [26, 22],
+  [28, 22],
+  [30, 22],
+  [32, 22],
+  [34, 22],
+  [36, 22],
+  [38, 22],
+  [40, 22],
+  [42, 22],
+  [44, 22],
+  [46, 22],
+]
+
 // export const PATH: Path = [
 //   [8, -2],
 //   [8, 0],
@@ -160,6 +187,34 @@ export const PATH: Path = [
   [44, 22],
   [46, 22],
 ];
+
+class WaveData {
+  allowedTowers: string[] = [];
+  allowedCritters: string[] = [];
+  allowedCats: boolean = true;
+  path: Path = [];
+
+  constructor(
+    allowedTowers: string[],
+    allowedCritters: string[],
+    allowedCats: boolean,
+    path: Path,
+) {
+    this.allowedTowers = allowedTowers;
+    this.allowedCritters = allowedCritters;
+    this.allowedCats = allowedCats;
+    this.path = path;
+  }
+}
+
+export const WAVE_DATA = {
+  1: new WaveData(
+    [STRINGS.kid],
+    [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
+    false,
+    PATH_1
+  )
+}
 
 export const PATH_OBJ: Record<string, number> = {};
 

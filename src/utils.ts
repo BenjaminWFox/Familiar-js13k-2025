@@ -34,7 +34,10 @@ export const mouseTile = {
 export const canAffordTower = (p: number) => {
   return p <= gameState.cash
 }
-export const setFont = (size: number) => {
+export const setFont = (size: number, color?: string) => {
+  if (color) {
+    gameState.ctx.fillStyle = color;
+  }
   gameState.ctx.font = `${size}px 'Courier New'`;
 }
 export const getPriceForAffordability = (p: number) => {
@@ -75,6 +78,7 @@ export function setMouseTile(mouseX: number, mouseY: number) {
   mouseTile.y = tileLockedY;
 }
 
+// @ts-ignore
 export function drawMouseTile(ctx: CanvasRenderingContext2D) {
   // ctx.fillStyle = 'red';
   // ctx.fillRect(mouseTile.x, mouseTile.y, TILE_WIDTH, TILE_WIDTH);

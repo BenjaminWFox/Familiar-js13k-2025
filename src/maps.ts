@@ -8,14 +8,14 @@ function testPath(x: number, y: number): keyof typeof PATH_OBJ {
 }
 
 function findPathIndex(x: number, y: number) {
-  return PATH.findIndex(([_x, _y]) => {
+  return gameState.waveData.path.findIndex(([_x, _y]) => {
     return _x === x && _y === y
   });
 }
 
 // Create an object to prevent iterating every time
 // probably overkill
-PATH.forEach((e: Tile) => {
+gameState.waveData.path.forEach((e: Tile) => {
   PATH_OBJ[e.toString()] = 1
 });
 
@@ -107,8 +107,8 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
 
       if (PATH_OBJ[testPath(x, y)]) {
         const currentIndex = findPathIndex(x, y);
-        const prevPath = PATH[currentIndex - 1];
-        const dirPastToCurrent = getDirectionFromTo(prevPath, PATH[currentIndex]);
+        const prevPath = gameState.waveData.path[currentIndex - 1];
+        const dirPastToCurrent = getDirectionFromTo(prevPath, gameState.waveData.path[currentIndex]);
         if (dirPastToCurrent) {
           // Fill in the extra corners
           ctx.fillStyle = 'teal'
