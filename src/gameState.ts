@@ -77,7 +77,7 @@ export class GameState {
 
   startWave() {
     /** For debug **/
-      // this.wave = 3;
+      // this.wave = 4;
       // this.setState(SCENES.playing);
     /** For debug **/
     this._waveData = WAVE_DATA[this.wave as keyof typeof WAVE_DATA]();

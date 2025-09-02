@@ -1,4 +1,4 @@
-import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG } from "./constants";
+import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 // import { playSong } from "./music";
@@ -335,7 +335,17 @@ export class Cat extends Animal {
     super.render();
 
     if (!this.distracted) {
-      const catTowers = (this.currentTile?.towersCoveringTile as CatCatchingTower[])?.filter(t => t.sprite?.type === STRINGS.scratch || t.sprite?.type === STRINGS.fish)!;
+      const nonCatTowers: PlacedTower[] = [];
+      const catTowers: CatCatchingTower[] = [];
+      this.currentTile?.towersCoveringTile.forEach(t => {
+        if (t.sprite?.type === STRINGS.scratch || t.sprite?.type === STRINGS.fish) {
+          catTowers.push(t as CatCatchingTower);
+        } else if (!t.cursed) {
+          nonCatTowers.push(t);
+          t.curse();
+        }
+      })
+      // const catTowers = (this.currentTile?.towersCoveringTile as CatCatchingTower[])?.filter(t => t.sprite?.type === STRINGS.scratch || t.sprite?.type === STRINGS.fish)!;
       if (catTowers) {
         for (const tower of catTowers) {
           if (tower.caughtCats.length < tower.maxCats) {
@@ -527,6 +537,8 @@ export class MenuTower extends BaseTower {
 
 export class PlacedTower extends BaseTower {
   coveredTiles: Array<TileData> = [];
+  cursed?: Sprite;
+  cursedAt: number = 0;
 
   constructor(x: number, y: number, type: string) {
     super(x, y);
@@ -548,6 +560,22 @@ export class PlacedTower extends BaseTower {
 
   override render() {
     super.render();
+    if (this.cursed && this.cursedAt < gameState.gameTime - CURSE_DURATION) {
+      this.unCurse();
+    } else if (this.cursed) {
+      this.cursed.draw(gameState.ctx, this.x, this.y, this.width, this.height);
+    }
+  }
+
+  curse() {
+    console.log('Cursing!')
+    this.cursed = sprites[STRINGS.curse]();
+    this.cursedAt = gameState.gameTime;
+  }
+
+  unCurse() {
+    console.log('Un-Cursing!')
+    this.cursed = undefined;
   }
 
   sell() {
@@ -784,6 +812,7 @@ class NetTower extends TileCoveringTower {
 
   constructor(x: number, y: number) {
     super(x, y, getSquareTilesCovered(-3, 6), STRINGS.net);
+
     this.sprite = sprites[STRINGS.net]();
     this.cX = this.x + TILE_WIDTH * 1.5;
     this.cY = this.y + TILE_WIDTH * 1.5;
@@ -800,6 +829,12 @@ class NetTower extends TileCoveringTower {
 
   render() {
     super.render();
+
+    if (this.cursed) {
+      ++this.swipeTime;
+
+      return;
+    }
 
     if (this.swipeTime % 180 === 0) {
       this.coveredTiles.forEach((tile) => {
@@ -848,6 +883,13 @@ class FanTower extends TileCoveringTower {
 
   render() {
     super.render();
+
+    if (this.cursed) {
+      ++this.tick;
+      
+      return;
+    }
+
     if (++this.tick % 30 === 0) {
       const destX = this.x + TILE_WIDTH * 1.5;
       const destY = this.y + TILE_WIDTH * 1.5;
@@ -895,6 +937,11 @@ class VaccuumTower extends TileCoveringTower {
 
   render() {
     super.render();
+
+    if (this.cursed) {
+      ++this.tick;
+      return;
+    }
     
     if (++this.tick % 90 === 0) {
       const destX = this.x + TILE_WIDTH * 1.5;
@@ -981,6 +1028,7 @@ class Fetcher extends Entity {
   parent: PlacedTower;
   chasing?: Critter;
   state: FetcherStates = FetcherStates.waiting;
+  curse: Sprite;
 
   constructor(parent: PlacedTower) {
     super(-100, -100, 0, 0, 30, 30, LAYERS.fetchers);
@@ -991,6 +1039,7 @@ class Fetcher extends Entity {
     this.y = getRandomInt(parent.y, parent.y + parent.width - this.height);
 
     fetchers.push(this);
+    this.curse = sprites[STRINGS.curse]();
   }
 
   remove() {
@@ -1026,58 +1075,60 @@ class Fetcher extends Entity {
   }
 
   override render() {
-    switch (this.state) {
-      case FetcherStates.chasing:
-        // Thing we are chasing is no longer chasable
-        if (this.chasing?.deleted || this.chasing?.distracted) {
-          this.chasing = undefined;
-          this.state = FetcherStates.waiting;
-          this.search();
+    if (!this.parent.cursed) {
+      switch (this.state) {
+        case FetcherStates.chasing:
+          // Thing we are chasing is no longer chasable
+          if (this.chasing?.deleted || this.chasing?.distracted) {
+            this.chasing = undefined;
+            this.state = FetcherStates.waiting;
+            this.search();
+            break;
+          }
+
+          const chaseAngle = angleToTarget(this, this.chasing!);
+          const {x: cX, y: cY} = movePoint(this, chaseAngle, this.chaseSpeed);
+          this.x = cX;
+          this.y = cY;
+
+          if (hitTest(this, this.chasing!) && this.chasing?.type) {
+            this.chasing!.setCarried();
+            this.state = FetcherStates.fetching;
+          }
+
           break;
-        }
+        case FetcherStates.fetching:
+          if (this.destX === 0) {
+            this.destX = getRandomInt(this.parent.x + this.width, this.parent.x + this.parent.width - this.width);
+            this.destY = getRandomInt(this.parent.y + this.width, this.parent.y + this.parent.height - this.height);
+          }
 
-        const chaseAngle = angleToTarget(this, this.chasing!);
-        const {x: cX, y: cY} = movePoint(this, chaseAngle, this.chaseSpeed);
-        this.x = cX;
-        this.y = cY;
+          const fetchAngle = angleToTarget(this, {x: this.destX, y: this.destY});
+          const {x: fX, y: fY} = movePoint(this, fetchAngle, this.carrySpeed);
+          this.x = fX;
+          this.y = fY;
+          this.chasing!.x = this.x + 5;
+          this.chasing!.y = this.y + 5;
 
-        if (hitTest(this, this.chasing!) && this.chasing?.type) {
-          this.chasing!.setCarried();
-          this.state = FetcherStates.fetching;
-        }
+          // ctx.fillStyle = "yellow";
+          // ctx.fillRect(this.destX, this.destY, 4, 4);
 
-        break;
-      case FetcherStates.fetching:
-        if (this.destX === 0) {
-          this.destX = getRandomInt(this.parent.x + this.width, this.parent.x + this.parent.width - this.width);
-          this.destY = getRandomInt(this.parent.y + this.width, this.parent.y + this.parent.height - this.height);
-        }
+          if (hitTest(this, {x: this.destX, y: this.destY, width: 4, height: 4})) {
+            this.destX = 0;
+            this.destY = 0;
+            this.state = FetcherStates.waiting
+            this.chasing!.setCaught();
+            this.chasing!.deleted = true;
+            this.chasing = undefined;
+          }
 
-        const fetchAngle = angleToTarget(this, {x: this.destX, y: this.destY});
-        const {x: fX, y: fY} = movePoint(this, fetchAngle, this.carrySpeed);
-        this.x = fX;
-        this.y = fY;
-        this.chasing!.x = this.x + 5;
-        this.chasing!.y = this.y + 5;
-
-        // ctx.fillStyle = "yellow";
-        // ctx.fillRect(this.destX, this.destY, 4, 4);
-
-        if (hitTest(this, {x: this.destX, y: this.destY, width: 4, height: 4})) {
-          this.destX = 0;
-          this.destY = 0;
-          this.state = FetcherStates.waiting
-          this.chasing!.setCaught();
-          this.chasing!.deleted = true;
-          this.chasing = undefined;
-        }
-
-        break;
-      case FetcherStates.waiting:
-        if (gameState.gameTime % 10 === 0) {
-          this.search();
-        }
-        break;
+          break;
+        case FetcherStates.waiting:
+          if (gameState.gameTime % 10 === 0) {
+            this.search();
+          }
+          break;
+      }
     }
 
     switch (this.state) {
@@ -1090,6 +1141,10 @@ class Fetcher extends Entity {
         this.sprite?.draw(gameState.ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH, true)
         // ctx.drawImage(gameState.image!, 0, 40, 10, 10, this.x, this.y, TILE_WIDTH, TILE_WIDTH)
         break;
+    }
+
+    if (this.parent.cursed) {
+      this.curse.draw(gameState.ctx, this.x, this.y, TILE_WIDTH, TILE_WIDTH);
     }
   }
 }

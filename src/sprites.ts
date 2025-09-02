@@ -103,4 +103,5 @@ export const sprites = {
   [STRINGS.scratch]: () => new Sprite(STRINGS.scratch, 0, 70, 1, 1, 20),
   [STRINGS.fetcher]: () => new Sprite(STRINGS.fetcher, 0, 10, 2, 8, 10, 10, 1, true),
   [STRINGS.catcher]: () => new Sprite(STRINGS.catcher, 40, 0, 1, 0, 10),
+  [STRINGS.curse]: () => new Sprite(STRINGS.curse, 0, 110, 2, 8, 10, 10),
 }

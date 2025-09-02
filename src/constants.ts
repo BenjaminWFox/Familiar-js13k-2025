@@ -28,6 +28,8 @@ export const COLOR_MAP_GREEN = '#39941a';
 export const COLOR_MENU_GREEN_1 = '#26700dff';
 export const COLOR_MENU_GREEN_2 = '#164e04ff';
 
+export const CURSE_DURATION = 90;
+
 export type Tile = [number, number];
 export type Path = Array<Tile>;
 
@@ -46,6 +48,7 @@ export const STRINGS = {
   net: 'net',
   fish: 'fish',
   scratch: 'scratch',
+  curse: 'curse',
 }
 
 export const TOWER_COST = {

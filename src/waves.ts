@@ -63,15 +63,15 @@ function wave1Event (this: WaveData, gameState: GameState) {
 
   if (
     !this.complete &&
-    gameState.waveSpawns >= this.maxSpawns &&
-    critters.length === 0 &&
-    cats.length === 0
+    gameState.waveSpawns >= this.maxSpawns
   ) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
     new Cat();
     this.complete = true;
     gameState.showDialog(
-      ['Oh no, a black cat!! It counts as 10 critters!', '',
+      [
+        'Oh no, a black cat!! It counts as 10 critters!', '',
+        'It will also CURSE many of your towers!', '',
         'Add a Fish on a Stick to distract it!', '',
         'Click a tower to sell it for extra cash if needed.'
       ]);
@@ -107,11 +107,18 @@ function wave3Event (this: WaveData, gameState: GameState) {
       'with vaccuums!',
     ])
   }
+  if(
+    !this.complete &&
+    gameState.waveSpawns >= this.maxSpawns &&
+    cats.length === 0
+  ) {
+    new Cat();
+  }
   if (
     !this.complete &&
     gameState.waveSpawns >= this.maxSpawns &&
-    critters.length === 0 &&
-    cats.length === 0
+    critters.length === 0 // &&
+    // cats.length === 0
   ) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
     new Cat();
@@ -134,7 +141,20 @@ function wave3Event (this: WaveData, gameState: GameState) {
       }
     );
   }
-} 
+}
+
+function wave4Event (this: WaveData, gameState: GameState) {
+  if (!this.complete &&
+    gameState.waveTime % 240 === 0
+  ) {
+    new Cat();
+  }
+
+  if (gameState.waveTime > 2200) {
+    this.complete = true;
+  }
+}
+
 
 export const WAVE_DATA = {
   1: () => new WaveData(
@@ -169,7 +189,18 @@ export const WAVE_DATA = {
     30,
     500,
     wave3Event,
-  )
+  ),
+  4:  () => new WaveData(
+    [STRINGS.kid, STRINGS.net, STRINGS.vaccuum, STRINGS.fan, STRINGS.fish, STRINGS.scratch],
+    [STRINGS.fly, STRINGS.lizard, STRINGS.frog],
+    false,
+    PATH_3,
+    100,
+    250,
+    20,
+    500,
+    wave4Event,
+  ),
 }
 
 export const TOTAL_WAVES = Object.keys(WAVE_DATA).length;
