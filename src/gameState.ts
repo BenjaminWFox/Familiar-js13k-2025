@@ -1,7 +1,7 @@
 import { canvas, ctx } from "./elements";
-import { Button } from "./button";
-import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
-import { setFont } from "./utils";
+import { Button, dialog } from "./entity";
+// import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
+// import { setFont } from "./utils";
 
 export enum SCENES {
   start,
@@ -11,17 +11,8 @@ export enum SCENES {
   dialog,
 }
 
-class Dialog {
-  rendered: boolean = false;
-
-  constructor() {
-    
-  }
-}
-
-export const dialog = new Dialog();
-
 class GameState {
+  mouseDownAt: number = 0;
   waves = 13;
   gameTime: number = 0;
   image: HTMLImageElement | undefined;
@@ -33,40 +24,61 @@ class GameState {
   cash: number = 250;
   escaped: number = 0;
 
+  dialogCallback: () => void;
+  dialogText: string[] = [];
+  dialogShowCancel: boolean = false;
+
   waveSelectBtns: Array<Button> = [];
+
+  defaultCallback = () => {
+    this.closeDialog();
+  }
 
   constructor() {
     this.canvas = canvas
     this.ctx = ctx;
+
+    this.dialogCallback = () => {};
   }
 
   addEscaped(n: number = 1) {
     this.escaped += n;
   }
 
-  dialogShowing = false;
-  showDialog(text: string[], okButton: Button, closeButton?: Button) {
-    if (!this.dialogShowing) {
-      this.dialogShowing = true;
-      ctx.fillStyle = 'rgba(255, 255, 255, .25)'
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
-      ctx.fillStyle = COLOR_MENU_GREEN_1;
-      ctx.strokeStyle = COLOR_MENU_GREEN_2;
-      ctx.lineWidth = 50;
-      ctx.fillRect(WIDTH * .5 - 500 - (WIDTH - MENU_START_X), HEIGHT * .5 - 450, 1500, 700);
-      ctx.strokeRect(WIDTH * .5 - 525 - (WIDTH - MENU_START_X), HEIGHT * .5 - 475, 1550, 750);
-      okButton.render();
-      if (closeButton) {
-        closeButton.render();
-      }
+  closeDialog(scene: SCENES = SCENES.playing) {
+    this.state = scene;
+    this.dialogShowing = false;
+    dialog.hasRendered = false;
+  }
 
-      text.forEach((str, i) => {
-        setFont(45);
-        ctx.textAlign = 'left'
-        ctx.textBaseline = 'bottom'
-        ctx.fillText(str, 450, 650 + (i * TILE_WIDTH))
-      })
+  dialogShowing = false;
+  showDialog(text: string[], callback?: () => void, showCancel: boolean = false) {
+    if (!this.dialogShowing) {
+      this.state = SCENES.dialog;
+      this.dialogCallback = callback || this.defaultCallback;
+      this.dialogText = text;
+      this.dialogShowCancel = showCancel;
+      this.dialogShowing = true;
     }
+    //   ctx.fillStyle = 'rgba(255, 255, 255, .25)'
+    //   ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    //   ctx.fillStyle = COLOR_MENU_GREEN_1;
+    //   ctx.strokeStyle = COLOR_MENU_GREEN_2;
+    //   ctx.lineWidth = 50;
+    //   ctx.fillRect(WIDTH * .5 - 500 - (WIDTH - MENU_START_X), HEIGHT * .5 - 450, 1500, 700);
+    //   ctx.strokeRect(WIDTH * .5 - 525 - (WIDTH - MENU_START_X), HEIGHT * .5 - 475, 1550, 750);
+    //   okButton.render();
+    //   if (closeButton) {
+    //     closeButton.render();
+    //   }
+
+    //   text.forEach((str, i) => {
+    //     setFont(45);
+    //     ctx.textAlign = 'left'
+    //     ctx.textBaseline = 'bottom'
+    //     ctx.fillText(str, 450, 650 + (i * TILE_WIDTH))
+    //   })
+    // }
   }
 }
 

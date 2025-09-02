@@ -1,6 +1,6 @@
-import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST } from "./constants";
+import { PATH, TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH } from "./constants";
 import { gameState } from "./gameState";
-import { getTileDataEntry, TILE_DATA_OBJ, TileData } from "./maps";
+import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { Sprite, sprites } from "./sprites";
 import { angleToTarget, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
@@ -188,6 +188,14 @@ export class Animal extends Entity {
     this.dx = 0;
     this.dy = 0;
     this.removeFromTile();
+  }
+
+  restoreAutonomy() {
+    this.chased = false;
+    this.caught = false;
+    this.distracted = false;
+    this.carried = false;
+    this.getNextDirection();
   }
 
   getForcedDirection() {
@@ -480,13 +488,11 @@ export class MenuTower extends BaseTower {
     if (this.dragging) {
       this.dragging = false;
       if (this._isValidPlacement) {
-        const markHasTower = (tileArr: number[]) => {
-          console.log('This?', this);
-          TILE_DATA_OBJ[tileArr.toString()].hasTower = true;
-          return true;
-        };
-        const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds()
-        checkConditionForTowerTiles(expandedMinX, expandedMaxX, expandedMinY, expandedMaxY, markHasTower);
+        // const markHasTower = () => {
+        //   return true;
+        // };
+        // const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds()
+        // checkConditionForTowerTiles(expandedMinX, expandedMaxX, expandedMinY, expandedMaxY, markHasTower);
         const x = mouseTile.x - TILE_WIDTH
         const y = mouseTile.y - TILE_WIDTH
         
@@ -528,29 +534,32 @@ export class PlacedTower extends BaseTower {
     for (let x = pathX;x <= pathX + 2;x++) {
       for (let y = pathY;y <= pathY + 2;y++) {
         const tileData = getTileDataEntry(x, y);
-        tileData.towerAtTile = this;
+        tileData.addOccupyingTower(this);
       }
     }
-
-    // const pathXY = convertCanvasXYToPathXY(x, y);
-    // const coverage = {minX: pathXY.pathX - 2, maxX: pathXY.pathX + 5, minY: pathXY.pathY - 2, maxY: pathXY.pathY + 5 };
-
-    // for(let x = coverage.minX;x < coverage.maxX;x++){
-    //   for(let y = coverage.minY;y < coverage.maxY;y++) {
-    //     const tileData = getTileDataEntry(x, y);
-    //     if (tileData?.isPath) {
-    //       this.coveredTiles.push(tileData);
-    //     }
-    //   }
-    // }
-    // Sort so that furthest tiles is first in the list
-    // this.coveredTiles.sort((a, b) => b.pathIndex! - a.pathIndex!)
 
     towers.push(this);
   }
 
   override render() {
     super.render();
+  }
+
+  sell() {
+    this.deleted = true;
+    this.coveredTiles.forEach(tile => {
+      tile.towersCoveringTile = tile.towersCoveringTile.filter(t => !t.deleted);
+    })
+    // const {tileLockedX, tileLockedY} = getTileLockedXY(this.x, this.y);
+    const {pathX, pathY} = convertCanvasXYToPathXY(this.x, this.y);
+    for(let x = pathX;x <=pathX+2;x++) {
+      for(let y = pathY;y <= pathY+2;y++) {
+        const t = TILE_DATA_OBJ[ getTileDataKey(x, y) ];
+        if (t) {
+          t.removeOccupyingTower();
+        }
+      }
+    }
   }
 }
 
@@ -745,7 +754,7 @@ class FetcherTower extends TileCoveringTower {
   fetchers: Array<Fetcher> = [];
 
   constructor(x: number, y: number) {
-    super(x, y, getSquareTilesCovered(-2, 5), STRINGS.fetcher);
+    super(x, y, getSquareTilesCovered(-2, 5), STRINGS.kid);
 
     this.sprite = sprites[STRINGS.kid]();
 
@@ -754,6 +763,11 @@ class FetcherTower extends TileCoveringTower {
       new Fetcher(this),
       // new Fetcher(this),
     ])
+  }
+
+  sell() {
+    this.fetchers.forEach(f => f.remove());
+    super.sell();
   }
 }
 
@@ -925,8 +939,13 @@ class CatCatchingTower extends TileCoveringTower {
 
   release() {
     this.caughtCats.forEach(c => {
-      c.distracted = false;
+      c.restoreAutonomy();
     })
+  }
+
+  sell() {
+    this.release();
+    super.sell();
   }
 }
 
@@ -968,6 +987,14 @@ class Fetcher extends Entity {
     fetchers.push(this);
   }
 
+  remove() {
+    if (this.state === FetcherStates.fetching) {
+      this.chasing?.restoreAutonomy();
+    }
+    this.state = FetcherStates.waiting;
+    this.deleted = true;
+  }
+
   search() {
     for (const t of this.parent.coveredTiles) {
       // All covered tiles
@@ -993,7 +1020,7 @@ class Fetcher extends Entity {
   override render() {
     switch (this.state) {
       case FetcherStates.chasing:
-        if (this.chasing?.deleted) {
+        if (this.chasing?.deleted || this.chasing?.distracted) {
           this.chasing = undefined;
           this.state = FetcherStates.waiting;
           this.search();
@@ -1132,7 +1159,187 @@ export class Menu extends Entity {
   }
 }
 
+export class Dialog extends Entity {
+  hasRendered = false;
+  openedAt: number = 0
+
+  constructor() {
+    super(0, 0);
+  }
+
+  render() {
+    if (!this.hasRendered) {
+      this.hasRendered = true;
+      this.openedAt = Date.now();
+
+      gameState.ctx.fillStyle = 'rgba(255, 255, 255, .25)'
+      gameState.ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      gameState.ctx.fillStyle = COLOR_MENU_GREEN_1;
+      gameState.ctx.strokeStyle = COLOR_MENU_GREEN_2;
+      gameState.ctx.lineWidth = 50;
+      gameState.ctx.fillRect(WIDTH * .5 - 500 - (WIDTH - MENU_START_X), HEIGHT * .5 - 450, 1500, 700);
+      gameState.ctx.strokeRect(WIDTH * .5 - 525 - (WIDTH - MENU_START_X), HEIGHT * .5 - 475, 1550, 750);
+      
+      okButton.addListener();
+      okButton.render();
+
+      okButton.callback = gameState.dialogCallback;
+
+      if (gameState.dialogShowCancel) {
+        cancelButton.addListener();
+        cancelButton.render();
+      }
+
+      gameState.dialogText.forEach((str, i) => {
+        setFont(45);
+        gameState.ctx.textAlign = 'left'
+        gameState.ctx.textBaseline = 'bottom'
+        gameState.ctx.fillText(str, 450, 650 + (i * TILE_WIDTH))
+      })
+    }
+  }
+}
+
+export class Button extends Entity {
+  text: string;
+  removeOnClick: boolean;
+  listening: boolean = false;
+  callback: () => void;
+  eventCallback: () => void;
+  font: number = 100;
+  
+  constructor(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    text: string,
+    onclick: () => void,
+    removeOnClick = true
+  ) {
+    super(x, y, 0, 0, width, height);
+    
+    this.text = text;
+    this.callback = onclick;
+    this.removeOnClick = removeOnClick;
+    this.eventCallback = this.hitTest.bind(this)
+
+    this.addListener();
+  }
+
+  render(dynamicText?: string) {
+    super.render();
+
+    if (dynamicText) {
+      this.text = dynamicText
+    }
+    
+    gameState.ctx.fillStyle = 'green'
+    gameState.ctx.fillRect(this.x, this.y, this.width, this.height);
+
+    gameState.ctx.fillStyle = 'white'
+    gameState.ctx.strokeStyle = 'white'
+    gameState.ctx.lineWidth = 5
+    gameState.ctx.strokeRect(this.x, this.y, this.width, this.height);
+    setFont(this.font);
+    gameState.ctx.textAlign = 'center';
+    gameState.ctx.textBaseline = 'middle';
+    gameState.ctx.fillText(this.text, this.x + this.width * .5, this.y + this.height * .5, this.width)
+  }
+
+  hitTest() {
+    if (dialog.hasRendered && gameState.mouseDownAt < dialog.openedAt) {
+      return;
+    }
+
+    if (hitTest(this, {x: mouseTile.x, y: mouseTile.y, width: 1, height: 1})) {
+      this.runCallback();
+    }
+  }
+
+  runCallback() {
+    this.removeListener();
+    this.callback();
+  }
+
+  addListener() {
+    if (!this.listening) {
+      gameState.canvas.addEventListener('click', this.eventCallback)
+      this.listening = true;
+    }
+  }
+
+  removeListener(override = false) {
+    if (override || this.removeOnClick) {
+      gameState.canvas.removeEventListener('click', this.eventCallback);
+      this.listening = false;
+    }
+  }
+
+  setDeleted() {
+    this.removeListener(true);
+    this.deleted = true;
+  }
+}
+
+export const startBtn = new Button(
+  WIDTH * .5 - 200,
+  1500,
+  400,
+  150,
+  'START', () => {
+    selectWave.removeListener(true);
+    setTimeout(() => {
+      gameState.showDialog([
+      'Oh no! The witch is making her brew...',
+      'Dont let her catch critters to fill her cauldron.',
+      '',
+      'Place towers along the path to catch critters!',
+      'Catching critters earns you $ to build more towers.',
+      '',
+      'Get some "High-energy Kids" out there now!',
+      'Tower coverage shows in light blue when placing.'
+    ])
+    }, 500)
+})
+
+export const selectWave = new Button(
+  WIDTH * .5 - 800,
+  1500,
+  500,
+  150,
+  'WAVE 1',
+  () => {
+    for(let i = 1;i <= gameState.waves;i++) {
+        const add = i > 9 ? 50 * (i - 9 - .5) : 0;
+      const xOffset = 200 * (i - 1);
+      const x = -550 + selectWave.x + xOffset + add;
+      gameState.waveSelectBtns.push(new Button(x, selectWave.y - 200, 150, 150, `${i}`, () => {
+        gameState.wave = i;
+        gameState.waveSelectBtns.forEach(e => e.setDeleted());
+      }));
+    }
+  },
+  false
+)
+
+export const okButton = new Button(1650, 1100, 200, 100, 'Okay',
+  () => {
+      gameState.closeDialog();
+    }
+)
+
+export const cancelButton = new Button(450, 1100, 200, 100, 'Cancel',
+  () => {
+      gameState.closeDialog();
+    }
+)
+
+okButton.font = 50;
+cancelButton.font = 50;
+
 // All entities
+export const dialog = new Dialog();
 export const entities: Entity[] = [];
 export const critters: Critter[] = [];
 export const cats: Cat[] = [];

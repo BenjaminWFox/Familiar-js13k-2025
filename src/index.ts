@@ -1,12 +1,12 @@
 import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET } from "./constants";
 import { drawTileMap } from "./maps";
-import { cashes, Cat, catchers, cats, Critter, critters, Entity, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers, Witch, witches } from "./entity";
+import { cashes, Cat, catchers, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers, Witch, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
 import { drawMouseTile, setFont } from "./utils";
 import { sprites } from "./sprites";
-import { okButton, selectWave, startBtn } from "./button";
+import { selectWave, startBtn } from "./entity";
 
 const image = new Image();
 image.src = 'path2.png';
@@ -87,6 +87,8 @@ function render(): void {
     purgeDeleted(cats);
     purgeDeleted(particles);
     purgeDeleted(cashes);
+    purgeDeleted(towers);
+    purgeDeleted(fetchers);
     // for (let i = 0; i < particles.length; i++) {
     //   if (particles[i].deleted) {
     //     particles.splice(i, 1);
@@ -110,16 +112,7 @@ function render(): void {
     gameState.waveSelectBtns.forEach(e => e.render());
     purgeDeleted(gameState.waveSelectBtns);
   } else if (gameState.state === SCENES.dialog) {
-    gameState.showDialog([
-      'Oh no! The witch is making her brew...',
-      'Dont let her catch critters to fill her cauldron.',
-      '',
-      'Place towers along the path to catch critters!',
-      'Catching critters earns you $ to build more towers.',
-      '',
-      'Get some "High-energy Kids" out there now!',
-      'Tower coverage shows in light blue when placing.'
-    ], okButton)
+    dialog.render();
   }
 
   if (hasMouseMoved) {

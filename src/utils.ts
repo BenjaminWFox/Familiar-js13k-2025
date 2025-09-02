@@ -67,9 +67,20 @@ export function drawMouseTile(ctx: CanvasRenderingContext2D) {
  * Debug function - logs data for a tile when clicked by mouse
  */
 export function mouseHitTest() {
+  gameState.mouseDownAt = Date.now();
   const tile = TILE_DATA_OBJ[`${mouseTile.x / TILE_WIDTH},${mouseTile.y / TILE_WIDTH}`];
-  console.log('Tile', tile, tile.towerAtTile);
+  // console.log('Tile', tile, tile.towerAtTile);
   // console.log('Data', entities);
+
+  if (tile.hasTower) {
+    const cb = () => {
+      gameState.cash += tile.towerAtTile!.cost * .5;
+      gameState.closeDialog();
+      tile.towerAtTile!.sell();
+    }
+    gameState.showDialog(
+      [`Really? Sell this tower for ${tile.towerAtTile!.cost * .5}?`], cb, true);
+  }
 }
 
 function valueInRange(point: number, min: number, max: number) {

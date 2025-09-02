@@ -37,6 +37,16 @@ export class TileData {
     this.isPath = isPath;
     this.pathIndex = pathIndex;
   }
+
+  removeOccupyingTower() {
+    this.hasTower = false;
+    this.towerAtTile = undefined;
+  }
+
+  addOccupyingTower(tower: PlacedTower) {
+    this.hasTower = true;
+    this.towerAtTile = tower;
+  }
 }
 
 export const TILE_DATA_OBJ: Record<string, TileData> = {}
