@@ -1092,10 +1092,29 @@ class Fetcher extends Entity {
   }
 }
 
+function addMenuTowers() {
+  const towers = [
+    STRINGS.kid,
+    STRINGS.fan,
+    STRINGS.vaccuum,
+    STRINGS.net,
+    STRINGS.fish,
+    STRINGS.scratch
+  ];
+
+  towers.forEach((key, i) => {
+    const towerX = MENU_START_X;
+    const towerY = MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
+
+    new MenuTower(towerX, towerY, key);
+  })
+}
+
 export class Menu extends Entity {
   constructor() {
     super(MENU_START_X, 0, 0, 0, TILE_WIDTH * 12, HEIGHT, LAYERS.menu);
     menus.push(this);
+    addMenuTowers();
   }
 
   override render(): void {
@@ -1112,13 +1131,13 @@ export class Menu extends Entity {
 
     ctx.fillStyle = 'white';
     setFont(40)
-    ctx.fillText(`${gameState.escaped} / 100 Critters`, MENU_START_X, 100)
+    ctx.fillText(`${gameState.escaped} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
     // ctx.fillText('100', MENU_START_X + 480, 100)
     setFont(50)
     ctx.strokeStyle = 'white'
     ctx.fillText('Witches Cauldron', MENU_START_X, 50)
     ctx.strokeRect(MENU_START_X, 125, 550, 50);
-    ctx.fillRect(MENU_START_X, 125, 550 * (gameState.escaped / 100), 50);
+    ctx.fillRect(MENU_START_X, 125, 550 * (gameState.escaped / gameState.waveData.lives), 50);
 
     // setFont(50)
 
@@ -1325,6 +1344,7 @@ export const startBtn = new Button(
   400,
   150,
   'START', () => {
+    gameState.startWave();
     selectWave.removeListener(true);
     gameState.setState(SCENES.playing);
     setTimeout(() => {
@@ -1338,7 +1358,7 @@ export const startBtn = new Button(
       'Get some "High-energy Kids" out there now!',
       'Tower coverage shows in light blue when placing.'
     ])
-    }, 500)
+    }, 2000)
 })
 
 export const selectWave = new Button(

@@ -1,6 +1,7 @@
-import { WAVE_DATA } from "./constants";
-import { canvas, ctx } from "./elements";
-import { Button, dialog, selectWave, startBtn } from "./entity";
+import { TOTAL_WAVES, WAVE_DATA } from "./waves";
+import { canvas, ctx, mapCtx } from "./elements";
+import { Button, cashes, cats, Critter, critters, dialog, selectWave, startBtn, towers, Witch } from "./entity";
+import { drawTileMap } from "./maps";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 // import { setFont } from "./utils";
 
@@ -23,7 +24,10 @@ class GameState {
   ctx: CanvasRenderingContext2D;
   wave: number = 1;
   cash: number = 250;
+
   escaped: number = 0;
+  waveSpawns: number = 0;
+  waveTime: number = 0;
 
   dialogCallback: () => void;
   dialogText: string[] = [];
@@ -67,6 +71,48 @@ class GameState {
 
   get waveData() {
     return WAVE_DATA[this.wave as keyof typeof WAVE_DATA];
+  }
+
+  startWave() {
+    this.cash = this.waveData.startingCash;
+    this.waveTime = 0;
+    this.escaped = 0;
+
+    drawTileMap(mapCtx);
+
+    new Witch();
+  }
+
+  nextWave() {
+    this.wave += 1;
+    towers.forEach(t => t.sell());
+    cashes.forEach(c => c.deleted = true);
+    this.startWave();
+  }
+
+  runWave() {
+    // Finish wave
+    if (this.waveSpawns >= this.waveData.maxSpawns && critters.length === 0 && cats.length === 0) {
+      console.log('WAVE COMPLETE');
+      const msg = [`Wave ${this.wave} complete!`, ''];
+      if (this.wave < TOTAL_WAVES) {
+        msg.push(`On to Wave ${this.wave + 1}!`);
+      } else if (this.wave === TOTAL_WAVES) {
+        msg.push(`You did it! The Witches Cauldron was never filled!`);
+      }
+      this.showDialog(msg, () => this.nextWave())
+    }
+
+    // Spawn Critters
+    if (this.waveTime % this.waveData.spawnFrequency === 0 && this.waveSpawns < this.waveData.maxSpawns) {
+      this.waveSpawns++;
+      new Critter();
+    }
+
+    if (gameState.gameTime % 100 === 0) {
+      // new Cat();
+    }
+
   }
 
   dialogShowing = false;

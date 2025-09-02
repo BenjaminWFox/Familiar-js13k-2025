@@ -1,4 +1,4 @@
-import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
+import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
 import { Animal, getDirectionFromTo, NEXT_DIR, PlacedTower, TileCoveringTower } from "./entity";
 import { gameState } from "./gameState";
 import { convertTileToMapBounds } from "./utils";
@@ -12,12 +12,6 @@ function findPathIndex(x: number, y: number) {
     return _x === x && _y === y
   });
 }
-
-// Create an object to prevent iterating every time
-// probably overkill
-gameState.waveData.path.forEach((e: Tile) => {
-  PATH_OBJ[e.toString()] = 1
-});
 
 export class TileData {
   x: number;
@@ -61,9 +55,27 @@ const images = {
 }
 
 export function drawTileMap(ctx: CanvasRenderingContext2D): void {
-    const tileWidthAdjust = TILE_WIDTH * .5
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-    function drawTile(x: number, y: number, type: any, rotation: number = 0) {
+  Object.keys(PATH_OBJ).forEach(key => {
+    delete PATH_OBJ[key];
+  })
+  
+  Object.keys(TILE_DATA_OBJ).forEach(key => {
+    delete TILE_DATA_OBJ[key];
+  })
+  
+  console.log('NEW PATH OBJ', {...TILE_DATA_OBJ}, {...PATH_OBJ});
+
+  // Create an object to prevent iterating every time
+  // probably overkill
+  gameState.waveData.path.forEach((e: Tile) => {
+    PATH_OBJ[e.toString()] = 1
+  });
+
+  const tileWidthAdjust = TILE_WIDTH * .5
+
+  function drawTile(x: number, y: number, type: any, rotation: number = 0) {
     const c = document.createElement('canvas');
     const c_ctx = c.getContext('2d') as CanvasRenderingContext2D;
     c.width = TILE_WIDTH;

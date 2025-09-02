@@ -54,12 +54,8 @@ function deleteCritter(c: Critter[], i: number) {
 function render(): void {
   if (gameState.state === SCENES.playing) {
     gameState.gameTime += 1;
-    if (gameState.gameTime % 25 === 0) {
-      new Critter();
-    }
-    if (gameState.gameTime % 100 === 0) {
-      // new Cat();
-    }
+    gameState.waveTime += 1;
+    gameState.runWave();
     
     critters.forEach(e => e.render());
     cats.forEach(e => e.render());
@@ -110,31 +106,11 @@ function clearScreen(): void {
 image.onload = () => {
   gameState.image = image;
   gameState.setState(SCENES.start);
-
-  new Critter();
   new Menu();
-  new Cat();
-  new Witch();
-
-  const towers = [
-    STRINGS.kid,
-    STRINGS.fan,
-    STRINGS.vaccuum,
-    STRINGS.net,
-    STRINGS.fish,
-    STRINGS.scratch
-  ];
-
-  towers.forEach((key, i) => {
-    const towerX = MENU_START_X;
-    const towerY = MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + (TILE_WIDTH * i * 5)
-
-    new MenuTower(towerX, towerY, key);
-  })
 
   mapCtx.imageSmoothingEnabled = false;
   ctx.imageSmoothingEnabled = false;
   registerListeners(canvas);
-  drawTileMap(mapCtx);
+
   requestAnimationFrame(gameLoop);
 }

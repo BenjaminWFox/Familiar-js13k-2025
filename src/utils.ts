@@ -96,7 +96,7 @@ export function mouseHitTest() {
   // console.log('Tile', tile, tile.towerAtTile);
   // console.log('Data', entities);
 
-  if (tile.hasTower) {
+  if (tile && tile.hasTower) {
     const cb = () => {
       gameState.cash += tile.towerAtTile!.cost * .5;
       gameState.closeDialog();
