@@ -1,6 +1,5 @@
-import { HEIGHT, WIDTH, TILE_WIDTH, MENU_START_X, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET } from "./constants";
-import { drawTileMap } from "./maps";
-import { cashes, Cat, catchers, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, MenuTower, menuTowers, particles, towers, Witch, witches } from "./entity";
+import { HEIGHT, WIDTH, STRINGS, } from "./constants";
+import { cashes, catchers, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
