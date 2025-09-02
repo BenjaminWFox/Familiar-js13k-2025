@@ -28,6 +28,7 @@ export class GameState {
   escaped: number = 0;
   waveSpawns: number = 0;
   waveTime: number = 0;
+  ended: boolean = false;
 
   dialogCallback: () => void;
   dialogText: string[] = [];
@@ -74,37 +75,71 @@ export class GameState {
   }
 
   startWave() {
+    /** For debug **/
+      this.wave = 2;
+      this.setState(SCENES.playing);
+    /** For debug **/
+
+    this.clearBoard();
+    this.ended = false;
     this.cash = this.waveData.startingCash;
     this.waveTime = 0;
     this.escaped = 0;
+    this.waveSpawns = 0;
 
     drawTileMap(mapCtx);
 
     new Witch();
   }
 
-  nextWave() {
-    this.wave += 1;
+  clearBoard() {
     towers.forEach(t => t.sell());
     cashes.forEach(c => c.deleted = true);
     cats.forEach(c => c.deleted = true);
     witches.forEach(w => w.deleted = true);
+    critters.forEach(c => c.deleted = true);
+  }
+
+  nextWave() {
+    this.wave += 1;
     this.startWave();
   }
 
   runWave() {
     // Finish wave
     this.waveData.waveEvent(this);
-    if (this.waveData.complete && this.waveSpawns >= this.waveData.maxSpawns && critters.length === 0 && cats.every(c => c.distracted)) {
-      console.log('WAVE COMPLETE');
+    
+    if (
+      this.waveData.complete &&
+      this.waveSpawns >= this.waveData.maxSpawns &&
+      critters.length === 0 && cats.every(c => c.distracted) &&
+      this.escaped < this.waveData.lives &&
+      !this.ended
+    ) {
+      this.ended = true;
       const msg = [`Wave ${this.wave} complete!`, ''];
       if (this.wave < TOTAL_WAVES) {
         msg.push(`On to Wave ${this.wave + 1}!`);
       } else if (this.wave === TOTAL_WAVES) {
         msg.push(`You did it! The Witches Cauldron was never filled!`);
       }
+      console.log('RUNNING SUCCESS')
+
       setTimeout(() => {
-        this.showDialog(msg, () => this.nextWave())
+        this.showDialog(msg, () => this.wave === TOTAL_WAVES ? this.setState(SCENES.start) : this.nextWave())
+      }, 2000);
+    } else if (
+      this.escaped >= this.waveData.lives &&
+      !this.ended
+    ) {
+      console.log('RUNNING FAILURE')
+      this.ended = true;
+
+      setTimeout(() => {
+        this.showDialog([
+          'Oh no you failed!', '',
+          'The witch has completed her brew!'
+        ], () => { this.setState(SCENES.start) })
       }, 2000);
     }
 

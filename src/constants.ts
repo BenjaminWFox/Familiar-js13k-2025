@@ -70,6 +70,7 @@ export const PATH_1: Path = [
   [16, 22],
   [18, 22],
   [20, 22],
+
   [22, 22],
   [24, 22],
   [26, 22],
@@ -85,6 +86,24 @@ export const PATH_1: Path = [
   [46, 22],
 ]
 
+const p2X: Path = [
+  [8, 20],
+  [8, 18],
+  [10, 16],
+  [10, 14],
+  [12, 12],
+  [14, 12],
+  [16, 12],
+  [18, 14],
+  [18, 16],
+  [18, 18],
+  [20, 20],
+]
+export const PATH_2: Path = [
+  ...PATH_1.slice(0, 5),
+  ...p2X,
+  ...PATH_1.slice(12, PATH_1.length),
+]
 // export const PATH: Path = [
 //   [8, -2],
 //   [8, 0],
@@ -133,7 +152,7 @@ export const PATH_1: Path = [
 //   [50, 26],
 // ];
 
-export const PATH_2: Path = [
+export const PATH_3: Path = [
   [8, -2],
   [8, 0],
   [8, 2],

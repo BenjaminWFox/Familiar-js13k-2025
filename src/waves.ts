@@ -43,7 +43,20 @@ function defaultWaveEvent (this: WaveData, _: GameState) {
 }
 
 function wave1Event (this: WaveData, gameState: GameState) {
-  if (gameState.waveSpawns >= this.maxSpawns && critters.length === 0 && cats.length === 0) {
+  if (gameState.waveTime === 120) {
+    gameState.showDialog([
+      'Oh no! The witch is making her brew...',
+      'Dont let her catch critters to fill her cauldron.',
+      '',
+      'Place towers along the path to catch critters!',
+      'Catching critters earns you $ to build more towers.',
+      '',
+      'Get some "High-energy Kids" out there now!',
+      'Tower coverage shows in light blue when placing.'
+    ])
+  }
+
+  if (!this.complete && gameState.waveSpawns >= this.maxSpawns && critters.length === 0 && cats.length === 0) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
     new Cat();
     this.complete = true;
@@ -56,27 +69,46 @@ function wave1Event (this: WaveData, gameState: GameState) {
   }
 }
 
+function wave2Event (this: WaveData, gameState: GameState) {
+  if (gameState.waveTime === 150) {
+    gameState.showDialog([
+      'FLIIIES!',
+      'The kids cant catch flies.',
+      '',
+      'Send out the guy with the net!',
+    ])
+  }
+  if (gameState.waveTime === 240) {
+    this.allowedCritters.push(STRINGS.snake);
+  }
+  if (gameState.waveTime === 1200) {
+    new Cat();
+    this.complete = true;
+  }
+}
+
 export const WAVE_DATA = {
   1: new WaveData(
     [STRINGS.kid],
     [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
     false,
     PATH_1,
-    2,
+    20,
     10,
     40,
     300,
     wave1Event
   ),
   2: new WaveData(
-    [STRINGS.kid],
-    [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
+    [STRINGS.kid, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+    [STRINGS.fly],
     false,
     PATH_2,
-    30,
+    40,
     10,
     30,
-    300
+    400,
+    wave2Event
   ),
 }
 

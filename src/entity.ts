@@ -1130,14 +1130,15 @@ export class Menu extends Entity {
     ctx.fillRect(MENU_START_X - TILE_WIDTH, 0, TILE_WIDTH, this.height);
 
     ctx.fillStyle = 'white';
-    setFont(40)
-    ctx.fillText(`${gameState.escaped} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
+    setFont(40);
+    const esc = gameState.escaped > gameState.waveData.lives ? gameState.waveData.lives : gameState.escaped
+    ctx.fillText(`${esc} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
     // ctx.fillText('100', MENU_START_X + 480, 100)
-    setFont(50)
+    setFont(50);
     ctx.strokeStyle = 'white'
     ctx.fillText('Witches Cauldron', MENU_START_X, 50)
     ctx.strokeRect(MENU_START_X, 125, 550, 50);
-    ctx.fillRect(MENU_START_X, 125, 550 * (gameState.escaped / gameState.waveData.lives), 50);
+    ctx.fillRect(MENU_START_X, 125, 550 * (esc / gameState.waveData.lives), 50);
 
     // setFont(50)
 
@@ -1347,18 +1348,6 @@ export const startBtn = new Button(
     gameState.startWave();
     selectWave.removeListener(true);
     gameState.setState(SCENES.playing);
-    setTimeout(() => {
-      gameState.showDialog([
-      'Oh no! The witch is making her brew...',
-      'Dont let her catch critters to fill her cauldron.',
-      '',
-      'Place towers along the path to catch critters!',
-      'Catching critters earns you $ to build more towers.',
-      '',
-      'Get some "High-energy Kids" out there now!',
-      'Tower coverage shows in light blue when placing.'
-    ])
-    }, 2000)
 })
 
 export const selectWave = new Button(

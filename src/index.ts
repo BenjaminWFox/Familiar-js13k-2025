@@ -112,5 +112,7 @@ image.onload = () => {
   ctx.imageSmoothingEnabled = false;
   registerListeners(canvas);
 
+  gameState.startWave();
+
   requestAnimationFrame(gameLoop);
 }
