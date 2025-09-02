@@ -109,7 +109,7 @@ function clearScreen(): void {
 
 image.onload = () => {
   gameState.image = image;
-  gameState.setState(SCENES.playing);
+  gameState.setState(SCENES.start);
 
   new Critter();
   new Menu();

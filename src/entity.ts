@@ -1202,7 +1202,7 @@ export class Dialog extends Entity {
       okButton.addListener();
       okButton.render();
 
-      okButton.callback = gameState.dialogCallback;
+      okButton.extraCallback = gameState.dialogCallback;
 
       if (gameState.dialogShowCancel) {
         cancelButton.addListener();
@@ -1224,6 +1224,7 @@ export class Button extends Entity {
   removeOnClick: boolean;
   listening: boolean = false;
   callback: () => void;
+  extraCallback: () => void = () => {};
   eventCallback: () => void;
   font: number = 100;
   
@@ -1278,6 +1279,7 @@ export class Button extends Entity {
   runCallback() {
     this.removeListener();
     this.callback();
+    this.extraCallback();
   }
 
   addListener() {
@@ -1347,12 +1349,14 @@ export const selectWave = new Button(
 export const okButton = new Button(1650, 1100, 200, 100, 'Okay',
   () => {
       gameState.closeDialog();
+      cancelButton.removeListener();
     }
 )
 
 export const cancelButton = new Button(450, 1100, 200, 100, 'Cancel',
   () => {
       gameState.closeDialog();
+      okButton.removeListener();
     }
 )
 
