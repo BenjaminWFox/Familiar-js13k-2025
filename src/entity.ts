@@ -288,7 +288,7 @@ export class Critter extends Animal {
   }
 
   blownBack() {
-    const blowback = this.flying ? 4 : 2
+    const blowback = this.flying ? 4 : 3
     this.blown = true;
     this.speed = 6;
     this.pathIndex = this.pathIndex < blowback ? 0 : this.pathIndex -= blowback;
@@ -865,7 +865,7 @@ class FanTower extends TileCoveringTower {
 
         Object.values(tile?.critters).forEach(critter => {
           const c = critter as Critter;
-          if (c.type !== STRINGS.cat && c.type !== STRINGS.snake && !c.blown) {
+          if (c.type && c.type !== STRINGS.cat && c.type !== STRINGS.snake && !c.blown) {
             (critter as Critter).blownBack();
           }
         })
@@ -912,10 +912,12 @@ class VaccuumTower extends TileCoveringTower {
         }
 
         Object.values(tile?.critters).forEach(critter => {
-          critter.setCaught();
-          critter.destX = destX;
-          critter.destY = destY;
-          critter.getForcedDirection();
+          if (critter.type) {
+            critter.setCaught();
+            critter.destX = destX;
+            critter.destY = destY;
+            critter.getForcedDirection();
+          }
         })
       })
     }
@@ -1096,8 +1098,8 @@ function addMenuTowers() {
   const towers = [
     STRINGS.kid,
     STRINGS.net,
-    STRINGS.fan,
     STRINGS.vaccuum,
+    STRINGS.fan,
     STRINGS.fish,
     STRINGS.scratch
   ];

@@ -1,4 +1,4 @@
-import { Path, PATH_1, PATH_2, STRINGS } from "./constants";
+import { Path, PATH_1, PATH_2, PATH_3, STRINGS } from "./constants";
 import { Cat, cats, critters } from "./entity";
 import { GameState } from "./gameState";
 
@@ -97,6 +97,46 @@ function wave2Event (this: WaveData, gameState: GameState) {
   }
 }
 
+function wave3Event (this: WaveData, gameState: GameState) {
+  if (gameState.waveTime === 150) {
+    gameState.showDialog([
+      'Oh geez, the rest of our team fell behind!',
+      '',
+      'Fortunately we have these fans and vaccuums.',
+      '',
+      'Stop the critters with fans, and collect them',
+      'with vaccuums!',
+    ])
+  }
+  if (
+    !this.complete &&
+    gameState.waveSpawns >= this.maxSpawns &&
+    critters.length === 0 &&
+    cats.length === 0
+  ) {
+    this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
+    new Cat();
+    // new Cat();
+    // new Cat();
+    // new Cat();
+    this.complete = true;
+    gameState.showDialog(
+      [
+        'Oh no a herd of Black Cats!', '',
+        'Our appliances are no match for them!!', '',
+        'Quickly, put out a Scratching Post!', '',
+      ],
+      () => {
+        for (let i = 1; i < 4;i++) {
+          setTimeout(() => {
+            new Cat();
+          }, i * 500)
+        }
+      }
+    );
+  }
+} 
+
 export const WAVE_DATA = {
   1: () => new WaveData(
     [STRINGS.kid],
@@ -120,6 +160,17 @@ export const WAVE_DATA = {
     400,
     wave2Event
   ),
+  3: () => new WaveData(
+    [STRINGS.vaccuum, STRINGS.fan, STRINGS.fish, STRINGS.scratch],
+    [STRINGS.fly, STRINGS.lizard, STRINGS.frog],
+    false,
+    PATH_3,
+    50,
+    25,
+    30,
+    500,
+    wave3Event,
+  )
 }
 
 export const TOTAL_WAVES = Object.keys(WAVE_DATA).length;

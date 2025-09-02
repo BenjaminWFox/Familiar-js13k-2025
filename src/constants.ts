@@ -15,7 +15,7 @@ export const LAYERS = {
 }
 
 export const DEBUG = {
-  ignoreTowerCost: true
+  ignoreTowerCost: false
 }
 
 export const TOWER_WIDTH = TILE_WIDTH * 3;
@@ -63,6 +63,8 @@ export const PATH_1: Path = [
   [2, 22],
   [4, 22],
   [6, 22],
+
+  // unique
   [8, 22],
   [10, 22],
   [12, 22],
@@ -151,8 +153,34 @@ export const PATH_2: Path = [
 //   [48, 26],
 //   [50, 26],
 // ];
-
+const p3X: Path = [
+  [20, 20],
+  [22, 20],
+  [24, 20],
+  [24, 18],
+  [24, 16],
+  [24, 14],
+  [26, 12],
+  [26, 10],
+  [26, 8],
+  [26, 6],
+  [28, 6],
+  [30, 6],
+  [32, 6],
+  [32, 8],
+  [32, 10],
+  [32, 12],
+  [34, 14],
+  [34, 16],
+  [36, 18],
+  [38, 20],
+]
 export const PATH_3: Path = [
+  ...PATH_1.slice(0, 12),
+  ...p3X,
+  ...PATH_1.slice(21, PATH_1.length),
+]
+export const PATH_4: Path = [
   [8, -2],
   [8, 0],
   [8, 2],
