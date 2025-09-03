@@ -197,7 +197,7 @@ function wave5Event (this: WaveData, gameState: GameState) {
       '',
       'Good things too, more cats are coming!',
       '',
-      'Sell a tower to buy a scratching post...',
+      'Sell a Fish on a Stick to buy a Scratching Post...',
       'but be quick, selling it will release the cat!',
     ], () => {
       gameState.cash += 200;
@@ -211,6 +211,19 @@ function wave5Event (this: WaveData, gameState: GameState) {
 function wave6Event (this: WaveData, gameState: GameState) {
   if (gameState.waveTime === 30) {
     gameState.showDialog([
+      '(Wave 6)', '',
+      'Whew, everyone has caught up!', '',
+      'Just in time for our final stand!', '',
+      'Use everything you can to thwart the Witch!',
+    ])
+  }
+  this.complete = true;
+}
+
+function wave7Event (this: WaveData, gameState: GameState) {
+  if (gameState.waveTime === 30) {
+    gameState.showDialog([
+      '(Wave 7)', '',
       'Whew, everyone has caught up!', '',
       'Just in time for our final stand!', '',
       'Use everything you can to thwart the Witch!',
@@ -277,32 +290,33 @@ export const WAVE_DATA = {
     20,
     200,
     2,
-    4,
+    3,
     wave5Event,
   ),
   6: () => new WaveData(
     [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
     PATH_5,
-    100,
+    150,
     25,
-    25,
+    20,
     500,
     3,
     5,
     wave6Event
   ),
-  // 6: () => new WaveData(
-  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
-  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-  //   PATH_5,
-  //   100,
-  //   25,
-  //   25,
-  //   500,
-  //   2,
-  //   5
-  // ),
+  7: () => new WaveData(
+    [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+    [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+    PATH_5,
+    200,
+    25,
+    10,
+    500,
+    3,
+    5,
+    wave7Event
+  ),
   // 7: () => new WaveData(
   //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
   //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
