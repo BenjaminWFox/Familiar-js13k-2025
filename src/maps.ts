@@ -1,4 +1,4 @@
-import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH_OBJ, STRINGS, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
+import { type Tile, COLOR_MAP_GREEN, HEIGHT, MENU_START_X, PATH_OBJ, STRINGS, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
 import { Animal, getDirectionFromTo, NEXT_DIR, PlacedTower, TileCoveringTower } from "./entity";
 import { gameState } from "./gameState";
 import { sprites } from "./sprites";
@@ -233,7 +233,7 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
         //   ctx.fillStyle = 'black';
         //   ctx.fillRect(minX, minY, 50, 50);
         // }
-      } else {
+      } else if (x * TILE_WIDTH < MENU_START_X) {
         const place = getRandomInt(0, 100)
         if (place < 10) {
           const o = getRandomInt(0, 3);

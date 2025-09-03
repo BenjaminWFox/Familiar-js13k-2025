@@ -1,4 +1,4 @@
-import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION } from "./constants";
+import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION, MENU_TITLE_FONT, MENU_HEADER_FONT, MENU_INFO_FONT, MENU_DETAIL_FONT, DETAIL_START_X } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { sounds } from "./sounds";
@@ -426,7 +426,9 @@ export class MenuTower extends BaseTower {
     this.cost = TOWER_COST[key as keyof typeof TOWER_COST];
 
     window.addEventListener('mousedown', this.dragHandler.bind(this));
+    window.addEventListener('touchstart', this.touchHandler.bind(this));
     window.addEventListener('mouseup', this.releaseHandler.bind(this));
+    window.addEventListener('touchend', this.releaseHandler.bind(this));
 
     menuTowers.push(this);
   }
@@ -507,6 +509,13 @@ export class MenuTower extends BaseTower {
       if (this.x < canvasX && this.x + this.width > canvasX && this.y < canvasY && this.y + this.height > canvasY) {
         this.dragging = true;
       }
+    }
+  }
+
+  touchHandler(e: TouchEvent) {
+    if (e.targetTouches.length === 1) {
+      const t = e.targetTouches[0];
+      this.dragHandler(t as unknown as MouseEvent);
     }
   }
 
@@ -943,10 +952,10 @@ class FanTower extends TileCoveringTower {
 
 class VaccuumTower extends TileCoveringTower {
   static CoveredTiles = [
-    0,0,-1,-1,-2,-2,-3,-3,
-    2,2,3,3,4,4,5,5,
-    0,2,-1,3,-2,4,-3,5,
-    2,0,3,-1,4,-2,5,-3
+    -1,-1,-2,-2,-3,-3,
+    3,3,4,4,5,5,
+    -1,3,-2,4,-3,5,
+    3,-1,4,-2,5,-3
   ];
   tick = 0;
 
@@ -1208,11 +1217,11 @@ export class Menu extends Entity {
     ctx.fillRect(MENU_START_X - TILE_WIDTH, 0, TILE_WIDTH, this.height);
 
     ctx.fillStyle = 'white';
-    setFont(40);
+    setFont(MENU_HEADER_FONT);
     const esc = gameState.escaped > gameState.waveData.lives ? gameState.waveData.lives : gameState.escaped
     ctx.fillText(`${esc} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
     // ctx.fillText('100', MENU_START_X + 480, 100)
-    setFont(50);
+    setFont(MENU_TITLE_FONT);
     ctx.strokeStyle = 'white'
     ctx.fillText('Witches Cauldron', MENU_START_X, 50)
     ctx.strokeRect(MENU_START_X, 125, 550, 50);
@@ -1225,68 +1234,68 @@ export class Menu extends Entity {
     ctx.fillText(`Cash: $${gameState.cash}`, MENU_START_X, 330)
 
     const sy = (mod: number) => MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + TILE_WIDTH * mod;
-    const sx = MENU_START_X + (TILE_WIDTH * 4);
+    const sx = DETAIL_START_X;
     let price = 0;
 
-    ctx.fillText(`Towers`, MENU_START_X, sy(-3))
+    ctx.fillText(`Towers`, MENU_START_X, sy(-2))
 
-    setFont(35);
-    ctx.fillText(`Click+Drag to place towers`, MENU_START_X, sy(-2))
+    // setFont(MENU_INFO_FONT);
+    // ctx.fillText(`Click+Drag to place towers`, MENU_START_X, sy(-2))
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.kid)) {
-      setFont(40);
+      setFont(MENU_HEADER_FONT);
       ctx.fillText(`High-energy Kids`, MENU_START_X, sy(-.5))
-      setFont(26);
-      ctx.fillText(`- Fast`, sx, sy(.5))
-      ctx.fillText(`- Cant catch flies`, sx, sy(1.5))
+      setFont(MENU_DETAIL_FONT);
+      ctx.fillText(`Fast`, sx, sy(.5))
+      ctx.fillText(`Cant catch flies`, sx, sy(1.5))
       price = TOWER_COST[STRINGS.kid];
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(2.5))
     }
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.net)) {
-      setFont(40, 'white');
+      setFont(MENU_HEADER_FONT, 'white');
       ctx.fillText(`Guy with a Net`, MENU_START_X, sy(4.5))
-      setFont(26);
-      ctx.fillText(`- Very Slow`, sx, sy(5.5))
-      ctx.fillText(`- Catches flies & frogs`, sx, sy(6.5))
+      setFont(MENU_DETAIL_FONT);
+      ctx.fillText(`Very Slow`, sx, sy(5.5))
+      ctx.fillText(`Catch flies & frogs`, sx, sy(6.5))
       price = TOWER_COST[STRINGS.net];
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(7.5))
     }
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.fan)) {
-      setFont(40, 'white');
+      setFont(MENU_HEADER_FONT, 'white');
       ctx.fillText(`Really Big Fans`, MENU_START_X, sy(14.5))
-      setFont(26);
-      ctx.fillText(`- Blows critters back`, sx, sy(15.5))
-      ctx.fillText(`- Cant blow snakes`, sx, sy(16.5))
+      setFont(MENU_DETAIL_FONT);
+      ctx.fillText(`Blows critters back`, sx, sy(15.5))
+      ctx.fillText(`Cant blow snakes`, sx, sy(16.5))
       price = TOWER_COST[STRINGS.fan];
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(17.5))
     }
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.vaccuum)) {
-      setFont(40, 'white');
+      setFont(MENU_HEADER_FONT, 'white');
       ctx.fillText(`Powerful Vaccuums`, MENU_START_X, sy(9.5))
-      setFont(26);
-      ctx.fillText(`- Slow`, sx, sy(10.5))
-      ctx.fillText(`- Covers many angles`, sx, sy(11.5))
+      setFont(MENU_DETAIL_FONT);
+      ctx.fillText(`Slow`, sx, sy(10.5))
+      ctx.fillText(`Cover many angles`, sx, sy(11.5))
       price = TOWER_COST[STRINGS.vaccuum];
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(12.5))
     }
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.fish)) {
-      setFont(40, 'white');
+      setFont(MENU_HEADER_FONT, 'white');
       ctx.fillText(`Fish on a Stick`, MENU_START_X, sy(19.5))
-      setFont(26);
-      ctx.fillText(`- Distract 1 Black Cat`, sx, sy(20.5))
+      setFont(MENU_DETAIL_FONT);
+      ctx.fillText(`Distract 1 Black Cat`, sx, sy(20.5))
       price = TOWER_COST[STRINGS.fish];
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(21.5))
     }
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.scratch)) {
-      setFont(40, 'white');
+      setFont(MENU_HEADER_FONT, 'white');
       ctx.fillText(`Scratching Post`, MENU_START_X, sy(24.5))
-      setFont(26);
-      ctx.fillText(`- Distract 4 Black Cats`, sx, sy(25.5))
+      setFont(MENU_DETAIL_FONT);
+      ctx.fillText(`Distract 4 Black Cat`, sx, sy(25.5))
       price = TOWER_COST[STRINGS.scratch];
       ctx.fillText(`${getPriceForAffordability(price)}`, sx, sy(26.5))    
     }

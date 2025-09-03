@@ -54,13 +54,13 @@ function wave1Event (this: WaveData, gameState: GameState) {
   if (gameState.waveTime === 30) {
     gameState.showDialog([
       'Oh no! The Witch is making her brew...',
-      'Dont let her catch critters to fill her cauldron.',
+      'dont let her catch critters to fill her cauldron.',
       '',
-      'Place towers along the path to catch critters!',
-      'Catching critters earns you $ to build more towers.',
+      'Drag towers from menu to map to catch critters...',
+      'catching critters earns you $ to build more towers!',
       '',
-      'Get some "High-energy Kids" out there now!',
-      'Tower coverage shows in light blue when placing.'
+      'Get some "High-energy Kids" out there now...',
+      'a tower covers the blue squares shown while dragging!'
     ])
   }
 
@@ -253,7 +253,7 @@ export const WAVE_DATA = {
     10,
     30,
     500,
-    1.5,
+    1.25,
     3,
     wave2Event
   ),
@@ -266,7 +266,7 @@ export const WAVE_DATA = {
     50,
     800,
     1.5,
-    4,
+    3,
     wave3Event,
   ),
   4: () => new WaveData(

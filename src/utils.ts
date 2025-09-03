@@ -1,4 +1,4 @@
-import { WIDTH, TILE_WIDTH, type Tile } from "./constants";
+import { WIDTH, TILE_WIDTH, type Tile, MENU_DETAIL_FONT } from "./constants";
 import { Entity, NEXT_DIR } from "./entity";
 import { gameState } from "./gameState";
 import { TILE_DATA_OBJ } from "./maps";
@@ -47,7 +47,7 @@ export const setFont = (size: number, color?: string) => {
   gameState.ctx.font = `${size}px 'Courier New'`;
 }
 export const getPriceForAffordability = (p: number) => {
-  setFont(30);
+  setFont(MENU_DETAIL_FONT);
   if (canAffordTower(p)) {
     gameState.ctx.fillStyle = 'white';
     return `- $ ${p}`;
@@ -93,6 +93,13 @@ export function drawMouseTile(ctx: CanvasRenderingContext2D) {
   // // ctx.fillText(`${mouseTile.x / TILE_WIDTH}, ${mouseTile.y / TILE_WIDTH} | ${mouseTile.x}, ${mouseTile.y}`, 2625, 75)
 }
 
+export function touchHitTest(e: TouchEvent) {
+  if (e.targetTouches.length === 1) {
+    const t = e.targetTouches[0];
+    setMouseTile(t.pageX, t.pageY);
+    mouseHitTest();
+  }
+}
 /**
  * Debug function - logs data for a tile when clicked by mouse
  */
