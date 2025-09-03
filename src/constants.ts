@@ -28,7 +28,7 @@ export const COLOR_MAP_GREEN = '#39941a';
 export const COLOR_MENU_GREEN_1 = '#26700dff';
 export const COLOR_MENU_GREEN_2 = '#164e04ff';
 
-export const CURSE_DURATION = 90;
+export const CURSE_DURATION = 120;
 
 export type Tile = [number, number];
 export type Path = Array<Tile>;
@@ -49,6 +49,10 @@ export const STRINGS = {
   fish: 'fish',
   scratch: 'scratch',
   curse: 'curse',
+  tree1: 'tree1',
+  tree2: 'tree2',
+  grass1: 'grass1',
+  grass2: 'grass2',
 }
 
 export const TOWER_COST = {
@@ -178,12 +182,33 @@ const p3X: Path = [
   [36, 18],
   [38, 20],
 ]
+
 export const PATH_3: Path = [
   ...PATH_1.slice(0, 12),
   ...p3X,
   ...PATH_1.slice(21, PATH_1.length),
 ]
+
 export const PATH_4: Path = [
+  ...PATH_1.slice(0, 5),
+  [8, 20],
+  [10, 18],
+  [12, 16],
+  [14, 16],
+  [16, 18],
+  [18, 20],
+  [20, 22],
+  [22, 24],
+  [24, 26],
+  [26, 28],
+  [28, 28],
+  [30, 26],
+  [32, 24],
+  [34, 22],
+  ...PATH_1.slice(19, PATH_1.length),
+]
+
+export const PATH_5: Path = [
   [8, -2],
   [8, 0],
   [8, 2],

@@ -1,4 +1,4 @@
-import { Path, PATH_1, PATH_2, PATH_3, STRINGS } from "./constants";
+import { Path, PATH_1, PATH_2, PATH_3, PATH_4, STRINGS } from "./constants";
 import { Cat, cats, critters } from "./entity";
 import { GameState } from "./gameState";
 
@@ -72,7 +72,7 @@ function wave1Event (this: WaveData, gameState: GameState) {
       [
         'Oh no, a black cat!! It counts as 10 critters!', '',
         'It will also CURSE many of your towers!', '',
-        'Add a Fish on a Stick to distract it!', '',
+        'Place a Fish on a Stick to distract it!', '',
         'Click a tower to sell it for extra cash if needed.'
       ]);
   }
@@ -96,6 +96,14 @@ function wave2Event (this: WaveData, gameState: GameState) {
   }
 }
 
+function staggerSpawnCats(n: number) {
+  for (let i = 1; i <= n;i++) {
+    setTimeout(() => {
+      new Cat();
+    }, i * 500)
+  }
+}
+
 function wave3Event (this: WaveData, gameState: GameState) {
   if (gameState.waveTime === 150) {
     gameState.showDialog([
@@ -103,8 +111,8 @@ function wave3Event (this: WaveData, gameState: GameState) {
       '',
       'Fortunately we have these fans and vaccuums.',
       '',
-      'Stop the critters with fans, and collect them',
-      'with vaccuums!',
+      'Stop the critters with fans...',
+      'and collect them with vaccuums!',
     ])
   }
   if(
@@ -117,14 +125,10 @@ function wave3Event (this: WaveData, gameState: GameState) {
   if (
     !this.complete &&
     gameState.waveSpawns >= this.maxSpawns &&
-    critters.length === 0 // &&
-    // cats.length === 0
+    critters.length === 0
   ) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
     new Cat();
-    // new Cat();
-    // new Cat();
-    // new Cat();
     this.complete = true;
     gameState.showDialog(
       [
@@ -133,25 +137,43 @@ function wave3Event (this: WaveData, gameState: GameState) {
         'Quickly, put out a Scratching Post!', '',
       ],
       () => {
-        for (let i = 1; i < 4;i++) {
-          setTimeout(() => {
-            new Cat();
-          }, i * 500)
-        }
+        staggerSpawnCats(3);
       }
     );
   }
 }
 
 function wave4Event (this: WaveData, gameState: GameState) {
-  if (!this.complete &&
-    gameState.waveTime % 240 === 0
+  if(
+    gameState.waveTime === 10 ||
+    gameState.waveTime === 300
   ) {
-    new Cat();
+      new Cat();
   }
 
-  if (gameState.waveTime > 2200) {
-    this.complete = true;
+  if (gameState.waveTime === 60) {
+    gameState.showDialog([
+      'Well, our guys havent caught up yet...',
+      'and we are out of appliances!',
+      '',
+      'Hold off these Black Cats until we can regroup!',
+    ])
+  }
+
+  if (gameState.waveTime === 650) {
+    gameState.showDialog([
+      'Oooh I found $200 under a rock!',
+      '',
+      'Good things too, more cats are coming!',
+      '',
+      'Sell a tower to buy a scratching post...',
+      'but be quick, selling it will release the cat!',
+    ], () => {
+      gameState.cash += 200;
+      new Cat();
+      staggerSpawnCats(2);
+      this.complete = true;
+    })
   }
 }
 
@@ -191,14 +213,14 @@ export const WAVE_DATA = {
     wave3Event,
   ),
   4:  () => new WaveData(
-    [STRINGS.kid, STRINGS.net, STRINGS.vaccuum, STRINGS.fan, STRINGS.fish, STRINGS.scratch],
-    [STRINGS.fly, STRINGS.lizard, STRINGS.frog],
+    [STRINGS.fish, STRINGS.scratch],
+    [],
     false,
-    PATH_3,
-    100,
-    250,
+    PATH_4,
+    0,
+    10,
     20,
-    500,
+    200,
     wave4Event,
   ),
 }

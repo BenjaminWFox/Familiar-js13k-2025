@@ -104,4 +104,8 @@ export const sprites = {
   [STRINGS.fetcher]: () => new Sprite(STRINGS.fetcher, 0, 10, 2, 8, 10, 10, 1, true),
   [STRINGS.catcher]: () => new Sprite(STRINGS.catcher, 40, 0, 1, 0, 10),
   [STRINGS.curse]: () => new Sprite(STRINGS.curse, 0, 110, 2, 8, 10, 10),
+  [STRINGS.tree1]: () => new Sprite(STRINGS.tree1, 0, 120, 1, 8, 10, 10),
+  [STRINGS.tree2]: () => new Sprite(STRINGS.tree2, 10, 120, 1, 8, 10, 10),
+  [STRINGS.grass1]: () => new Sprite(STRINGS.grass1, 40, 130, 1, 8, 10, 10),
+  [STRINGS.grass2]: () => new Sprite(STRINGS.grass2, 40, 140, 1, 8, 10, 10),
 }

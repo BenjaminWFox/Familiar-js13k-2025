@@ -95,7 +95,7 @@ export class GameState {
   }
 
   clearBoard() {
-    towers.forEach(t => t.sell());
+    towers.forEach(t => t.remove());
     cashes.forEach(c => c.deleted = true);
     cats.forEach(c => c.deleted = true);
     witches.forEach(w => w.deleted = true);
@@ -111,11 +111,11 @@ export class GameState {
   runWave() {
     // Finish wave
     this.waveData.waveEvent(this);
-    
     if (
       this.waveData.complete &&
       this.waveSpawns >= this.waveData.maxSpawns &&
-      critters.length === 0 && cats.every(c => c.distracted) &&
+      critters.length === 0 &&
+      cats.every(c => c.distracted) &&
       this.escaped < this.waveData.lives &&
       !this.ended
     ) {
@@ -126,16 +126,23 @@ export class GameState {
       } else if (this.wave === TOTAL_WAVES) {
         msg.push(`You did it! The Witches Cauldron was never filled!`);
       }
-      console.log('RUNNING SUCCESS')
 
       setTimeout(() => {
-        this.showDialog(msg, () => this.wave === TOTAL_WAVES ? this.setState(SCENES.start) : this.nextWave())
+        this.showDialog(
+          msg,
+          () => {
+            if (this.wave === TOTAL_WAVES) {
+              this.wave = 1;
+              this.setState(SCENES.start);
+            } else {
+              this.nextWave();
+            }
+          })
       }, 2000);
     } else if (
       this.escaped >= this.waveData.lives &&
       !this.ended
     ) {
-      console.log('RUNNING FAILURE')
       this.ended = true;
 
       setTimeout(() => {
@@ -147,7 +154,11 @@ export class GameState {
     }
 
     // Spawn Critters
-    if (this.waveTime % this.waveData.spawnFrequency === 0 && this.waveSpawns < this.waveData.maxSpawns) {
+    if (
+      this.waveTime % this.waveData.spawnFrequency === 0 &&
+      this.waveSpawns < this.waveData.maxSpawns &&
+      this.waveData.allowedCritters.length
+    ) {
       this.waveSpawns++;
       new Critter();
     }

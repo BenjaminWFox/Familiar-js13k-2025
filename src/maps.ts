@@ -1,7 +1,8 @@
-import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH_OBJ, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
+import { type Tile, COLOR_MAP_GREEN, HEIGHT, PATH_OBJ, STRINGS, TILE_WIDTH, WIDTH, X_TILES, Y_TILES } from "./constants";
 import { Animal, getDirectionFromTo, NEXT_DIR, PlacedTower, TileCoveringTower } from "./entity";
 import { gameState } from "./gameState";
-import { convertTileToMapBounds } from "./utils";
+import { sprites } from "./sprites";
+import { convertTileToMapBounds, getRandomInt } from "./utils";
 
 function testPath(x: number, y: number): keyof typeof PATH_OBJ {
   return `${x},${y}` as keyof typeof PATH_OBJ;
@@ -47,6 +48,7 @@ export const TILE_DATA_OBJ: Record<string, TileData> = {}
 export const getTileDataKey = (x: number, y: number) => `${x},${y}`;
 export const getTileDataEntry = (x: number, y: number) => TILE_DATA_OBJ[getTileDataKey(x, y)];
 
+const fillerOptions = [STRINGS.tree1, STRINGS.tree2, STRINGS.grass1, STRINGS.grass2];
 const images = {
   path: {x: 30},
   edge: {x: 20},
@@ -64,8 +66,6 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
   Object.keys(TILE_DATA_OBJ).forEach(key => {
     delete TILE_DATA_OBJ[key];
   })
-  
-  console.log('NEW PATH OBJ', {...TILE_DATA_OBJ}, {...PATH_OBJ});
 
   // Create an object to prevent iterating every time
   // probably overkill
@@ -233,6 +233,13 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
         //   ctx.fillStyle = 'black';
         //   ctx.fillRect(minX, minY, 50, 50);
         // }
+      } else {
+        const place = getRandomInt(0, 100)
+        if (place < 10) {
+          const o = getRandomInt(0, 3);
+          const s = sprites[fillerOptions[o]]();
+          s.draw(ctx, x * TILE_WIDTH, y * TILE_WIDTH, o < 2 ? TILE_WIDTH * 3 : TILE_WIDTH);
+        }
       }
     }
   }

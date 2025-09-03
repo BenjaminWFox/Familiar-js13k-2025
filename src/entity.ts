@@ -3,7 +3,7 @@ import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 // import { playSong } from "./music";
 import { Sprite, sprites } from "./sprites";
-import { angleToTarget, canAffordTower, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getPriceForAffordability, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
+import { angleToTarget, canAffordTower, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getPriceForAffordability, getRandomInt, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -19,12 +19,6 @@ export enum NEXT_DIR {
   SW,
   W,
   NW
-}
-
-function getRandomInt(min: number, max: number) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export function getDirectionFromTo(tFrom: Tile, tTo: Tile) {
@@ -496,7 +490,11 @@ export class MenuTower extends BaseTower {
   dragHandler(e: MouseEvent) {
     const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
 
-    if (!this.dragging && (canAffordTower(this.cost) || DEBUG.ignoreTowerCost) && gameState.state === SCENES.playing) {
+    if (
+      !this.dragging &&
+      (canAffordTower(this.cost) || DEBUG.ignoreTowerCost) &&
+      gameState.state === SCENES.playing
+    ) {
       if (this.x < canvasX && this.x + this.width > canvasX && this.y < canvasY && this.y + this.height > canvasY) {
         this.dragging = true;
       }
@@ -506,6 +504,9 @@ export class MenuTower extends BaseTower {
   releaseHandler() {
     if (this.dragging) {
       this.dragging = false;
+      if (gameState.dialogShowing) {
+        return;
+      }
       if (this._isValidPlacement) {
         const x = mouseTile.x - TILE_WIDTH
         const y = mouseTile.y - TILE_WIDTH
@@ -568,17 +569,15 @@ export class PlacedTower extends BaseTower {
   }
 
   curse() {
-    console.log('Cursing!')
     this.cursed = sprites[STRINGS.curse]();
     this.cursedAt = gameState.gameTime;
   }
 
   unCurse() {
-    console.log('Un-Cursing!')
     this.cursed = undefined;
   }
 
-  sell() {
+  remove() {
     this.deleted = true;
     this.coveredTiles.forEach(tile => {
       tile.towersCoveringTile = tile.towersCoveringTile.filter(t => !t.deleted);
@@ -593,6 +592,10 @@ export class PlacedTower extends BaseTower {
         }
       }
     }
+  }
+
+  sell() {
+    this.remove();
   }
 }
 
@@ -796,6 +799,11 @@ class FetcherTower extends TileCoveringTower {
       new Fetcher(this),
       // new Fetcher(this),
     ])
+  }
+
+  remove(): void {
+    this.fetchers.forEach(f => f.remove());
+    super.remove();
   }
 
   sell() {
@@ -1360,7 +1368,6 @@ export class Button extends Entity {
   }
 
   hitTest() {
-    console.log('Testing...')
     if (dialog.hasRendered && gameState.mouseDownAt < dialog.openedAt) {
       return;
     }
