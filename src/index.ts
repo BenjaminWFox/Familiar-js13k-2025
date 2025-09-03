@@ -8,7 +8,7 @@ import { sprites } from "./sprites";
 import { selectWave, startBtn } from "./entity";
 
 const image = new Image();
-image.src = 'path2.png';
+image.src = 'path2_test.png';
 
 // let windowTime = 0;
 // let dt = 0;
