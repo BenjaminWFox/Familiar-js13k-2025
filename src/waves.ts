@@ -1,4 +1,4 @@
-import { Path, PATH_1, PATH_2, PATH_3, PATH_4, STRINGS } from "./constants";
+import { Path, PATH_1, PATH_2, PATH_3, PATH_4, PATH_5, STRINGS } from "./constants";
 import { Cat, cats, critters } from "./entity";
 import { GameState } from "./gameState";
 
@@ -222,6 +222,16 @@ export const WAVE_DATA = {
     20,
     200,
     wave4Event,
+  ),
+  5: () => new WaveData(
+    [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+    [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+    false,
+    PATH_5,
+    100,
+    25,
+    25,
+    500,
   ),
 }
 
