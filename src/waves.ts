@@ -184,9 +184,9 @@ export const WAVE_DATA = {
     [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
     false,
     PATH_1,
-    20,
+    25,
     10,
-    40,
+    45,
     300,
     wave1Event
   ),
