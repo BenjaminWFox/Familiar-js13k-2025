@@ -15,7 +15,7 @@ export enum SCENES {
 
 export class GameState {
   mouseDownAt: number = 0;
-  waves = 13;
+  waves = Object.keys(WAVE_DATA).length;
   gameTime: number = 0;
   image: HTMLImageElement | undefined;
   paused: boolean = false;
@@ -77,7 +77,7 @@ export class GameState {
 
   startWave() {
     /** For debug **/
-      // this.wave = 4;
+      // this.wave = 3;
       // this.setState(SCENES.playing);
     /** For debug **/
     this._waveData = WAVE_DATA[this.wave as keyof typeof WAVE_DATA]();

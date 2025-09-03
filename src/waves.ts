@@ -1,16 +1,17 @@
-import { Path, PATH_1, PATH_2, PATH_3, PATH_4, PATH_5, STRINGS } from "./constants";
+import { Path, PATH_STRIGHT, PATH_2, PATH_3, PATH_4, PATH_5, STRINGS, PATH_CLOSE_RIGHT } from "./constants";
 import { Cat, cats, critters } from "./entity";
 import { GameState } from "./gameState";
 
 class WaveData {
   allowedTowers: string[] = [];
   allowedCritters: string[] = [];
-  allowedCats: boolean = true;
   path: Path = [];
   maxSpawns: number;
   lives: number;
   spawnFrequency: number;
   startingCash: number;
+  critterSpeed: number;
+  catSpeed: number;
 
   waveEvent: (gs: GameState) => void;
 
@@ -19,22 +20,24 @@ class WaveData {
   constructor(
     allowedTowers: string[],
     allowedCritters: string[],
-    allowedCats: boolean,
     path: Path,
     maxSpawns: number,
     lives: number,
     spawnFrequency: number,
     startingCash: number,
+    critterSpeed: number,
+    catSpeed: number,
     waveEvent: (gs: GameState) => void = defaultWaveEvent
 ) {
     this.allowedTowers = allowedTowers;
     this.allowedCritters = allowedCritters;
-    this.allowedCats = allowedCats;
     this.path = path;
     this.maxSpawns = maxSpawns;
     this.lives = lives;
     this.spawnFrequency = spawnFrequency;
     this.startingCash = startingCash;
+    this.critterSpeed = critterSpeed;
+    this.catSpeed = catSpeed;
     this.waveEvent = waveEvent.bind(this);
   }
 
@@ -48,9 +51,9 @@ function defaultWaveEvent (this: WaveData, _: GameState) {
 }
 
 function wave1Event (this: WaveData, gameState: GameState) {
-  if (gameState.waveTime === 120) {
+  if (gameState.waveTime === 30) {
     gameState.showDialog([
-      'Oh no! The witch is making her brew...',
+      'Oh no! The Witch is making her brew...',
       'Dont let her catch critters to fill her cauldron.',
       '',
       'Place towers along the path to catch critters!',
@@ -70,7 +73,7 @@ function wave1Event (this: WaveData, gameState: GameState) {
     this.complete = true;
     gameState.showDialog(
       [
-        'Oh no, a black cat!! It counts as 10 critters!', '',
+        'Oh no, a Black Cat!! It counts as 10 critters!', '',
         'It will also CURSE many of your towers!', '',
         'Place a Fish on a Stick to distract it!', '',
         'Click a tower to sell it for extra cash if needed.'
@@ -79,7 +82,7 @@ function wave1Event (this: WaveData, gameState: GameState) {
 }
 
 function wave2Event (this: WaveData, gameState: GameState) {
-  if (gameState.waveTime === 150) {
+  if (gameState.waveTime === 30) {
     gameState.showDialog([
       'FLIIIES!', '',
       'The kids cant catch flies.', '',
@@ -88,6 +91,14 @@ function wave2Event (this: WaveData, gameState: GameState) {
     ])
   }
   if (gameState.waveTime === 600) {
+    gameState.showDialog([
+      'SNAKES ON A PATH!', '',
+      'Snakes are too sneaky for a net...',
+      'put out some kids to chase them down!', '',
+      'Black Cats are coming soon...',
+      'Fish on a Stick anyone?!'
+    ])
+    this.allowedTowers.push(STRINGS.kid, STRINGS.fish, STRINGS.scratch);
     this.allowedCritters.push(STRINGS.snake);
   }
   if (gameState.waveTime === 1200) {
@@ -105,11 +116,31 @@ function staggerSpawnCats(n: number) {
 }
 
 function wave3Event (this: WaveData, gameState: GameState) {
+  if (gameState.waveTime === 30) {
+    gameState.showDialog([
+      'Oh geez oh geez the Witch is right there!', '',
+      'And our critter catching kids have fallen behind!', '',
+      'Slow the critters down with these fans...',
+      'until the kids catch up!',
+    ])
+  }
+  if (gameState.waveTime === 1200) {
+    gameState.showDialog([
+      'Ahh here they are, put those kids to work!', '',
+      'Watch out for snakes sneaking under the fans.',
+    ])
+    this.allowedTowers.push(STRINGS.kid);
+    this.allowedCritters.push(STRINGS.snake);
+    this.complete = true;
+  }
+}
+
+function wave4Event (this: WaveData, gameState: GameState) {
   if (gameState.waveTime === 150) {
     gameState.showDialog([
-      'Oh geez, the rest of our team fell behind!',
+      'Oh geez, the rest of our team is lost again!',
       '',
-      'Fortunately we have these fans and vaccuums.',
+      'But we found some vaccuums to go with our fans!',
       '',
       'Stop the critters with fans...',
       'and collect them with vaccuums!',
@@ -143,7 +174,7 @@ function wave3Event (this: WaveData, gameState: GameState) {
   }
 }
 
-function wave4Event (this: WaveData, gameState: GameState) {
+function wave5Event (this: WaveData, gameState: GameState) {
   if(
     gameState.waveTime === 10 ||
     gameState.waveTime === 300
@@ -182,57 +213,140 @@ export const WAVE_DATA = {
   1: () => new WaveData(
     [STRINGS.kid],
     [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
-    false,
-    PATH_1,
+    PATH_STRIGHT,
     25,
-    10,
+    15,
     45,
-    300,
+    600,
+    1,
+    3,
     wave1Event
   ),
   2: () => new WaveData(
-    [STRINGS.kid, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+    [STRINGS.net],
     [STRINGS.fly],
-    false,
     PATH_2,
     40,
     10,
     30,
-    400,
+    500,
+    1.5,
+    3,
     wave2Event
   ),
   3: () => new WaveData(
+    [STRINGS.fan,],
+    [STRINGS.lizard, STRINGS.frog],
+    PATH_CLOSE_RIGHT,
+    75,
+    20,
+    50,
+    800,
+    1.5,
+    4,
+    wave3Event,
+  ),
+  4: () => new WaveData(
     [STRINGS.vaccuum, STRINGS.fan, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.lizard, STRINGS.frog],
-    false,
     PATH_3,
     50,
     25,
     30,
     500,
-    wave3Event,
+    2,
+    4,
+    wave4Event,
   ),
-  4:  () => new WaveData(
+  5:  () => new WaveData(
     [STRINGS.fish, STRINGS.scratch],
     [],
-    false,
     PATH_4,
     0,
     10,
     20,
     200,
-    wave4Event,
+    2,
+    4,
+    wave5Event,
   ),
-  5: () => new WaveData(
+  6: () => new WaveData(
     [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-    false,
     PATH_5,
     100,
     25,
     25,
     500,
+    2,
+    5
   ),
+  // 6: () => new WaveData(
+  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+  //   PATH_5,
+  //   100,
+  //   25,
+  //   25,
+  //   500,
+  //   2,
+  //   5
+  // ),
+  // 7: () => new WaveData(
+  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+  //   PATH_5,
+  //   100,
+  //   25,
+  //   25,
+  //   500,
+  //   2,
+  //   5
+  // ),
+  // 8: () => new WaveData(
+  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+  //   PATH_5,
+  //   100,
+  //   25,
+  //   25,
+  //   500,
+  //   2,
+  //   5
+  // ),
+  // 9: () => new WaveData(
+  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+  //   PATH_5,
+  //   100,
+  //   25,
+  //   25,
+  //   500,
+  //   2,
+  //   5
+  // ),
+  // 10: () => new WaveData(
+  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+  //   PATH_5,
+  //   100,
+  //   25,
+  //   25,
+  //   500,
+  //   2,
+  //   5
+  // ),
+  // 11: () => new WaveData(
+  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
+  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
+  //   PATH_5,
+  //   100,
+  //   25,
+  //   25,
+  //   500,
+  //   2,
+  //   5
+  // ),
 }
 
 export const TOTAL_WAVES = Object.keys(WAVE_DATA).length;

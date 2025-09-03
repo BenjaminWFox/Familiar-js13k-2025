@@ -150,6 +150,10 @@ export class Animal extends Entity {
     this.getNextDirection();
   }
 
+  get currentSpeed() {
+    return gameState.waveData.critterSpeed || this.baseSpeed;
+  }
+
   get nextPathIndex() { return this.pathIndex + 1 }
 
   getNextDirection() {
@@ -211,7 +215,7 @@ export class Animal extends Entity {
         (this.blown && hitTest(this, {x: this.destX - 15, y: this.destY - 15, width: 30, height: 30}))
       ) {
         this.blown = false;
-        this.speed = this.baseSpeed;
+        this.speed = this.currentSpeed;
 
         if (this.distracted) {
           return;
@@ -314,6 +318,10 @@ export class Cat extends Animal {
     this.sprite = sprites[STRINGS.cat]();
     this.speed = this.baseSpeed;
     cats.push(this);
+  }
+
+  override get currentSpeed() {
+    return gameState.waveData.catSpeed || this.baseSpeed;
   }
 
   override get canMove(): boolean {
@@ -443,7 +451,6 @@ export class MenuTower extends BaseTower {
         // Tower is outside of the game board
         this._isValidPlacement = false;
       } else {
-
         function isValidPlacement(tileArr: number[]) {
           const tile = TILE_DATA_OBJ[tileArr.toString()];
           if(tile.isPath || tile.hasTower) {
@@ -477,9 +484,11 @@ export class MenuTower extends BaseTower {
         }
       } else if (this.sprite?.type === 'net') {
         gameState.ctx?.fillRect(mouseTile.x - (TOWER_WIDTH + TILE_WIDTH), mouseTile.y - (TOWER_WIDTH + TILE_WIDTH), TILE_WIDTH * 9, TILE_WIDTH * 9)
+        gameState.ctx?.clearRect(mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, TILE_WIDTH * 3, TILE_WIDTH * 3)
       } else {
         // Draw "valid" range for tower
         gameState.ctx?.fillRect(mouseTile.x - (TOWER_WIDTH), mouseTile.y - (TOWER_WIDTH), TILE_WIDTH * 7, TILE_WIDTH * 7)
+        gameState.ctx?.clearRect(mouseTile.x - TILE_WIDTH, mouseTile.y - TILE_WIDTH, TILE_WIDTH * 3, TILE_WIDTH * 3)
       }
 
       // Draw tower
@@ -1404,7 +1413,7 @@ export class Button extends Entity {
 }
 
 export const startBtn = new Button(
-  WIDTH * .5 - 200,
+  WIDTH * .5 + 100,
   1500,
   400,
   150,
@@ -1416,17 +1425,24 @@ export const startBtn = new Button(
 })
 
 export const selectWave = new Button(
-  WIDTH * .5 - 800,
+  WIDTH * .5 - 600,
   1500,
   500,
   150,
   'WAVE 1',
   () => {
+    const btnWidth = gameState.waves < 6 ? 350 : gameState.waves < 10 ? 250 : 150
+    const spacing = WIDTH / gameState.waves
+    const spaceTaken = (spacing * (gameState.waves - 1)) + btnWidth
+    const remainder = WIDTH - spaceTaken
+
     for(let i = 1;i <= gameState.waves;i++) {
-        const add = i > 9 ? 50 * (i - 9 - .5) : 0;
-      const xOffset = 200 * (i - 1);
-      const x = -550 + selectWave.x + xOffset + add;
-      const waveBtn = new Button(x, selectWave.y - 200, 150, 150, `${i}`, () => {
+      // const add = i > 9 ? 50 * (i - 9 - .5) : 0;
+      const xOffset = spacing * (i - 1);
+      console.log('spacing', spacing, remainder)
+      const x = remainder/2 + xOffset // -350 + selectWave.x + xOffset // + add;
+
+      const waveBtn = new Button(x, selectWave.y - 200, btnWidth, 150, `${i}`, () => {
         gameState.wave = i;
         gameState.waveSelectBtns.forEach(e => e.setDeleted());
       })
