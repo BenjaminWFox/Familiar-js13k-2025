@@ -1,7 +1,7 @@
 import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
-import { playSong } from "./music";
+import { sounds } from "./sounds";
 import { Sprite, sprites } from "./sprites";
 import { angleToTarget, canAffordTower, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getPriceForAffordability, getRandomInt, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
@@ -516,6 +516,7 @@ export class MenuTower extends BaseTower {
       if (gameState.dialogShowing) {
         return;
       }
+      sounds.dialogOrPlacement();
       if (this._isValidPlacement) {
         const x = mouseTile.x - TILE_WIDTH
         const y = mouseTile.y - TILE_WIDTH
@@ -854,6 +855,7 @@ class NetTower extends TileCoveringTower {
     }
 
     if (this.swipeTime % 180 === 0) {
+      sounds.swipe();
       this.coveredTiles.forEach((tile) => {
         let isKey = false;
         let  r = getRandomInt(90, 220);
@@ -908,6 +910,7 @@ class FanTower extends TileCoveringTower {
     }
 
     if (++this.tick % 30 === 0) {
+      sounds.fan();
       const destX = this.x + TILE_WIDTH * 1.5;
       const destY = this.y + TILE_WIDTH * 1.5;
       
@@ -1110,6 +1113,7 @@ class Fetcher extends Entity {
 
           if (hitTest(this, this.chasing!) && this.chasing?.type) {
             this.chasing!.setCarried();
+            sounds.catch();
             this.state = FetcherStates.fetching;
           }
 
@@ -1418,7 +1422,7 @@ export const startBtn = new Button(
   400,
   150,
   'START', () => {
-    playSong();
+    gameState.play();
     gameState.startWave();
     selectWave.removeListener(true);
     gameState.setState(SCENES.playing);

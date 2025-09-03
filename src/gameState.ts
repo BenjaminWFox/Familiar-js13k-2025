@@ -2,6 +2,8 @@ import { TOTAL_WAVES, WAVE_DATA } from "./waves";
 import { canvas, ctx, mapCtx } from "./elements";
 import { Button, cashes, cats, Critter, critters, dialog, particles, selectWave, startBtn, towers, Witch, witches } from "./entity";
 import { drawTileMap } from "./maps";
+import { createP1 } from "./p1";
+import { sounds } from "./sounds";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 // import { setFont } from "./utils";
 
@@ -24,6 +26,8 @@ export class GameState {
   ctx: CanvasRenderingContext2D;
   wave: number = 1;
   cash: number = 250;
+  p1: any;
+  music: boolean = false;
 
   escaped: number = 0;
   waveSpawns: number = 0;
@@ -58,6 +62,7 @@ export class GameState {
     this.ctx = ctx;
 
     this.dialogCallback = () => {};
+    this.p1 = createP1();
   }
 
   addEscaped(n: number = 1) {
@@ -172,12 +177,31 @@ export class GameState {
   dialogShowing = false;
   showDialog(text: string[], callback?: () => void, showCancel: boolean = false) {
     if (!this.dialogShowing) {
+      sounds.dialogOrPlacement();
       this.state = SCENES.dialog;
       this.dialogCallback = callback || this.defaultCallback;
       this.dialogText = text;
       this.dialogShowCancel = showCancel;
       this.dialogShowing = true;
     }
+  }
+  play() {
+    if (this.music) return;
+
+    this.music = true;
+    // p1`50.25
+    // |C----H--|--------|        |J----A--|--------|        |F----E--|--------|        |H----F--|--------|        |A----C--|--------|        |E----C--|--------|        |F----J--|--------|        |C----F--|--------|     |`
+    // |C---H---|--------|        |J---A---|--------|        |F---E---|--------|        |H---F---|--------|        |A---C---|--------|        |E---C---|--------|        |F---J---|--------|        |C---F---|--------|     |
+    // 
+    // |V-Y-c-V-|d---c-a-|V-Y-c-V-|d---c-a-|
+    this.p1`90
+    |Y-c-h-g-|----fef-|b-a-----|e-g-k-h-|g---Y-c-|e-b-----|----bcb-|Y-c-h-g-|----e-g-|k-h-g---|----bcb-|fef-lkl-|h-g-hkg-|ekd-e---|c-b-Y-Z-|c-b-Z---|Y-c-h-g-|----fef-|b-a-----|e-g-k-h-|g---Y-c-|e-b-----|----bcb-|Y-c-h-g-|----e-g-|k-h-g---|----bcb-|fef-lkl-|h-g-hkg-|ekd-e---|c-b-Y-Z-|c-b-Z---|
+    |A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|
+    `
+  }
+  stop() {
+    this.music = false;
+    this.p1``;
   }
 }
 
