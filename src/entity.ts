@@ -951,7 +951,7 @@ class VaccuumTower extends TileCoveringTower {
       return;
     }
     
-    if (++this.tick % 90 === 0) {
+    if (++this.tick % 60 === 0) {
       const destX = this.x + TILE_WIDTH * 1.5;
       const destY = this.y + TILE_WIDTH * 1.5;
 
