@@ -1,7 +1,7 @@
 import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
-// import { playSong } from "./music";
+import { playSong } from "./music";
 import { Sprite, sprites } from "./sprites";
 import { angleToTarget, canAffordTower, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getPriceForAffordability, getRandomInt, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
@@ -1418,7 +1418,7 @@ export const startBtn = new Button(
   400,
   150,
   'START', () => {
-    // playSong();
+    playSong();
     gameState.startWave();
     selectWave.removeListener(true);
     gameState.setState(SCENES.playing);

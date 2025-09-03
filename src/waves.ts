@@ -136,7 +136,7 @@ function wave3Event (this: WaveData, gameState: GameState) {
 }
 
 function wave4Event (this: WaveData, gameState: GameState) {
-  if (gameState.waveTime === 150) {
+  if (gameState.waveTime === 30) {
     gameState.showDialog([
       'Oh geez, the rest of our team is lost again!',
       '',
@@ -176,13 +176,13 @@ function wave4Event (this: WaveData, gameState: GameState) {
 
 function wave5Event (this: WaveData, gameState: GameState) {
   if(
-    gameState.waveTime === 10 ||
-    gameState.waveTime === 300
+    gameState.waveTime === 60 ||
+    gameState.waveTime === 400
   ) {
       new Cat();
   }
 
-  if (gameState.waveTime === 60) {
+  if (gameState.waveTime === 30) {
     gameState.showDialog([
       'Well, our guys havent caught up yet...',
       'and we are out of appliances!',
@@ -191,7 +191,7 @@ function wave5Event (this: WaveData, gameState: GameState) {
     ])
   }
 
-  if (gameState.waveTime === 650) {
+  if (gameState.waveTime === 750) {
     gameState.showDialog([
       'Oooh I found $200 under a rock!',
       '',
@@ -208,6 +208,16 @@ function wave5Event (this: WaveData, gameState: GameState) {
   }
 }
 
+function wave6Event (this: WaveData, gameState: GameState) {
+  if (gameState.waveTime === 30) {
+    gameState.showDialog([
+      'Whew, everyone has caught up!', '',
+      'Just in time for our final stand!', '',
+      'Use everything you can to thwart the Witch!',
+    ])
+  }
+  this.complete = true;
+}
 
 export const WAVE_DATA = {
   1: () => new WaveData(
@@ -278,8 +288,9 @@ export const WAVE_DATA = {
     25,
     25,
     500,
-    2,
-    5
+    3,
+    5,
+    wave6Event
   ),
   // 6: () => new WaveData(
   //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
