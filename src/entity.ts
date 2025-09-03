@@ -1,4 +1,4 @@
-import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION, MENU_TITLE_FONT, MENU_HEADER_FONT, MENU_INFO_FONT, MENU_DETAIL_FONT, DETAIL_START_X } from "./constants";
+import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION, MENU_TITLE_FONT, MENU_HEADER_FONT, MENU_DETAIL_FONT, DETAIL_START_X } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { sounds } from "./sounds";
@@ -1238,9 +1238,6 @@ export class Menu extends Entity {
     let price = 0;
 
     ctx.fillText(`Towers`, MENU_START_X, sy(-2))
-
-    // setFont(MENU_INFO_FONT);
-    // ctx.fillText(`Click+Drag to place towers`, MENU_START_X, sy(-2))
 
     if (gameState.waveData.allowedTowers.includes(STRINGS.kid)) {
       setFont(MENU_HEADER_FONT);
