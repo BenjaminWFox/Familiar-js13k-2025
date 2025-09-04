@@ -82,8 +82,8 @@ export class GameState {
 
   startWave() {
     /** For debug **/
-      this.wave = 1;
-      this.setState(SCENES.playing);
+      // this.wave = 7;
+      // this.setState(SCENES.playing);
     /** For debug **/
     this._waveData = WAVE_DATA[this.wave as keyof typeof WAVE_DATA]();
     this.clearBoard();
@@ -177,7 +177,7 @@ export class GameState {
   dialogShowing = false;
   showDialog(text: string[], callback?: () => void, showCancel: boolean = false) {
     if (!this.dialogShowing) {
-      sounds.dialogOrPlacement();
+      sounds.dialog();
       this.state = SCENES.dialog;
       this.dialogCallback = callback || this.defaultCallback;
       this.dialogText = text;
@@ -189,16 +189,15 @@ export class GameState {
     if (this.music) return;
 
     this.music = true;
-    // p1`50.25
-    // |C----H--|--------|        |J----A--|--------|        |F----E--|--------|        |H----F--|--------|        |A----C--|--------|        |E----C--|--------|        |F----J--|--------|        |C----F--|--------|     |`
-    // |C---H---|--------|        |J---A---|--------|        |F---E---|--------|        |H---F---|--------|        |A---C---|--------|        |E---C---|--------|        |F---J---|--------|        |C---F---|--------|     |
-    // 
-    // |V-Y-c-V-|d---c-a-|V-Y-c-V-|d---c-a-|
-    this.p1`90
-    |Y-c-h-g-|----fef-|b-a-----|e-g-k-h-|g---Y-c-|e-b-----|----bcb-|Y-c-h-g-|----e-g-|k-h-g---|----bcb-|fef-lkl-|h-g-hkg-|ekd-e---|c-b-Y-Z-|c-b-Z---|Y-c-h-g-|----fef-|b-a-----|e-g-k-h-|g---Y-c-|e-b-----|----bcb-|Y-c-h-g-|----e-g-|k-h-g---|----bcb-|fef-lkl-|h-g-hkg-|ekd-e---|c-b-Y-Z-|c-b-Z---|
-    |A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|
+
+    // See https://github.com/curtastic/p1
+    // Tune 1 by Ben Fox
+    // Tune 2 by Google Gemini
+    this.p1`120.100
+      |Y-c-h-g-|----fef-|b-a-----|e-g-k-h-|g---Y-c-|e-b-----|----bcb-|Y-c-h-g-|----e-g-|k-h-g---|----bcb-|fef-lkl-|h-g-hkg-|ekd-e---|c-b-Y-Z-|c-b-Z---|Y-c-h-g-|----fef-|b-a-----|e-g-k-h-|g---Y-c-|e-b-----|----bcb-|Y-c-h-g-|----e-g-|k-h-g---|----bcb-|fef-lkl-|h-g-hkg-|ekd-e---|c-b-Y-Z-|c-b-Z---|----    |hhaajjkk|k---j-h-|kkccddff|f-c-h---|k-h-c-a-|ccccddff|a-Y-c-j-|h-------|l-h-t-j-|k---j-h-|kkcch-tt|wwvvkk--|d-c-h-a-|Y-a-c-Y-|h---h---|h-------|hhaajjkk|k---j-h-|k-h-c-a-|d-c-h---|ccccddff|a-Y-c-j-|f-c-h---|h-------|kkccddff|h-h-k-k-|wwvvkk--|Y-Y-a-a-|k-j-h-d-|c-a-Y-c-|c-h-k-h-|h-------|
+      |A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|----    |J-Q-J-Q-|R---Q-J-|T---Q-J-|R---Q-J-|J---Q-R-|T---Q-J-|J-Q-J-Q-|J-------|J-T-J-T-|R-Q-J-Q-|J-J-J-J-|R-R-R-R-|T-Q-J-Q-|R---J-Q-|J---J---|J-------|J-Q-J-Q-|R---Q-J-|J---Q-R-|T---Q-J-|J-Q-J-Q-|T-Q-J-Q-|R---Q-J-|J-------|J-J-J-J-|R-R-R-R-|T-T-T-T-|Q---Q-J-|Q---Q---|Q-Q-J-J-|J---J---|J-------|
     `
-  }
+}
   stop() {
     this.music = false;
     this.p1``;
