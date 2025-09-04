@@ -108,4 +108,6 @@ export const sprites = {
   [STRINGS.tree2]: () => new Sprite(STRINGS.tree2, 10, 120, 1, 8, 10, 10),
   [STRINGS.grass1]: () => new Sprite(STRINGS.grass1, 40, 130, 1, 8, 10, 10),
   [STRINGS.grass2]: () => new Sprite(STRINGS.grass2, 40, 140, 1, 8, 10, 10),
+  [STRINGS.starEmpty]: () => new Sprite(STRINGS.starEmpty, 40, 0, 1, 1, 10, 10),
+  [STRINGS.starFull]: () => new Sprite(STRINGS.starFull, 40, 150, 1, 8, 10, 10),
 }

@@ -215,3 +215,11 @@ export function movePoint(point: Point, angle: number, distance: number) {
     y: point.y + Math.sin(angle) * distance
   };
 }
+
+export function setLocalStorageWaveData(stars: number) {
+  localStorage.setItem(gameState.wave.toString(), `${stars || 0}`);
+}
+
+export function getLocalStorageWaveData() {
+  return Number(localStorage.getItem(gameState.wave.toString()));
+}

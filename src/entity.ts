@@ -1452,21 +1452,42 @@ export const selectWave = new Button(
     const remainder = WIDTH - spaceTaken
 
     for(let i = 1;i <= gameState.waves;i++) {
-      // const add = i > 9 ? 50 * (i - 9 - .5) : 0;
       const xOffset = spacing * (i - 1);
-      console.log('spacing', spacing, remainder)
-      const x = remainder/2 + xOffset // -350 + selectWave.x + xOffset // + add;
+      const x = remainder/2 + xOffset;
+
+      for(let p = 0;p < 3;p++) {
+        const waveStars = 3 // getLocalStorageWaveData(i);
+        gameState.waveStars.push(
+          new WaveStars(
+            15 + x + 70 * p,
+            selectWave.y - 225,
+            p + 1 <= waveStars
+          ));
+      }
 
       const waveBtn = new Button(x, selectWave.y - 200, btnWidth, 150, `${i}`, () => {
         gameState.wave = i;
         gameState.waveSelectBtns.forEach(e => e.setDeleted());
       })
+
       waveBtn.addListener();
       gameState.waveSelectBtns.push(waveBtn);
     }
   },
   false
 )
+
+export class WaveStars extends Entity {
+  constructor(x: number, y: number, isFull: boolean) {
+    super(x, y, 0, 0, 50, 50);
+    this.sprite = isFull ? sprites[STRINGS.starFull]() : sprites[STRINGS.starEmpty]();
+  }
+  render() {
+    gameState.ctx.fillStyle = 'green'
+    gameState.ctx.fillRect(this.x - 10, this.y - 10, this.width + 20, this.width + 20);
+    this.sprite?.draw(gameState.ctx, this.x, this.y, this.width)
+  }
+}
 
 export const okButton = new Button(1650, 1100, 200, 100, 'Okay',
   () => {

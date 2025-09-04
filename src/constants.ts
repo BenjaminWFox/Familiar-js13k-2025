@@ -58,6 +58,8 @@ export const STRINGS = {
   tree2: 'tree2',
   grass1: 'grass1',
   grass2: 'grass2',
+  starEmpty: 'starEmpty',
+  starFull: 'starFull',
 }
 
 export const TOWER_COST = {

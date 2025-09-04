@@ -88,6 +88,7 @@ function render(): void {
     selectWave.render(`WAVE ${gameState.wave}`);
 
     gameState.waveSelectBtns.forEach(e => e.render());
+    gameState.waveStars.forEach(s => s.render());
     purgeDeleted(gameState.waveSelectBtns);
   } else if (gameState.state === SCENES.dialog) {
     dialog.render();
