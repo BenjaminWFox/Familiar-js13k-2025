@@ -91,7 +91,8 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
   ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
   // Build all TileData
-  for(let y = 0; y < Y_TILES; y++) {
+  // Extra tiles added to support paths coming from bottom of screen (max Y)
+  for(let y = 0; y < Y_TILES + 2; y++) {
     for(let x = 0; x < X_TILES; x++) {
       const currentIndex = findPathIndex(x, y);
 
