@@ -1,6 +1,6 @@
 import { TOTAL_WAVES, WAVE_DATA } from "./waves";
 import { canvas, ctx, mapCtx } from "./elements";
-import { Button, cashes, cats, Critter, critters, dialog, particles, selectWave, startBtn, towers, waveBest, WaveStars, Witch, witches } from "./entity";
+import { Button, cashes, cats, Critter, critters, dialog, menuBtn, particles, selectWave, startBtn, towers, waveBest, WaveStars, Witch, witches } from "./entity";
 import { drawTileMap } from "./maps";
 import { createP1 } from "./p1";
 import { sounds } from "./sounds";
@@ -65,6 +65,7 @@ export class GameState {
         this.state = scene;
       break;
       case SCENES.playing:
+        menuBtn.addListener();
         this.state = scene;
       break;
     }
@@ -88,11 +89,9 @@ export class GameState {
   }
 
   updateCurrentStars() {
-    console.log('updateCurrentStars')
     let stars = 0;
     for (let i = 1;i<=gameState.waves;i++) {
       const cs = getLocalStorageWaveData(i)
-      console.log('Running for', i, cs)
       stars += cs.stars || 0
     }
     this._currentStars = stars;

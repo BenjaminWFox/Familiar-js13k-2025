@@ -1,5 +1,5 @@
 import { HEIGHT, WIDTH, } from "./constants";
-import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, waveBest, Witch, witches } from "./entity";
+import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menuBtn, menus, menuTowers, particles, towers, waveBest, Witch, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
@@ -66,6 +66,8 @@ function render(): void {
     waveBest.forEach(s => s.render());
     menuTowers.forEach(e => e.render());
     cashes.forEach(e => e.render());
+
+    menuBtn.render();
 
     purgeDeleted<Critter>(critters, deleteCritter);
     purgeDeleted(cats);

@@ -1373,6 +1373,8 @@ export class Dialog extends Entity {
       this.hasRendered = true;
       this.openedAt = Date.now();
 
+      const isWaveEnd = gameState.ended && gameState.starResults !== undefined;
+
       gameState.ctx.fillStyle = 'rgba(255, 255, 255, .25)'
       gameState.ctx.fillRect(0, 0, WIDTH, HEIGHT);
       gameState.ctx.fillStyle = COLOR_MENU_GREEN_1;
@@ -1385,13 +1387,18 @@ export class Dialog extends Entity {
       gameState.ctx.strokeRect(WIDTH * .5 - 525 - (WIDTH - MENU_START_X), HEIGHT * .5 - 475, 1550, 750);
       
       okButton.addListener();
-      okButton.render();
-
       okButton.extraCallback = gameState.dialogCallback;
 
       if (gameState.dialogShowCancel) {
         cancelButton.addListener();
         cancelButton.render();
+      }
+      if (isWaveEnd) {
+        retryButton.addListener();
+        retryButton.render();
+        okButton.render('Next');
+      } else {
+        okButton.render('Okay');
       }
 
       gameState.dialogText.forEach((str, i) => {
@@ -1401,9 +1408,9 @@ export class Dialog extends Entity {
         gameState.ctx.fillText(str, 450, 650 + (i * TILE_WIDTH))
       })
 
-      if (gameState.ended && gameState.starResults !== undefined) {
+      if (isWaveEnd) {
         for(let i = 0;i<3;i++) {
-          const ws = new WaveStars(dialogLeft + 50 + (125 * i), dialogBottom - 150, i < gameState.starResults, false);
+          const ws = new WaveStars(dialogLeft + 50 + (125 * i), dialogBottom - 150, i < gameState.starResults!, false);
           ws.width = 100;
           ws.render();
         }
@@ -1512,6 +1519,20 @@ export class Button extends Entity {
   }
 }
 
+export const menuBtn = new Button(
+  MENU_START_X - 325,
+  25,
+  200,
+  100,
+  'MENU',
+  () => {
+    gameState.closeDialog();
+    gameState.setState(SCENES.start)
+  },
+  true
+)
+menuBtn.font = 50;
+
 export const startBtn = new Button(
   WIDTH * .5 + 100,
   1500,
@@ -1587,6 +1608,14 @@ export const okButton = new Button(1650, 1100, 200, 100, 'Okay',
     }
 )
 
+export const retryButton = new Button(1650, 950, 200, 100, 'Retry',
+  () => {
+      gameState.closeDialog();
+      gameState.startWave();
+      retryButton.removeListener();
+    }
+)
+
 export const cancelButton = new Button(450, 1100, 200, 100, 'Cancel',
   () => {
       gameState.closeDialog();
@@ -1595,6 +1624,7 @@ export const cancelButton = new Button(450, 1100, 200, 100, 'Cancel',
 )
 
 okButton.font = 50;
+retryButton.font = 50;
 cancelButton.font = 50;
 
 // All entities

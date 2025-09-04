@@ -1,4 +1,4 @@
-import { Path, PATH_STRIGHT, PATH_2, PATH_4, PATH_5, STRINGS, PATH_CLOSE_RIGHT, PATH_6, PATH_7 } from "./constants";
+import { Path, PATH_STRIGHT, PATH_2, PATH_4, PATH_5, STRINGS, PATH_CLOSE_RIGHT, PATH_6, PATH_7, CRITTER_DEFAULT_SPEED, CAT_DEFAULT_SPEED } from "./constants";
 import { Cat, cats, critters } from "./entity";
 import { GameState } from "./gameState";
 
@@ -238,10 +238,10 @@ export const WAVE_DATA = {
     PATH_STRIGHT,
     25,
     15,
-    45,
-    600,
-    1,
-    3,
+    75,
+    400,
+    CRITTER_DEFAULT_SPEED,
+    CAT_DEFAULT_SPEED,
     wave1Event
   ),
   2: () => new WaveData(
@@ -252,8 +252,8 @@ export const WAVE_DATA = {
     10,
     30,
     300,
-    1.25,
-    3,
+    CRITTER_DEFAULT_SPEED,
+    CAT_DEFAULT_SPEED,
     wave2Event
   ),
   3: () => new WaveData(
@@ -264,8 +264,8 @@ export const WAVE_DATA = {
     20,
     50,
     400,
-    1.5,
-    3,
+    CRITTER_DEFAULT_SPEED,
+    CAT_DEFAULT_SPEED,
     wave3Event,
   ),
   4: () => new WaveData(
@@ -276,8 +276,8 @@ export const WAVE_DATA = {
     25,
     30,
     500,
-    2,
-    4,
+    CRITTER_DEFAULT_SPEED,
+    CAT_DEFAULT_SPEED,
     wave4Event,
   ),
   5:  () => new WaveData(
@@ -288,8 +288,8 @@ export const WAVE_DATA = {
     10,
     20,
     200,
-    2,
-    5,
+    CRITTER_DEFAULT_SPEED,
+    CAT_DEFAULT_SPEED,
     wave5Event,
   ),
   6: () => new WaveData(
@@ -300,8 +300,8 @@ export const WAVE_DATA = {
     25,
     20,
     500,
-    3,
-    5,
+    CRITTER_DEFAULT_SPEED,
+    CAT_DEFAULT_SPEED,
     wave6Event
   ),
   7: () => new WaveData(
@@ -312,8 +312,8 @@ export const WAVE_DATA = {
     2500,
     10,
     500,
-    3,
-    5,
+    CRITTER_DEFAULT_SPEED,
+    CAT_DEFAULT_SPEED,
     wave7Event
   ),
 }
