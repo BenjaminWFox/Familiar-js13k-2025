@@ -244,7 +244,9 @@ export function getStarsResultForWave(missedCritters: number, missedCats: number
 
 export function setLocalStorageWaveData(wave: number, stars: number) {
   const waveData = getLocalStorageWaveData(wave);
+
   const starsToSet = waveData.stars > stars ? waveData.stars : stars;
+
   localStorage.setItem(wave.toString(), JSON.stringify({
     wave,
     stars: starsToSet
@@ -253,9 +255,20 @@ export function setLocalStorageWaveData(wave: number, stars: number) {
 
 export function getLocalStorageWaveData(wave: number): LocalStorageWaveDate {
   const savedData = localStorage.getItem(wave.toString());
+  let parsed;
 
   if (savedData) {
-    return JSON.parse(savedData);
+    try {
+      parsed = JSON.parse(savedData);
+    } catch (e) {
+      // noop
+    }
+  }
+
+  console.log('savedData', savedData);
+
+  if (parsed && typeof parsed === 'object') {
+    return parsed;
   }
 
   return {

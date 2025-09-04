@@ -88,9 +88,12 @@ export class GameState {
   }
 
   updateCurrentStars() {
+    console.log('updateCurrentStars')
     let stars = 0;
     for (let i = 1;i<=gameState.waves;i++) {
-      stars += getLocalStorageWaveData(i).stars
+      const cs = getLocalStorageWaveData(i)
+      console.log('Running for', i, cs)
+      stars += cs.stars || 0
     }
     this._currentStars = stars;
   }
