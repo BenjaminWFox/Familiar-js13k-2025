@@ -1,4 +1,4 @@
-import { Path, PATH_STRIGHT, PATH_2, PATH_3, PATH_4, PATH_5, STRINGS, PATH_CLOSE_RIGHT } from "./constants";
+import { Path, PATH_STRIGHT, PATH_2, PATH_4, PATH_5, STRINGS, PATH_CLOSE_RIGHT, PATH_6, PATH_7 } from "./constants";
 import { Cat, cats, critters } from "./entity";
 import { GameState } from "./gameState";
 
@@ -69,7 +69,6 @@ function wave1Event (this: WaveData, gameState: GameState) {
     gameState.waveSpawns >= this.maxSpawns
   ) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
-    new Cat();
     this.complete = true;
     gameState.showDialog(
       [
@@ -77,7 +76,7 @@ function wave1Event (this: WaveData, gameState: GameState) {
         'It will also CURSE many of your towers!', '',
         'Place a Fish on a Stick to distract it!', '',
         'Click a tower to sell it for extra cash if needed.'
-      ]);
+      ], () => new Cat());
   }
 }
 
@@ -191,11 +190,11 @@ function wave5Event (this: WaveData, gameState: GameState) {
     ])
   }
 
-  if (gameState.waveTime === 750) {
+  if (gameState.waveTime === 1000) {
     gameState.showDialog([
       'Oooh I found $200 under a rock!',
       '',
-      'Good things too, more cats are coming!',
+      'Good things too, more Black Cats are coming!',
       '',
       'Sell a Fish on a Stick to buy a Scratching Post...',
       'but be quick, selling it will release the cat!',
@@ -220,15 +219,15 @@ function wave6Event (this: WaveData, gameState: GameState) {
   this.complete = true;
 }
 
-function wave7Event (this: WaveData, gameState: GameState) {
-  if (gameState.waveTime === 30) {
-    gameState.showDialog([
-      '(Wave 7)', '',
-      'Whew, everyone has caught up!', '',
-      'Just in time for our final stand!', '',
-      'Use everything you can to thwart the Witch!',
-    ])
-  }
+function wave7Event (this: WaveData, _: GameState) {
+  // if (gameState.waveTime === 30) {
+  //   gameState.showDialog([
+  //     '(Wave 7)', '',
+  //     'Whew, everyone has caught up!', '',
+  //     'Just in time for our final stand!', '',
+  //     'Use everything you can to thwart the Witch!',
+  //   ])
+  // }
   this.complete = true;
 }
 
@@ -261,10 +260,10 @@ export const WAVE_DATA = {
     [STRINGS.fan,],
     [STRINGS.lizard, STRINGS.frog],
     PATH_CLOSE_RIGHT,
-    75,
+    50,
     20,
     50,
-    800,
+    400,
     1.5,
     3,
     wave3Event,
@@ -272,7 +271,7 @@ export const WAVE_DATA = {
   4: () => new WaveData(
     [STRINGS.vaccuum, STRINGS.fan, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.lizard, STRINGS.frog],
-    PATH_3,
+    PATH_4,
     50,
     25,
     30,
@@ -284,19 +283,19 @@ export const WAVE_DATA = {
   5:  () => new WaveData(
     [STRINGS.fish, STRINGS.scratch],
     [],
-    PATH_4,
+    PATH_5,
     0,
     10,
     20,
     200,
     2,
-    3,
+    5,
     wave5Event,
   ),
   6: () => new WaveData(
     [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-    PATH_5,
+    PATH_6,
     150,
     25,
     20,
@@ -308,70 +307,15 @@ export const WAVE_DATA = {
   7: () => new WaveData(
     [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-    PATH_5,
-    200,
-    25,
+    PATH_7,
+    2000,
+    2500,
     10,
     500,
     3,
     5,
     wave7Event
   ),
-  // 7: () => new WaveData(
-  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
-  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-  //   PATH_5,
-  //   100,
-  //   25,
-  //   25,
-  //   500,
-  //   2,
-  //   5
-  // ),
-  // 8: () => new WaveData(
-  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
-  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-  //   PATH_5,
-  //   100,
-  //   25,
-  //   25,
-  //   500,
-  //   2,
-  //   5
-  // ),
-  // 9: () => new WaveData(
-  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
-  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-  //   PATH_5,
-  //   100,
-  //   25,
-  //   25,
-  //   500,
-  //   2,
-  //   5
-  // ),
-  // 10: () => new WaveData(
-  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
-  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-  //   PATH_5,
-  //   100,
-  //   25,
-  //   25,
-  //   500,
-  //   2,
-  //   5
-  // ),
-  // 11: () => new WaveData(
-  //   [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
-  //   [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
-  //   PATH_5,
-  //   100,
-  //   25,
-  //   25,
-  //   500,
-  //   2,
-  //   5
-  // ),
 }
 
 export const TOTAL_WAVES = Object.keys(WAVE_DATA).length;
