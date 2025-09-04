@@ -207,24 +207,21 @@ function wave5Event (this: WaveData, gameState: GameState) {
 function wave6Event (this: WaveData, gameState: GameState) {
   if (gameState.waveTime === 30) {
     gameState.showDialog([
-      '(Wave 6)', '',
       'Whew, everyone has caught up!', '',
-      'Just in time for our final stand!', '',
       'Use everything you can to thwart the Witch!',
     ])
   }
   this.complete = true;
 }
 
-function wave7Event (this: WaveData, _: GameState) {
-  // if (gameState.waveTime === 30) {
-  //   gameState.showDialog([
-  //     '(Wave 7)', '',
-  //     'Whew, everyone has caught up!', '',
-  //     'Just in time for our final stand!', '',
-  //     'Use everything you can to thwart the Witch!',
-  //   ])
-  // }
+function wave7Event (this: WaveData, gameState: GameState) {
+  if (gameState.waveTime === 30) {
+    gameState.showDialog([
+      'Uh-oh the witch is really mad now!', '',
+      'She cast a spell to speed up the critters!!', '',
+      'Stay strong, and save those critters!',
+    ])
+  }
   this.complete = true;
 }
 
@@ -289,7 +286,7 @@ export const WAVE_DATA = {
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
     PATH_6,
     150,
-    20,
+    10,
     500,
     CRITTER_DEFAULT_SPEED,
     CAT_DEFAULT_SPEED,
@@ -299,8 +296,8 @@ export const WAVE_DATA = {
     [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
     PATH_7,
-    300,
-    10,
+    3,
+    15,
     500,
     CRITTER_DEFAULT_SPEED + 1,
     CAT_DEFAULT_SPEED + 1,

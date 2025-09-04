@@ -178,7 +178,7 @@ export class GameState {
       if (this.wave < TOTAL_WAVES) {
         msg.push(`On to Wave ${this.wave + 1}!`);
       } else if (this.wave === TOTAL_WAVES) {
-        msg.push(`You did it! The Witches Cauldron was never filled!`);
+        msg.push(`Whew, you made it to the end!`, ``, `That will teach the witch not to make evil soup!`);
       }
 
       setTimeout(() => {

@@ -265,8 +265,6 @@ export function getLocalStorageWaveData(wave: number): LocalStorageWaveDate {
     }
   }
 
-  console.log('savedData', savedData);
-
   if (parsed && typeof parsed === 'object') {
     return parsed;
   }
