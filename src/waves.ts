@@ -299,7 +299,7 @@ export const WAVE_DATA = {
     [STRINGS.fan, STRINGS.kid, STRINGS.vaccuum, STRINGS.net, STRINGS.fish, STRINGS.scratch],
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
     PATH_7,
-    2000,
+    300,
     10,
     500,
     CRITTER_DEFAULT_SPEED + 1,
