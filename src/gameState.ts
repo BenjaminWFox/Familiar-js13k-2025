@@ -1,10 +1,11 @@
 import { TOTAL_WAVES, WAVE_DATA } from "./waves";
 import { canvas, ctx, mapCtx } from "./elements";
-import { Button, cashes, cats, Critter, critters, dialog, particles, selectWave, startBtn, towers, WaveStars, Witch, witches } from "./entity";
+import { Button, cashes, cats, Critter, critters, dialog, particles, selectWave, startBtn, towers, waveBest, WaveStars, Witch, witches } from "./entity";
 import { drawTileMap } from "./maps";
 import { createP1 } from "./p1";
 import { sounds } from "./sounds";
-import { getStarsResultForWave, setLocalStorageWaveData } from "./utils";
+import { getLocalStorageWaveData, getStarsResultForWave, setLocalStorageWaveData } from "./utils";
+import { MENU_START_X } from "./constants";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 // import { setFont } from "./utils";
 
@@ -31,6 +32,7 @@ export class GameState {
   cash: number = 250;
   p1: any;
   music: boolean = false;
+  waveBestResult: number = 0;
 
   escaped: number = 0;
   waveSpawns: number = 0;
@@ -57,6 +59,7 @@ export class GameState {
         this.clearBoard();
         startBtn.addListener();
         selectWave.addListener();
+        this.updateCurrentStars();
         this.state = scene;
       break;
       case SCENES.playing:
@@ -71,6 +74,23 @@ export class GameState {
 
     this.dialogCallback = () => {};
     this.p1 = createP1();
+  }
+
+  get totalStars() {
+    return this.waves * 3;
+  }
+
+  _currentStars = 0;
+  get currentStars() {
+    return this._currentStars;
+  }
+
+  updateCurrentStars() {
+    let stars = 0;
+    Object.keys(WAVE_DATA).forEach(k => {
+      stars += getLocalStorageWaveData(Number(k)).stars
+    })
+    this._currentStars = stars;
   }
 
   addEscapedCritter() {
@@ -108,7 +128,12 @@ export class GameState {
     this.waveSpawns = 0;
     this.waveMissedCats = 0;
     this.waveMissedCritters = 0;
-
+    this.waveBestResult = getLocalStorageWaveData(this.wave).stars;
+    waveBest.push(
+      new WaveStars(MENU_START_X + 175, 150, this.waveBestResult > 0, false),
+      new WaveStars(MENU_START_X + 245, 150, this.waveBestResult > 1, false),
+      new WaveStars(MENU_START_X + 315, 150, this.waveBestResult > 2, false)
+    )
     drawTileMap(mapCtx);
 
     new Witch();
@@ -121,6 +146,7 @@ export class GameState {
     witches.forEach(w => w.deleted = true);
     critters.forEach(c => c.deleted = true);
     particles.forEach(p => p.deleted = true);
+    waveBest.forEach(s => s.deleted = true);
   }
 
   nextWave() {

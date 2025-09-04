@@ -1,5 +1,5 @@
 import { HEIGHT, WIDTH, } from "./constants";
-import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, Witch, witches } from "./entity";
+import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, waveBest, Witch, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
@@ -63,12 +63,14 @@ function render(): void {
     // catchers.forEach(e => e.render());
     witches.forEach(e => e.render());
     menus.forEach(e => e.render());
+    waveBest.forEach(s => s.render());
     menuTowers.forEach(e => e.render());
     cashes.forEach(e => e.render());
 
     purgeDeleted<Critter>(critters, deleteCritter);
     purgeDeleted(cats);
     purgeDeleted(particles);
+    purgeDeleted(waveBest);
     purgeDeleted(cashes);
     purgeDeleted(towers);
     purgeDeleted(fetchers);
@@ -86,6 +88,12 @@ function render(): void {
     menuWitch.render(WIDTH * .5 - 300, 500, 600, 900)
     startBtn.render();
     selectWave.render(`WAVE ${gameState.wave}`);
+
+    ctx.fillText(
+      `${gameState.currentStars} / ${gameState.totalStars} Wave Stars Earned`,
+      WIDTH * .5 - 50,
+      1800
+    )
 
     gameState.waveSelectBtns.forEach(e => e.render());
     gameState.waveStars.forEach(s => s.render());

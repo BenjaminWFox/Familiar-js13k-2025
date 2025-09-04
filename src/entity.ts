@@ -1233,12 +1233,15 @@ export class Menu extends Entity {
     ctx.fillText('Witches Cauldron', MENU_START_X - 25, 50)
 
     setFont(MENU_INFO_FONT);
-    ctx.fillText(`Missed Critters: ${gameState.waveMissedCritters}`, MENU_START_X, 325)
-    ctx.fillText(`Missed Cats: ${gameState.waveMissedCats}`, MENU_START_X, 375)
+    ctx.fillText(`Missed Critters: ${gameState.waveMissedCritters}`, MENU_START_X, 235)
+    ctx.fillText(`Missed Cats: ${gameState.waveMissedCats}`, MENU_START_X, 285)
 
     setFont(MENU_HEADER_FONT);
-    ctx.fillText(`Wave: ${gameState.wave} / 13`, MENU_START_X, 150)
-    ctx.fillText(`Cash: $${gameState.cash}`, MENU_START_X, 237)
+    ctx.fillText(`Wave: ${gameState.wave} / ${gameState.waves}`, MENU_START_X, 110)
+    ctx.fillText(`Best:`, MENU_START_X, 175)
+
+    setFont(60)
+    ctx.fillText(`Cash: $${gameState.cash}`, MENU_START_X, 375)
 
     // const esc = gameState.escaped > gameState.waveData.lives ? gameState.waveData.lives : gameState.escaped
     // ctx.fillText(`${esc} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
@@ -1565,3 +1568,4 @@ export const particles: Particle[] = [];
 // export const catchers: Catcher[] = [];
 export const witches: Witch[] = [];
 export const cashes: Witch[] = [];
+export const waveBest: WaveStars[] = [];
