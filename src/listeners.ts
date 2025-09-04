@@ -1,4 +1,4 @@
-import { mouseHitTest, setMouseTile, setScale, touchHitTest } from "./utils";
+import { clearTouch, mouseHitTest, setMouseTile, setScale, touchHitTest } from "./utils";
 
 export let hasMouseMoved = false;
 
@@ -11,6 +11,13 @@ export function registerListeners(canvas: HTMLCanvasElement) {
   canvas.addEventListener('touchstart', (e: TouchEvent) => {
     // const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
     touchHitTest(e);
+  })
+
+  canvas.addEventListener('touchcancel', (e: TouchEvent) => {
+    // const { canvasX, canvasY } = translateXYMouseToCanvas(e.pageX, e.pageY);
+    if (e.targetTouches.length === 0) {
+      clearTouch();
+    }
   })
 
   // overlayCanvas.addEventListener('mouseup', () => {

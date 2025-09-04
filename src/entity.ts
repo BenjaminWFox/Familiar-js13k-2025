@@ -3,7 +3,7 @@ import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { sounds } from "./sounds";
 import { Sprite, sprites } from "./sprites";
-import { angleToTarget, canAffordTower, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getPriceForAffordability, getRandomInt, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
+import { angleToTarget, canAffordTower, clearTouch, convertCanvasXYToPathXY, convertTileToMapBounds, getExpanededDraggingTileBounds, getLocalStorageWaveData, getPriceForAffordability, getRandomInt, getTileLockedXY, hitTest, mouseTile, movePoint, setFont, translateXYMouseToCanvas } from "./utils";
 
 export const ENTITY_TYPE_PLAYER = 0;
 export const ENTITY_TYPE_COIN = 1;
@@ -432,7 +432,7 @@ export class MenuTower extends BaseTower {
     window.addEventListener('mousedown', this.dragHandler.bind(this));
     window.addEventListener('touchstart', this.touchHandler.bind(this));
     window.addEventListener('mouseup', this.releaseHandler.bind(this));
-    window.addEventListener('touchend', this.releaseHandler.bind(this));
+    window.addEventListener('touchend', this.touchEndHandler.bind(this));
 
     menuTowers.push(this);
   }
@@ -521,6 +521,11 @@ export class MenuTower extends BaseTower {
       const t = e.targetTouches[0];
       this.dragHandler(t as unknown as MouseEvent);
     }
+  }
+
+  touchEndHandler() {
+    clearTouch();
+    this.releaseHandler();
   }
 
   releaseHandler() {
@@ -1456,7 +1461,8 @@ export const selectWave = new Button(
       const x = remainder/2 + xOffset;
 
       for(let p = 0;p < 3;p++) {
-        const waveStars = 3 // getLocalStorageWaveData(i);
+        const waveStarData = getLocalStorageWaveData(i)
+        const waveStars = waveStarData.stars;
         gameState.waveStars.push(
           new WaveStars(
             15 + x + 70 * p,
@@ -1468,6 +1474,7 @@ export const selectWave = new Button(
       const waveBtn = new Button(x, selectWave.y - 200, btnWidth, 150, `${i}`, () => {
         gameState.wave = i;
         gameState.waveSelectBtns.forEach(e => e.setDeleted());
+        gameState.waveStars.forEach(s => s.deleted = true);
       })
 
       waveBtn.addListener();

@@ -4,6 +4,7 @@ import { Button, cashes, cats, Critter, critters, dialog, particles, selectWave,
 import { drawTileMap } from "./maps";
 import { createP1 } from "./p1";
 import { sounds } from "./sounds";
+import { getStarsResultForWave, setLocalStorageWaveData } from "./utils";
 // import { COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, HEIGHT, MENU_START_X, TILE_WIDTH, WIDTH } from "./constants";
 // import { setFont } from "./utils";
 
@@ -17,6 +18,8 @@ export enum SCENES {
 
 export class GameState {
   mouseDownAt: number = 0;
+  touchStartAt: number = 0;
+  hasTouchDown: boolean = false;
   waves = Object.keys(WAVE_DATA).length;
   gameTime: number = 0;
   image: HTMLImageElement | undefined;
@@ -32,6 +35,8 @@ export class GameState {
   escaped: number = 0;
   waveSpawns: number = 0;
   waveTime: number = 0;
+  waveMissedCritters: number = 0;
+  waveMissedCats: number = 0;
   ended: boolean = false;
 
   dialogCallback: () => void;
@@ -48,6 +53,7 @@ export class GameState {
   setState(scene: SCENES) {
     switch(scene) {
       case SCENES.start:
+        this.clearBoard();
         startBtn.addListener();
         selectWave.addListener();
         this.state = scene;
@@ -94,6 +100,8 @@ export class GameState {
     this.waveTime = 0;
     this.escaped = 0;
     this.waveSpawns = 0;
+    this.waveMissedCats = 0;
+    this.waveMissedCritters = 0;
 
     drawTileMap(mapCtx);
 
@@ -115,8 +123,9 @@ export class GameState {
   }
 
   runWave() {
-    // Finish wave
     this.waveData.waveEvent(this);
+
+    // Finish wave
     if (
       this.waveData.complete &&
       this.waveSpawns >= this.waveData.maxSpawns &&
@@ -126,6 +135,7 @@ export class GameState {
       !this.ended
     ) {
       this.ended = true;
+      setLocalStorageWaveData(this.wave, getStarsResultForWave(gameState.waveMissedCritters, gameState.waveMissedCats));
       const msg = [`Wave ${this.wave} complete!`, ''];
       if (this.wave < TOTAL_WAVES) {
         msg.push(`On to Wave ${this.wave + 1}!`);

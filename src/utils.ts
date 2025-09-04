@@ -95,10 +95,15 @@ export function drawMouseTile(ctx: CanvasRenderingContext2D) {
 
 export function touchHitTest(e: TouchEvent) {
   if (e.targetTouches.length === 1) {
+    gameState.hasTouchDown = true;
+    gameState.touchStartAt = Date.now();
     const t = e.targetTouches[0];
     setMouseTile(t.pageX, t.pageY);
     mouseHitTest();
   }
+}
+export function clearTouch() {
+  gameState.hasTouchDown = false;
 }
 /**
  * Debug function - logs data for a tile when clicked by mouse
@@ -216,10 +221,45 @@ export function movePoint(point: Point, angle: number, distance: number) {
   };
 }
 
-export function setLocalStorageWaveData(stars: number) {
-  localStorage.setItem(gameState.wave.toString(), `${stars || 0}`);
+interface LocalStorageWaveDate {
+  wave: number;
+  stars: number;
 }
 
-export function getLocalStorageWaveData() {
-  return Number(localStorage.getItem(gameState.wave.toString()));
+export function getStarsResultForWave(missedCritters: number, missedCats: number) {
+  let stars = 3;
+
+  if (missedCritters > 0) {
+    stars--;
+  }
+  if (missedCats > 0) {
+    stars--;
+  }
+  if (missedCritters > 10 || missedCats > 1) {
+    stars--;
+  }
+
+  return stars;
+}
+
+export function setLocalStorageWaveData(wave: number, stars: number) {
+  const waveData = getLocalStorageWaveData(wave);
+  const starsToSet = waveData.stars > stars ? waveData.stars : stars;
+  localStorage.setItem(wave.toString(), JSON.stringify({
+    wave,
+    stars: starsToSet
+  }));
+}
+
+export function getLocalStorageWaveData(wave: number): LocalStorageWaveDate {
+  const savedData = localStorage.getItem(wave.toString());
+
+  if (savedData) {
+    return JSON.parse(savedData);
+  }
+
+  return {
+    wave,
+    stars: 0
+  }
 }
