@@ -89,9 +89,9 @@ export class GameState {
 
   updateCurrentStars() {
     let stars = 0;
-    Object.keys(WAVE_DATA).forEach(k => {
-      stars += getLocalStorageWaveData(Number(k)).stars
-    })
+    for (let i = 1;i<=gameState.waves;i++) {
+      stars += getLocalStorageWaveData(i).stars
+    }
     this._currentStars = stars;
   }
 

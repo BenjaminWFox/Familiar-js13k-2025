@@ -251,7 +251,7 @@ export const WAVE_DATA = {
     40,
     10,
     30,
-    500,
+    300,
     1.25,
     3,
     wave2Event
