@@ -167,7 +167,6 @@ export class GameState {
       this.waveSpawns >= this.waveData.maxSpawns &&
       critters.length === 0 &&
       cats.every(c => c.distracted) &&
-      this.escaped < this.waveData.lives &&
       !this.ended
     ) {
       this.ended = true;
@@ -194,20 +193,6 @@ export class GameState {
             }
           })
       }, 2000);
-    } else if (
-      this.escaped >= this.waveData.lives &&
-      !this.ended
-    ) {
-      // // Lose condition removed in favor of 3-star condition
-
-      // this.ended = true;
-
-      // setTimeout(() => {
-      //   this.showDialog([
-      //     'Oh no you failed!', '',
-      //     'The witch has completed her brew!'
-      //   ], () => { this.setState(SCENES.start) })
-      // }, 2000);
     }
 
     // Spawn Critters

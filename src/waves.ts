@@ -7,7 +7,6 @@ class WaveData {
   allowedCritters: string[] = [];
   path: Path = [];
   maxSpawns: number;
-  lives: number;
   spawnFrequency: number;
   startingCash: number;
   critterSpeed: number;
@@ -22,7 +21,6 @@ class WaveData {
     allowedCritters: string[],
     path: Path,
     maxSpawns: number,
-    lives: number,
     spawnFrequency: number,
     startingCash: number,
     critterSpeed: number,
@@ -33,7 +31,6 @@ class WaveData {
     this.allowedCritters = allowedCritters;
     this.path = path;
     this.maxSpawns = maxSpawns;
-    this.lives = lives;
     this.spawnFrequency = spawnFrequency;
     this.startingCash = startingCash;
     this.critterSpeed = critterSpeed;
@@ -237,7 +234,6 @@ export const WAVE_DATA = {
     [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
     PATH_STRIGHT,
     25,
-    15,
     75,
     400,
     CRITTER_DEFAULT_SPEED,
@@ -249,7 +245,6 @@ export const WAVE_DATA = {
     [STRINGS.fly],
     PATH_2,
     40,
-    10,
     30,
     300,
     CRITTER_DEFAULT_SPEED,
@@ -261,7 +256,6 @@ export const WAVE_DATA = {
     [STRINGS.lizard, STRINGS.frog],
     PATH_CLOSE_RIGHT,
     50,
-    20,
     50,
     400,
     CRITTER_DEFAULT_SPEED,
@@ -273,7 +267,6 @@ export const WAVE_DATA = {
     [STRINGS.fly, STRINGS.lizard, STRINGS.frog],
     PATH_4,
     50,
-    25,
     30,
     500,
     CRITTER_DEFAULT_SPEED,
@@ -285,7 +278,6 @@ export const WAVE_DATA = {
     [],
     PATH_5,
     0,
-    10,
     20,
     200,
     CRITTER_DEFAULT_SPEED,
@@ -297,7 +289,6 @@ export const WAVE_DATA = {
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
     PATH_6,
     150,
-    25,
     20,
     500,
     CRITTER_DEFAULT_SPEED,
@@ -309,11 +300,10 @@ export const WAVE_DATA = {
     [STRINGS.fly, STRINGS.frog, STRINGS.snake, STRINGS.lizard],
     PATH_7,
     2000,
-    2500,
     10,
     500,
-    CRITTER_DEFAULT_SPEED,
-    CAT_DEFAULT_SPEED,
+    CRITTER_DEFAULT_SPEED + 1,
+    CAT_DEFAULT_SPEED + 1,
     wave7Event
   ),
 }

@@ -1285,15 +1285,6 @@ export class Menu extends Entity {
     setFont(60)
     ctx.fillText(`Cash: $${gameState.cash}`, MENU_START_X, 375)
 
-    // const esc = gameState.escaped > gameState.waveData.lives ? gameState.waveData.lives : gameState.escaped
-    // ctx.fillText(`${esc} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
-
-    // ctx.strokeRect(MENU_START_X, 125, 550, 50);
-    // ctx.fillRect(MENU_START_X, 125, 550 * (esc / gameState.waveData.lives), 50);
-
-    // setFont(50)
-
-
     const sy = (mod: number) => MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + TILE_WIDTH * mod;
     const sx = DETAIL_START_X;
     let price = 0;
