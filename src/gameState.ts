@@ -21,6 +21,8 @@ export class GameState {
   mouseDownAt: number = 0;
   touchStartAt: number = 0;
   hasTouchDown: boolean = false;
+  isTouchDragging: boolean = false;
+  yTouchOffset: number = 0;
   waves = Object.keys(WAVE_DATA).length;
   gameTime: number = 0;
   image: HTMLImageElement | undefined;
