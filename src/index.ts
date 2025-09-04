@@ -1,10 +1,9 @@
-import { HEIGHT, WIDTH, STRINGS, } from "./constants";
-import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, witches } from "./entity";
+import { HEIGHT, WIDTH, } from "./constants";
+import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menus, menuTowers, particles, towers, Witch, witches } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
 import { drawMouseTile, setFont } from "./utils";
-import { sprites } from "./sprites";
 import { selectWave, startBtn } from "./entity";
 
 const image = new Image();
@@ -49,17 +48,17 @@ function purgeDeleted<T extends Entity>(arr: T[], extra?: (arr: Array<T>, index:
 function deleteCritter(c: Critter[], i: number) {
   delete (c[i] as Critter).currentTile?.critters[c[i].id];
 }
-
+let menuWitch: Witch;
 function render(): void {
   if (gameState.state === SCENES.playing) {
     gameState.gameTime += 1;
     gameState.waveTime += 1;
     gameState.runWave();
     
-    critters.forEach(e => e.render());
-    cats.forEach(e => e.render());
     particles.forEach(e => e.render());
     towers.forEach(e => e.render());
+    critters.forEach(e => e.render());
+    cats.forEach(e => e.render());
     fetchers.forEach(e => e.render());
     // catchers.forEach(e => e.render());
     witches.forEach(e => e.render());
@@ -84,7 +83,7 @@ function render(): void {
     ctx.textAlign = 'center';
     ctx.fillText('Witches Cauldron', WIDTH * .5, 300)
     ctx.restore();
-    sprites[STRINGS.witch]().draw(ctx, WIDTH * .5 - 300, 500, 600, 900);
+    menuWitch.render(WIDTH * .5 - 300, 500, 600, 900)
     startBtn.render();
     selectWave.render(`WAVE ${gameState.wave}`);
 
@@ -107,6 +106,8 @@ image.onload = () => {
   gameState.image = image;
   gameState.setState(SCENES.start);
   new Menu();
+  
+  menuWitch = new Witch(true);
 
   mapCtx.imageSmoothingEnabled = false;
   ctx.imageSmoothingEnabled = false;
