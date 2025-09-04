@@ -103,15 +103,17 @@ export class Entity {
 }
 
 export class Witch extends Entity {
-  constructor() {
+  constructor(preventPush = false) {
     const [x, y] = gameState.waveData.path[gameState.waveData.path.length - 1];
     super((x - 4) * TILE_WIDTH + 20, (y - 4) * TILE_WIDTH + 20)
     this.sprite = sprites[STRINGS.witch]();
-    witches.push(this);
+    if (!preventPush) {
+      witches.push(this);
+    }
   }
 
-  render(): void {
-    this.sprite?.draw(gameState.ctx, this.x, this.y, TILE_WIDTH * 3, TILE_WIDTH * 5)
+  render(x?:number,y?:number,width?:number,height?:number): void {
+    this.sprite?.draw(gameState.ctx, x || this.x, y || this.y, width || TILE_WIDTH * 3, height || TILE_WIDTH * 5)
   }
 }
 
@@ -225,6 +227,7 @@ export class Animal extends Entity {
         
         if (!gameState.waveData.path[this.nextPathIndex + 1] || this.caught) {
           if (!this.caught) {
+            sounds.bad();
             if (!this.type) {
               gameState.addEscaped(10)
             } else {
@@ -318,6 +321,7 @@ export class Cat extends Animal {
     this.sprite = sprites[STRINGS.cat]();
     this.speed = this.baseSpeed;
     cats.push(this);
+    sounds.hiss();
   }
 
   override get currentSpeed() {
@@ -525,7 +529,7 @@ export class MenuTower extends BaseTower {
       if (gameState.dialogShowing) {
         return;
       }
-      sounds.dialogOrPlacement();
+      sounds.placement();
       if (this._isValidPlacement) {
         const x = mouseTile.x - TILE_WIDTH
         const y = mouseTile.y - TILE_WIDTH
@@ -973,6 +977,7 @@ class VaccuumTower extends TileCoveringTower {
     }
     
     if (++this.tick % 60 === 0) {
+      sounds.vaccuum();
       const destX = this.x + TILE_WIDTH * 1.5;
       const destY = this.y + TILE_WIDTH * 1.5;
 
