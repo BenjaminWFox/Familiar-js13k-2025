@@ -53,8 +53,8 @@ function defaultWaveEvent (this: WaveData, _: GameState) {
 function wave1Event (this: WaveData, gameState: GameState) {
   if (gameState.waveTime === 30) {
     gameState.showDialog([
-      'Oh no! The Witch is making her brew...',
-      'dont let her catch critters to fill her cauldron.',
+      'Oh no! The Witch is making her evil soup...',
+      'dont let her catch critters to fill her cauldron!',
       '',
       'Drag towers from menu to map to catch critters...',
       'catching critters earns you $ to build more towers!',
@@ -72,8 +72,8 @@ function wave1Event (this: WaveData, gameState: GameState) {
     this.complete = true;
     gameState.showDialog(
       [
-        'Oh no, a Black Cat!! It counts as 10 critters!', '',
-        'It will also CURSE many of your towers!', '',
+        'Oh no, a Black Cat!! Its much faster than critters!', '',
+        'It will also CURSE many of your towers as it passes!', '',
         'Place a Fish on a Stick to distract it!', '',
         'Click a tower to sell it for extra cash if needed.'
       ], () => new Cat());

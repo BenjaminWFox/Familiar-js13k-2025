@@ -23,8 +23,9 @@ export const TOWER_WIDTH = TILE_WIDTH * 3;
 export const MENU_START_X = WIDTH - TILE_WIDTH * 12;
 export const MENU_TOWER_START_Y = TILE_WIDTH * 8;
 export const MENU_TOWER_Y_OFFSET = 175;
-export const MENU_TITLE_FONT = 50;
-export const MENU_HEADER_FONT = 40;
+export const MENU_TITLE_FONT = 63;
+export const MENU_HEADER_FONT = 50;
+export const MENU_INFO_FONT = 40;
 export const MENU_DETAIL_FONT = 30;
 export const DETAIL_START_X = MENU_START_X + (TILE_WIDTH * 4);
 

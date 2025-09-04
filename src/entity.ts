@@ -1,4 +1,4 @@
-import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION, MENU_TITLE_FONT, MENU_HEADER_FONT, MENU_DETAIL_FONT, DETAIL_START_X } from "./constants";
+import { TILE_WIDTH, type Tile, HEIGHT, MENU_START_X, LAYERS, COLOR_MENU_GREEN_1, COLOR_MENU_GREEN_2, TOWER_WIDTH, MENU_TOWER_START_Y, STRINGS, MENU_TOWER_Y_OFFSET, TOWER_COST, WIDTH, DEBUG, CURSE_DURATION, MENU_TITLE_FONT, MENU_HEADER_FONT, MENU_DETAIL_FONT, DETAIL_START_X, MENU_INFO_FONT } from "./constants";
 import { gameState, SCENES } from "./gameState";
 import { getTileDataEntry, getTileDataKey, TILE_DATA_OBJ, TileData } from "./maps";
 import { sounds } from "./sounds";
@@ -229,9 +229,9 @@ export class Animal extends Entity {
           if (!this.caught) {
             sounds.bad();
             if (!this.type) {
-              gameState.addEscaped(10)
+              gameState.addEscapedCat();
             } else {
-              gameState.addEscaped(1)
+              gameState.addEscapedCritter();
             }
           }
           this.deleted = true;
@@ -1226,22 +1226,28 @@ export class Menu extends Entity {
     ctx.fillStyle = COLOR_MENU_GREEN_1;
     ctx.fillRect(MENU_START_X - TILE_WIDTH, 0, TILE_WIDTH, this.height);
 
-    ctx.fillStyle = 'white';
-    setFont(MENU_HEADER_FONT);
-    const esc = gameState.escaped > gameState.waveData.lives ? gameState.waveData.lives : gameState.escaped
-    ctx.fillText(`${esc} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
-    // ctx.fillText('100', MENU_START_X + 480, 100)
-    setFont(MENU_TITLE_FONT);
     ctx.strokeStyle = 'white'
-    ctx.fillText('Witches Cauldron', MENU_START_X, 50)
-    ctx.strokeRect(MENU_START_X, 125, 550, 50);
-    ctx.fillRect(MENU_START_X, 125, 550 * (esc / gameState.waveData.lives), 50);
+    ctx.fillStyle = 'white';
+
+    setFont(MENU_TITLE_FONT);
+    ctx.fillText('Witches Cauldron', MENU_START_X - 25, 50)
+
+    setFont(MENU_INFO_FONT);
+    ctx.fillText(`Missed Critters: ${gameState.waveMissedCritters}`, MENU_START_X, 325)
+    ctx.fillText(`Missed Cats: ${gameState.waveMissedCats}`, MENU_START_X, 375)
+
+    setFont(MENU_HEADER_FONT);
+    ctx.fillText(`Wave: ${gameState.wave} / 13`, MENU_START_X, 150)
+    ctx.fillText(`Cash: $${gameState.cash}`, MENU_START_X, 237)
+
+    // const esc = gameState.escaped > gameState.waveData.lives ? gameState.waveData.lives : gameState.escaped
+    // ctx.fillText(`${esc} / ${gameState.waveData.lives} Critters`, MENU_START_X, 100)
+
+    // ctx.strokeRect(MENU_START_X, 125, 550, 50);
+    // ctx.fillRect(MENU_START_X, 125, 550 * (esc / gameState.waveData.lives), 50);
 
     // setFont(50)
 
-    ctx.fillText(`Wave: ${gameState.wave} / 13`, MENU_START_X, 240)
-
-    ctx.fillText(`Cash: $${gameState.cash}`, MENU_START_X, 330)
 
     const sy = (mod: number) => MENU_TOWER_Y_OFFSET + MENU_TOWER_START_Y + TILE_WIDTH * mod;
     const sx = DETAIL_START_X;
@@ -1327,7 +1333,10 @@ export class Dialog extends Entity {
       gameState.ctx.fillStyle = COLOR_MENU_GREEN_1;
       gameState.ctx.strokeStyle = COLOR_MENU_GREEN_2;
       gameState.ctx.lineWidth = 50;
-      gameState.ctx.fillRect(WIDTH * .5 - 500 - (WIDTH - MENU_START_X), HEIGHT * .5 - 450, 1500, 700);
+      const dialogLeft = WIDTH * .5 - 500 - (WIDTH - MENU_START_X);
+      // const dialogRight = dialogLeft + 1500;
+      const dialogBottom = HEIGHT * .5 - 450 + 700;
+      gameState.ctx.fillRect(dialogLeft, HEIGHT * .5 - 450, 1500, 700);
       gameState.ctx.strokeRect(WIDTH * .5 - 525 - (WIDTH - MENU_START_X), HEIGHT * .5 - 475, 1550, 750);
       
       okButton.addListener();
@@ -1346,6 +1355,32 @@ export class Dialog extends Entity {
         gameState.ctx.textBaseline = 'bottom'
         gameState.ctx.fillText(str, 450, 650 + (i * TILE_WIDTH))
       })
+
+      if (gameState.ended && gameState.starResults !== undefined) {
+        for(let i = 0;i<3;i++) {
+          const ws = new WaveStars(dialogLeft + 50 + (125 * i), dialogBottom - 150, i < gameState.starResults, false);
+          ws.width = 100;
+          ws.render();
+        }
+        switch(gameState.starResults) {
+          case 0:
+            gameState.ctx.fillText('The witch appreciates your', 850, dialogBottom - 105);
+            gameState.ctx.fillText('contribution! Try again!', 850, dialogBottom - 55);
+          break;
+          case 1:
+            gameState.ctx.fillText('A valient effort, but', 850, dialogBottom - 105);
+            gameState.ctx.fillText('maybe give it another try!', 850, dialogBottom - 55);
+          break;
+          case 2:
+            gameState.ctx.fillText('Almost caught em all! This', 850, dialogBottom - 105);
+            gameState.ctx.fillText('isnt pokemon, but still...!', 850, dialogBottom - 55);
+          break;
+          case 3:
+            gameState.ctx.fillText('Haha, no soup for the witch!', 850, dialogBottom - 105);
+            gameState.ctx.fillText('She is very sad, nice work!', 850, dialogBottom - 55);
+          break;
+        }
+      }
     }
   }
 }
@@ -1485,13 +1520,17 @@ export const selectWave = new Button(
 )
 
 export class WaveStars extends Entity {
-  constructor(x: number, y: number, isFull: boolean) {
+  backfill: boolean;
+  constructor(x: number, y: number, isFull: boolean, backfill: boolean = true) {
     super(x, y, 0, 0, 50, 50);
     this.sprite = isFull ? sprites[STRINGS.starFull]() : sprites[STRINGS.starEmpty]();
+    this.backfill = backfill;
   }
   render() {
-    gameState.ctx.fillStyle = 'green'
-    gameState.ctx.fillRect(this.x - 10, this.y - 10, this.width + 20, this.width + 20);
+    if (this.backfill) {
+      gameState.ctx.fillStyle = 'green'
+      gameState.ctx.fillRect(this.x - 10, this.y - 10, this.width + 20, this.width + 20);
+    }
     this.sprite?.draw(gameState.ctx, this.x, this.y, this.width)
   }
 }

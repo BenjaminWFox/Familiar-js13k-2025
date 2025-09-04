@@ -221,7 +221,7 @@ export function movePoint(point: Point, angle: number, distance: number) {
   };
 }
 
-interface LocalStorageWaveDate {
+export interface LocalStorageWaveDate {
   wave: number;
   stars: number;
 }

@@ -38,6 +38,7 @@ export class GameState {
   waveMissedCritters: number = 0;
   waveMissedCats: number = 0;
   ended: boolean = false;
+  starResults: number | undefined;
 
   dialogCallback: () => void;
   dialogText: string[] = [];
@@ -72,8 +73,12 @@ export class GameState {
     this.p1 = createP1();
   }
 
-  addEscaped(n: number = 1) {
-    this.escaped += n;
+  addEscapedCritter() {
+    this.waveMissedCritters++;
+  }
+
+  addEscapedCat() {
+    this.waveMissedCats++;
   }
 
   closeDialog(scene: SCENES = SCENES.playing) {
@@ -95,6 +100,7 @@ export class GameState {
     this._waveData = WAVE_DATA[this.wave as keyof typeof WAVE_DATA]();
     this.clearBoard();
     this.ended = false;
+    this.starResults = undefined;
     this.cash = this.waveData.startingCash;
     this.waveData.restart();
     this.waveTime = 0;
@@ -135,8 +141,11 @@ export class GameState {
       !this.ended
     ) {
       this.ended = true;
-      setLocalStorageWaveData(this.wave, getStarsResultForWave(gameState.waveMissedCritters, gameState.waveMissedCats));
+      this.starResults = getStarsResultForWave(gameState.waveMissedCritters, gameState.waveMissedCats);
+      setLocalStorageWaveData(this.wave, this.starResults);
+
       const msg = [`Wave ${this.wave} complete!`, ''];
+
       if (this.wave < TOTAL_WAVES) {
         msg.push(`On to Wave ${this.wave + 1}!`);
       } else if (this.wave === TOTAL_WAVES) {
@@ -159,14 +168,16 @@ export class GameState {
       this.escaped >= this.waveData.lives &&
       !this.ended
     ) {
-      this.ended = true;
+      // // Lose condition removed in favor of 3-star condition
 
-      setTimeout(() => {
-        this.showDialog([
-          'Oh no you failed!', '',
-          'The witch has completed her brew!'
-        ], () => { this.setState(SCENES.start) })
-      }, 2000);
+      // this.ended = true;
+
+      // setTimeout(() => {
+      //   this.showDialog([
+      //     'Oh no you failed!', '',
+      //     'The witch has completed her brew!'
+      //   ], () => { this.setState(SCENES.start) })
+      // }, 2000);
     }
 
     // Spawn Critters
