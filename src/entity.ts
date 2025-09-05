@@ -1597,6 +1597,7 @@ export const okButton = new Button(1650, 1100, 200, 100, 'Okay',
   () => {
       gameState.closeDialog();
       cancelButton.removeListener();
+      retryButton.removeListener();
     }
 )
 
@@ -1604,7 +1605,7 @@ export const retryButton = new Button(1650, 950, 200, 100, 'Retry',
   () => {
       gameState.closeDialog();
       gameState.startWave();
-      retryButton.removeListener();
+      okButton.removeListener();
     }
 )
 

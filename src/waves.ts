@@ -254,7 +254,7 @@ export const WAVE_DATA = {
     PATH_2,
     50,
     40,
-    300,
+    400,
     CRITTER_DEFAULT_SPEED,
     CAT_DEFAULT_SPEED,
     wave2Event
