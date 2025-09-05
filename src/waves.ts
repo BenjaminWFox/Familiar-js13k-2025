@@ -1,6 +1,7 @@
 import { Path, PATH_STRIGHT, PATH_2, PATH_4, PATH_5, STRINGS, PATH_CLOSE_RIGHT, PATH_6, PATH_7, CRITTER_DEFAULT_SPEED, CAT_DEFAULT_SPEED } from "./constants";
 import { Cat, cats, critters } from "./entity";
 import { GameState } from "./gameState";
+import { getRandomInt } from "./utils";
 
 class WaveData {
   allowedTowers: string[] = [];
@@ -63,7 +64,7 @@ function wave1Event (this: WaveData, gameState: GameState) {
 
   if (
     !this.complete &&
-    gameState.waveSpawns >= this.maxSpawns
+    gameState.waveSpawns >= this.maxSpawns * .75
   ) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
     this.complete = true;
@@ -86,7 +87,7 @@ function wave2Event (this: WaveData, gameState: GameState) {
       'Watch out for Black Cats and snakes...',
     ])
   }
-  if (gameState.waveTime === 600) {
+  if (gameState.waveTime === 900) {
     gameState.showDialog([
       'SNAKES ON A PATH!', '',
       'Snakes are too sneaky for a net...',
@@ -97,7 +98,7 @@ function wave2Event (this: WaveData, gameState: GameState) {
     this.allowedTowers.push(STRINGS.kid, STRINGS.fish, STRINGS.scratch);
     this.allowedCritters.push(STRINGS.snake);
   }
-  if (gameState.waveTime === 1200) {
+  if (gameState.waveTime === 1350) {
     new Cat();
     this.complete = true;
   }
@@ -152,7 +153,7 @@ function wave4Event (this: WaveData, gameState: GameState) {
   if (
     !this.complete &&
     gameState.waveSpawns >= this.maxSpawns &&
-    critters.length === 0
+    critters.length <= 10
   ) {
     this.allowedTowers.push(STRINGS.fish, STRINGS.scratch);
     new Cat();
@@ -187,7 +188,7 @@ function wave5Event (this: WaveData, gameState: GameState) {
     ])
   }
 
-  if (gameState.waveTime === 1000) {
+  if (gameState.waveTime === 800) {
     gameState.showDialog([
       'Oooh I found $200 under a rock!',
       '',
@@ -211,7 +212,12 @@ function wave6Event (this: WaveData, gameState: GameState) {
       'Use everything you can to thwart the Witch!',
     ])
   }
-  this.complete = true;
+  if (gameState.waveTime >= 600 && gameState.waveTime % 240 === 0) {
+    if (getRandomInt(0, 10) <= 3 && critters.length) { new Cat(); }
+  }
+  if(!this.complete && gameState.waveSpawns >= this.maxSpawns) {
+    this.complete = true;
+  }
 }
 
 function wave7Event (this: WaveData, gameState: GameState) {
@@ -222,7 +228,12 @@ function wave7Event (this: WaveData, gameState: GameState) {
       'Stay strong, and save those critters!',
     ])
   }
-  this.complete = true;
+  if (gameState.waveTime >= 600 && gameState.waveTime % 240 === 0) {
+    if (getRandomInt(0, 10) <= 3 && critters.length) { new Cat(); }
+  }
+  if(!this.complete && gameState.waveSpawns >= this.maxSpawns) {
+    this.complete = true;
+  }
 }
 
 export const WAVE_DATA = {
@@ -231,7 +242,7 @@ export const WAVE_DATA = {
     [STRINGS.frog, STRINGS.lizard, STRINGS.snake],
     PATH_STRIGHT,
     25,
-    75,
+    55,
     400,
     CRITTER_DEFAULT_SPEED,
     CAT_DEFAULT_SPEED,
@@ -241,8 +252,8 @@ export const WAVE_DATA = {
     [STRINGS.net],
     [STRINGS.fly],
     PATH_2,
+    50,
     40,
-    30,
     300,
     CRITTER_DEFAULT_SPEED,
     CAT_DEFAULT_SPEED,
@@ -254,7 +265,7 @@ export const WAVE_DATA = {
     PATH_CLOSE_RIGHT,
     50,
     50,
-    400,
+    450,
     CRITTER_DEFAULT_SPEED,
     CAT_DEFAULT_SPEED,
     wave3Event,
