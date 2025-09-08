@@ -103,13 +103,17 @@ export class Entity {
 }
 
 const dialogs = [
-  ['Wing of Fly', 'Eye of Newt', 'Chop em Up', 'Into Soup!'],
-  ['Here Kitty Kitty!', 'Pss Pss Pss!'],
-  ['Cant a Girl', 'Just make Soup', 'In Peace?!'],
-  ['Eye of Newt', 'Toe of Frog', 'This Fire Needs', 'Another Log'],
-  ['Where oh Where', 'Is my Cat?!'],
-  ['Slime of Frog', 'Skin of Snake', 'Its Really Nice', 'The Soup I Make'],
-  ['Kitty Cat', 'Black as Night', 'Come to Me', 'Give Them a Fright']
+  ['Wing of fly', 'Eye of fewt', 'Chop em up', 'Into soup!'],
+  ['Here kitty kitty!', 'Pspspspsps!'],
+  ['Cant a girl', 'Just make soup', 'In peace?!'],
+  ['Eye of newt', 'Toe of frog', 'This fire needs', 'Another log'],
+  ['Where oh where', 'Is my cat?!'],
+  ['Slime of frog', 'Skin of snake', 'Its really nice', 'The soup I make'],
+  ['Kitty cat', 'Black as night', 'Come to me', 'Give them a fright'],
+  ['Skin of snake', 'Wing of fly', 'Soup just splashed', 'Into my eye', 'Ow ow ow!'],
+  ['Oh come on', 'Just leave me', 'Some critters!'],
+  ['You know', 'I would share', 'Some soup if', 'Youd calm down'],
+  ['For how hard', 'Youre trying', 'I sure hope', 'Youre a vegan'],
 ];
 
 export class Witch extends Entity {
