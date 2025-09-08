@@ -1608,6 +1608,8 @@ export const startBtn = new Button(
     gameState.play();
     gameState.startWave();
     selectWave.removeListener(true);
+    gameState.waveSelectBtns.forEach(b => b.setDeleted())
+    gameState.waveStars.forEach(s => s.deleted = true);
     gameState.setState(SCENES.playing);
 })
 

@@ -79,6 +79,8 @@ function render(): void {
     purgeDeleted(fetchers);
     purgeDeleted(witches);
     purgeDeleted(witchTexts);
+    purgeDeleted(gameState.waveSelectBtns);
+    purgeDeleted(gameState.waveStars);
 
   } else if (gameState.state === SCENES.start) {
     ctx.fillStyle = 'green'
