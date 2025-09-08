@@ -447,6 +447,7 @@ export class MenuTower extends BaseTower {
 
     if (this.dragging) {
         if (gameState.hasTouchDown) {
+          gameState.yTouchOffset = -100;
           if (mouseTile.x < WIDTH * .25 && gameState.xTouchOffset > 0) {
             gameState.xTouchOffset = -250;
           } else if (mouseTile.x > WIDTH * .75 && gameState.xTouchOffset <= 0) {
@@ -459,7 +460,7 @@ export class MenuTower extends BaseTower {
         }
 
       this._isValidPlacement = true;
-      const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds(gameState.xTouchOffset)
+      const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds(gameState.xTouchOffset, gameState.yTouchOffset)
       if (
         expandedMinX < 0 || 
         expandedMaxX > (MENU_START_X - TILE_WIDTH) / TILE_WIDTH ||
