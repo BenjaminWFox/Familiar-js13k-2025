@@ -114,6 +114,7 @@ const dialogs = [
   ['Oh come on', 'Just leave me', 'Some critters!'],
   ['You know', 'I would share', 'Some soup if', 'Youd calm down'],
   ['For how hard', 'Youre trying', 'I sure hope', 'Youre a vegan'],
+  ['Wait are you', 'Going to eat', 'These critters', 'Yourself?!'],
 ];
 
 export class Witch extends Entity {
