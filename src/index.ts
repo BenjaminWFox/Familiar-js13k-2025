@@ -1,5 +1,5 @@
 import { HEIGHT, WIDTH, } from "./constants";
-import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menuBtn, menus, menuTowers, particles, towers, waveBest, Witch, witches } from "./entity";
+import { cashes, cats, Critter, critters, dialog, Entity, fetchers, Menu, menuBtn, menus, menuTowers, particles, towers, waveBest, Witch, witches, witchTexts } from "./entity";
 import { hasMouseMoved, registerListeners } from "./listeners";
 import { mapCtx, ctx, canvas } from "./elements";
 import { gameState, SCENES } from "./gameState";
@@ -62,6 +62,7 @@ function render(): void {
     fetchers.forEach(e => e.render());
     // catchers.forEach(e => e.render());
     witches.forEach(e => e.render());
+    witchTexts.forEach(e => e.render());
     menus.forEach(e => e.render());
     waveBest.forEach(s => s.render());
     menuTowers.forEach(e => e.render());
@@ -77,6 +78,7 @@ function render(): void {
     purgeDeleted(towers);
     purgeDeleted(fetchers);
     purgeDeleted(witches);
+    purgeDeleted(witchTexts);
 
   } else if (gameState.state === SCENES.start) {
     ctx.fillStyle = 'green'
@@ -125,7 +127,7 @@ image.onload = () => {
   ctx.imageSmoothingEnabled = false;
   registerListeners(canvas);
 
-  gameState.startWave();
+  // gameState.startWave();
 
   requestAnimationFrame(gameLoop);
 }

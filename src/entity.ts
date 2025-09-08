@@ -102,7 +102,21 @@ export class Entity {
   render() {};
 }
 
+const dialogs = [
+  ['Wing of Fly', 'Eye of Newt', 'Chop em Up', 'Into Soup!'],
+  ['Here Kitty Kitty!', 'Pss Pss Pss!'],
+  ['Cant a Girl', 'Just make Soup', 'In Peace?!'],
+  ['Eye of Newt', 'Toe of Frog', 'This Fire Needs', 'Another Log'],
+  ['Where oh Where', 'Is my Cat?!'],
+  ['Slime of Frog', 'Skin of Snake', 'Its Really Nice', 'The Soup I Make'],
+  ['Kitty Cat', 'Black as Night', 'Come to Me', 'Give Them a Fright']
+];
+
 export class Witch extends Entity {
+  spoke: boolean = false;
+  timeLastSpoke: number = 0;
+  speaking: string[] = [];
+
   constructor(preventPush = false) {
     const [x, y] = gameState.waveData.path[gameState.waveData.path.length - 1];
     super((x - 4) * TILE_WIDTH + 20, (y - 4) * TILE_WIDTH + 20)
@@ -114,6 +128,25 @@ export class Witch extends Entity {
 
   render(x?:number,y?:number,width?:number,height?:number): void {
     this.sprite?.draw(gameState.ctx, x || this.x, y || this.y, width || TILE_WIDTH * 3, height || TILE_WIDTH * 5)
+
+    if (gameState.state !== SCENES.start) {
+      if (
+        !witchTexts.length &&
+        !this.speaking.length &&
+        gameState.gameTime - this.timeLastSpoke > 600 && 
+        getRandomInt(0, 200) === 1
+      ) {
+        this.speaking = [...dialogs[getRandomInt(0, dialogs.length - 1)]];
+        new WitchText(this.x + TILE_WIDTH * 2, this.y, this.speaking.shift()!);
+      } else if (
+        witchTexts.length &&
+        witchTexts[witchTexts.length - 1].opacity < .60 &&
+        this.speaking.length
+      ) {
+        new WitchText(this.x + TILE_WIDTH * 2, this.y, this.speaking.shift()!);
+        this.timeLastSpoke = gameState.gameTime;
+      }
+    }
   }
 }
 
@@ -447,7 +480,7 @@ export class MenuTower extends BaseTower {
 
     if (this.dragging) {
         if (gameState.hasTouchDown) {
-          gameState.yTouchOffset = -100;
+          // gameState.yTouchOffset = -100;
           if (mouseTile.x < WIDTH * .25 && gameState.xTouchOffset > 0) {
             gameState.xTouchOffset = -250;
           } else if (mouseTile.x > WIDTH * .75 && gameState.xTouchOffset <= 0) {
@@ -802,6 +835,36 @@ class Particle extends Entity {
     gameState.ctx.fillStyle = '#dedede';
     gameState.ctx.fillRect(this.x, this.y, 6, 6);
 
+  }
+}
+
+class WitchText extends Particle {
+  text: string;
+  opacity: number = 1;
+
+  constructor(x: number, y: number, text: string) {
+    super(x, y, x, y - 250, false)
+    this.text = text;
+    this.speed = .25;
+
+    witchTexts.push(this);
+  }
+
+  render() {
+      if(this.opacity <= 0) {
+        this.deleted = true;
+        return;
+      } else {
+        this.opacity -= .0025;
+      }
+
+      const {x, y} = movePoint(this, this.att, this.speed);
+      this.x = x;
+      this.y = y;
+      setFont(35);
+      gameState.ctx.textAlign = 'right'
+      gameState.ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
+      gameState.ctx.fillText(this.text, this.x, this.y)
   }
 }
 
@@ -1638,5 +1701,6 @@ export const menus: Menu[] = [];
 export const particles: Particle[] = [];
 // export const catchers: Catcher[] = [];
 export const witches: Witch[] = [];
-export const cashes: Witch[] = [];
+export const witchTexts: WitchText[] = [];
+export const cashes: Cash[] = [];
 export const waveBest: WaveStars[] = [];
