@@ -105,14 +105,17 @@ export class Entity {
 const dialogs = [
   ['Wing of fly', 'Eye of fewt', 'Chop em up', 'Into soup!'],
   ['Here kitty kitty!', 'Pspspspsps!'],
+  ['Pspspspsps!', 'Pspspspsps!'],
   ['Cant a girl', 'Just make soup', 'In peace?!'],
   ['Eye of newt', 'Toe of frog', 'This fire needs', 'Another log'],
-  ['Where oh where', 'Is my cat?!'],
+  ['Where oh where', 'Has my little', 'Black cat gone?'],
+  ['Where oh where', 'Is that cat?!'],
   ['Slime of frog', 'Skin of snake', 'Its really nice', 'The soup I make'],
   ['Kitty cat', 'Black as night', 'Come to me', 'Give them a fright'],
   ['Skin of snake', 'Wing of fly', 'Soup just splashed', 'Into my eye', 'Ow ow ow!'],
   ['Oh come on', 'Just leave me', 'Some critters!'],
   ['You know', 'I would share', 'Some soup if', 'Youd calm down'],
+  ['If only I had', 'A can of tuna', 'And a can opener'],
   ['For how hard', 'Youre trying', 'I sure hope', 'Youre a vegan'],
   ['Wait are you', 'Going to eat', 'These critters', 'Yourself?!'],
 ];
@@ -845,6 +848,7 @@ class Particle extends Entity {
 
 class WitchText extends Particle {
   text: string;
+  age: number = 0;
   opacity: number = 1;
 
   constructor(x: number, y: number, text: string) {
@@ -859,9 +863,10 @@ class WitchText extends Particle {
       if(this.opacity <= 0) {
         this.deleted = true;
         return;
-      } else {
-        this.opacity -= .0025;
+      } else if (this.age > 120) {
+        this.opacity -= .005;
       }
+      this.age++;
 
       const {x, y} = movePoint(this, this.att, this.speed);
       this.x = x;
