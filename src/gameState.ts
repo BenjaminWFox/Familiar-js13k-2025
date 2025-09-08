@@ -23,6 +23,7 @@ export class GameState {
   hasTouchDown: boolean = false;
   isTouchDragging: boolean = false;
   yTouchOffset: number = 0;
+  xTouchOffset: number = 0;
   waves = Object.keys(WAVE_DATA).length;
   gameTime: number = 0;
   image: HTMLImageElement | undefined;

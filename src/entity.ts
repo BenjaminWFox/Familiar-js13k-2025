@@ -447,15 +447,19 @@ export class MenuTower extends BaseTower {
 
     if (this.dragging) {
         if (gameState.hasTouchDown) {
+          if (mouseTile.x < WIDTH * .25 && gameState.xTouchOffset > 0) {
+            gameState.xTouchOffset = -250;
+          } else if (mouseTile.x > WIDTH * .75 && gameState.xTouchOffset <= 0) {
+            gameState.xTouchOffset = 250;
+          }
           gameState.isTouchDragging = true;
-          gameState.yTouchOffset = 200;
         } else {
           gameState.isTouchDragging = false;
-          gameState.yTouchOffset = 0;
+          gameState.xTouchOffset = 0;
         }
 
       this._isValidPlacement = true;
-      const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds(gameState.yTouchOffset)
+      const { expandedMinX, expandedMaxX, expandedMinY, expandedMaxY } = getExpanededDraggingTileBounds(gameState.xTouchOffset)
       if (
         expandedMinX < 0 || 
         expandedMaxX > (MENU_START_X - TILE_WIDTH) / TILE_WIDTH ||
@@ -496,36 +500,36 @@ export class MenuTower extends BaseTower {
           const yDiff = (tiles[i+1] * TILE_WIDTH) // tiles[i+1] > 0 ? (TOWER_WIDTH) + (tiles[i+1] * TILE_WIDTH) : (tiles[i+1] * TILE_WIDTH);;
           
           gameState.ctx?.fillRect(
-            tileLockedX - (TILE_WIDTH) + xDiff,
-            tileLockedY - (TILE_WIDTH) + yDiff - gameState.yTouchOffset,
+            tileLockedX - (TILE_WIDTH) + xDiff + gameState.xTouchOffset,
+            tileLockedY - (TILE_WIDTH) + yDiff + gameState.yTouchOffset,
             TILE_WIDTH,
             TILE_WIDTH
           )
         }
       } else if (this.sprite?.type === 'net') {
         gameState.ctx?.fillRect(
-          mouseTile.x - (TOWER_WIDTH + TILE_WIDTH),
-          mouseTile.y - (TOWER_WIDTH + TILE_WIDTH) - gameState.yTouchOffset,
+          mouseTile.x - (TOWER_WIDTH + TILE_WIDTH) + gameState.xTouchOffset,
+          mouseTile.y - (TOWER_WIDTH + TILE_WIDTH) + gameState.yTouchOffset,
           TILE_WIDTH * 9,
           TILE_WIDTH * 9
         )
         gameState.ctx?.clearRect(
-          mouseTile.x - TILE_WIDTH,
-          mouseTile.y - TILE_WIDTH - gameState.yTouchOffset,
+          mouseTile.x - TILE_WIDTH + gameState.xTouchOffset,
+          mouseTile.y - TILE_WIDTH + gameState.yTouchOffset,
           TILE_WIDTH * 3,
           TILE_WIDTH * 3
         )
       } else {
         // Draw "valid" range for tower
         gameState.ctx?.fillRect(
-          mouseTile.x - (TOWER_WIDTH),
-          mouseTile.y - (TOWER_WIDTH) - gameState.yTouchOffset,
+          mouseTile.x - (TOWER_WIDTH) + gameState.xTouchOffset,
+          mouseTile.y - (TOWER_WIDTH) + gameState.yTouchOffset,
           TILE_WIDTH * 7,
           TILE_WIDTH * 7
         )
         gameState.ctx?.clearRect(
-          mouseTile.x - TILE_WIDTH,
-          mouseTile.y - TILE_WIDTH - gameState.yTouchOffset,
+          mouseTile.x - TILE_WIDTH + gameState.xTouchOffset,
+          mouseTile.y - TILE_WIDTH + gameState.yTouchOffset,
           TILE_WIDTH * 3,
           TILE_WIDTH * 3
         )
@@ -534,8 +538,8 @@ export class MenuTower extends BaseTower {
       // Draw tower
       this.sprite?.draw(
         gameState.ctx,
-        mouseTile.x - TILE_WIDTH,
-        mouseTile.y - TILE_WIDTH - gameState.yTouchOffset,
+        mouseTile.x - TILE_WIDTH + gameState.xTouchOffset,
+        mouseTile.y - TILE_WIDTH + gameState.yTouchOffset,
         TOWER_WIDTH
       );
     }
@@ -575,8 +579,8 @@ export class MenuTower extends BaseTower {
       }
       sounds.placement();
       if (this._isValidPlacement) {
-        const x = mouseTile.x - TILE_WIDTH
-        const y = mouseTile.y - TILE_WIDTH - gameState.yTouchOffset;
+        const x = mouseTile.x - TILE_WIDTH + gameState.xTouchOffset
+        const y = mouseTile.y - TILE_WIDTH + gameState.yTouchOffset;
         
         switch(this.sprite?.type) {
           case STRINGS.kid:
@@ -601,6 +605,7 @@ export class MenuTower extends BaseTower {
       }
 
       gameState.isTouchDragging = false;
+      gameState.xTouchOffset = 0;
       gameState.yTouchOffset = 0;
     }
   }

@@ -148,10 +148,10 @@ export function convertCanvasXYToPathXY(canvasX: number, canvasY: number) {
 
 export function getExpanededDraggingTileBounds(offset: number) {
   return {
-    expandedMinX: (mouseTile.x - TILE_WIDTH) / TILE_WIDTH,
-    expandedMaxX: (mouseTile.x + TILE_WIDTH) / TILE_WIDTH,
-    expandedMinY: (mouseTile.y - offset - TILE_WIDTH) / TILE_WIDTH,
-    expandedMaxY: (mouseTile.y - offset + TILE_WIDTH) / TILE_WIDTH,
+    expandedMinX: (mouseTile.x + offset - TILE_WIDTH) / TILE_WIDTH,
+    expandedMaxX: (mouseTile.x + offset + TILE_WIDTH) / TILE_WIDTH,
+    expandedMinY: (mouseTile.y - TILE_WIDTH) / TILE_WIDTH,
+    expandedMaxY: (mouseTile.y + TILE_WIDTH) / TILE_WIDTH,
   }
 }
 
