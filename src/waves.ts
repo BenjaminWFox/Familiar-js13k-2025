@@ -266,7 +266,7 @@ export const WAVE_DATA = {
     50,
     50,
     450,
-    CRITTER_DEFAULT_SPEED,
+    CRITTER_DEFAULT_SPEED - .5,
     CAT_DEFAULT_SPEED,
     wave3Event,
   ),
