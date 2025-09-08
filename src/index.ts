@@ -62,13 +62,14 @@ function render(): void {
     fetchers.forEach(e => e.render());
     // catchers.forEach(e => e.render());
     witches.forEach(e => e.render());
-    witchTexts.forEach(e => e.render());
     menus.forEach(e => e.render());
     waveBest.forEach(s => s.render());
     menuTowers.forEach(e => e.render());
     cashes.forEach(e => e.render());
 
     menuBtn.render();
+
+    witchTexts.forEach(e => e.render());
 
     purgeDeleted<Critter>(critters, deleteCritter);
     purgeDeleted(cats);
