@@ -29,8 +29,8 @@ export const MENU_INFO_FONT = 40;
 export const MENU_DETAIL_FONT = 30;
 export const DETAIL_START_X = MENU_START_X + (TILE_WIDTH * 4);
 
-export const CRITTER_DEFAULT_SPEED = 3;
-export const CAT_DEFAULT_SPEED = 6;
+export const CRITTER_DEFAULT_SPEED = 3 - .25;
+export const CAT_DEFAULT_SPEED = 6 - 1;
 
 export const COLOR_MAP_GREEN = '#39941a';
 export const COLOR_MENU_GREEN_1 = '#26700dff';
