@@ -36,6 +36,7 @@ export class GameState {
   p1: any;
   music: boolean = false;
   waveBestResult: number = 0;
+  isLoading: boolean = false;
 
   escaped: number = 0;
   waveSpawns: number = 0;
@@ -117,7 +118,7 @@ export class GameState {
     return this._waveData;
   }
 
-  startWave() {
+  startWave(doDrawTileMap = true) {
     /** For debug **/
       // this.wave = 7;
       // this.setState(SCENES.playing);
@@ -139,7 +140,9 @@ export class GameState {
       new WaveStars(MENU_START_X + 245, 150, this.waveBestResult > 1, false),
       new WaveStars(MENU_START_X + 315, 150, this.waveBestResult > 2, false)
     )
-    drawTileMap(mapCtx);
+    if (doDrawTileMap) {
+      drawTileMap(mapCtx);
+    }
 
     new Witch();
   }
@@ -238,11 +241,19 @@ export class GameState {
     //   |A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|A---A---|D---D---|A-------|F-------|I-------|J-------|I-------|F-------|A-------|H-------|A-------|K---K---|I-------|H-------|F-------|F-------|----    |J-Q-J-Q-|R---Q-J-|T---Q-J-|R---Q-J-|J---Q-R-|T---Q-J-|J-Q-J-Q-|J-------|J-T-J-T-|R-Q-J-Q-|J-J-J-J-|R-R-R-R-|T-Q-J-Q-|R---J-Q-|J---J---|J-------|J-Q-J-Q-|R---Q-J-|J---Q-R-|T---Q-J-|J-Q-J-Q-|T-Q-J-Q-|R---Q-J-|J-------|J-J-J-J-|R-R-R-R-|T-T-T-T-|Q---Q-J-|Q---Q---|Q-Q-J-J-|J---J---|J-------|
     // `
 
-    // Transposed + linked 1st and 2nd pieces
+    // Transposed + linked 1st and 2nd pieces ... Full double looped:
+    // console.time('p1compile')
+    
     this.p1`120.100
       |Y-c-h-h-|----fdf-|a-a-----|d-h-k-h-|f---Y-c-|d-a-----|----aca-|Y-c-h-h-|----d-h-|k-h-f---|----aca-|fdh-khk-|h-h-hkh-|dkd-d---|c-a-Y-Y-|c-a-Y---|Y-c-h-h-|----fdf-|a-a-----|d-h-k-h-|f---Y-c-|d-a-----|----aca-|Y-c-h-h-|----d-h-|k-h-f---|----aca-|fdf-k-k-|h-h-hkh-|dkd-d---|c-a-Y-Y-|c-a-Y-h-|h-a-j-k-|hhaajjkk|k---j-h-|kkccddff|f-c-h---|k-h-c-a-|ccccddff|a-Y-c-j-|h-------|l-h-t-j-|k---j-h-|kkcch-tt|wwvvkk--|d-c-h-a-|Y-a-c-Y-|h---h---|h-------|hhaajjkk|k---j-h-|k-h-c-a-|d-c-h---|ccccddff|a-Y-c-j-|f-c-h---|h-------|kkccddff|h-h-k-k-|wwvvkk--|Y-Y-a-a-|k-j-h-d-|c-a-Y-c-|c-h-k-h-|h-------|
       |J---J---|O---O---|J-------|F-------|H-------|J-------|H-------|F-------|J-------|H-------|J-------|J---J---|H-------|H-------|F-------|F-------|J---J---|O---O---|J-------|F-------|H-------|J-------|H-------|F-------|J-------|H-------|J-------|J---J---|H-------|H-------|F-------|F-------|J---Q   |J-Q-J-Q-|R---Q-J-|T---Q-J-|R---Q-J-|J---Q-R-|T---Q-J-|J-Q-J-Q-|J-------|J-T-J-T-|R-Q-J-Q-|J-J-J-J-|R-R-R-R-|T-Q-J-Q-|R---J-Q-|J---J---|J-------|J-Q-J-Q-|R---Q-J-|J---Q-R-|T---Q-J-|J-Q-J-Q-|T-Q-J-Q-|R---Q-J-|J-------|J-J-J-J-|R-R-R-R-|T-T-T-T-|Q---Q-J-|Q---Q---|Q-Q-J-J-|J---J---|J-------|
     `
+
+    // this.p1`120.100
+    //   |Y-c-h-h-|----fdf-|a-a-----|d-h-k-h-|f---Y-c-|d-a-----|----aca-|Y-c-h-h-|----d-h-|k-h-f---|----aca-|fdh-khk-|h-h-hkh-|dkd-d---|c-a-Y-Y-|c-a-Y-h-|h-a-j-k-|hhaajjkk|k---j-h-|kkccddff|f-c-h---|k-h-c-a-|ccccddff|a-Y-c-j-|h-------|l-h-t-j-|k---j-h-|kkcch-tt|wwvvkk--|d-c-h-a-|Y-a-c-Y-|h---h---|h-------|
+    //   |J---J---|O---O---|J-------|F-------|H-------|J-------|H-------|F-------|J-------|H-------|J-------|J---J---|H-------|H-------|F-------|F-------|J---Q   |J-Q-J-Q-|R---Q-J-|T---Q-J-|R---Q-J-|J---Q-R-|T---Q-J-|J-Q-J-Q-|J-------|J-T-J-T-|R-Q-J-Q-|J-J-J-J-|R-R-R-R-|T-Q-J-Q-|R---J-Q-|J---J---|J-------|
+    // `
+    // console.timeEnd('p1compile')
   }
   stop() {
     this.music = false;

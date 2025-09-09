@@ -1450,33 +1450,38 @@ export class Dialog extends Entity {
       gameState.ctx.fillStyle = COLOR_MENU_GREEN_1;
       gameState.ctx.strokeStyle = COLOR_MENU_GREEN_2;
       gameState.ctx.lineWidth = 50;
-      const dialogLeft = WIDTH * .5 - 500 - (WIDTH - MENU_START_X);
+      const leftAdjust = gameState.isLoading ? 300 : 0;
+      const dialogLeft = WIDTH * .5 - 500 - (WIDTH - MENU_START_X) + leftAdjust;
       // const dialogRight = dialogLeft + 1500;
       const dialogBottom = HEIGHT * .5 - 450 + 700;
       gameState.ctx.fillRect(dialogLeft, HEIGHT * .5 - 450, 1500, 700);
-      gameState.ctx.strokeRect(WIDTH * .5 - 525 - (WIDTH - MENU_START_X), HEIGHT * .5 - 475, 1550, 750);
-      
-      okButton.addListener();
-      okButton.extraCallback = gameState.dialogCallback;
+      gameState.ctx.strokeRect(WIDTH * .5 - 525 - (WIDTH - MENU_START_X) + leftAdjust, HEIGHT * .5 - 475, 1550, 750);
 
-      if (gameState.dialogShowCancel) {
-        cancelButton.addListener();
-        cancelButton.render();
-      }
-      if (isWaveEnd) {
-        retryButton.addListener();
-        retryButton.render();
-        const btnText = gameState.wave === gameState.waves ? 'Okay' : 'Next'
-        okButton.render(btnText);
-      } else {
-        okButton.render('Okay');
+      if (!gameState.isLoading) {
+        okButton.addListener();
+        okButton.extraCallback = gameState.dialogCallback;
+
+        if (gameState.dialogShowCancel) {
+          cancelButton.addListener();
+          cancelButton.render();
+        }
+
+        if (isWaveEnd) {
+          retryButton.addListener();
+          retryButton.render();
+          const btnText = gameState.wave === gameState.waves ? 'Okay' : 'Next'
+          okButton.render(btnText);
+        } else {
+          okButton.render('Okay');
+        }
       }
 
       gameState.dialogText.forEach((str, i) => {
         setFont(45);
+        gameState.ctx.fillStyle = 'white'
         gameState.ctx.textAlign = 'left'
         gameState.ctx.textBaseline = 'bottom'
-        gameState.ctx.fillText(str, 450, 650 + (i * TILE_WIDTH))
+        gameState.ctx.fillText(str, 450 + leftAdjust, 650 + (i * TILE_WIDTH))
       })
 
       if (isWaveEnd) {
@@ -1610,12 +1615,18 @@ export const startBtn = new Button(
   400,
   150,
   'START', () => {
-    gameState.play();
-    gameState.startWave();
-    selectWave.removeListener(true);
-    gameState.waveSelectBtns.forEach(b => b.setDeleted())
-    gameState.waveStars.forEach(s => s.deleted = true);
-    gameState.setState(SCENES.playing);
+    gameState.isLoading = true;
+    gameState.showDialog(['Loading...'], undefined, false);
+    setTimeout(() => {
+      gameState.play();
+      gameState.startWave();
+      selectWave.removeListener(true);
+      gameState.waveSelectBtns.forEach(b => b.setDeleted())
+      gameState.waveStars.forEach(s => s.deleted = true);
+      gameState.isLoading = false;
+      gameState.closeDialog();
+      gameState.setState(SCENES.playing);
+    })
 })
 
 export const selectWave = new Button(
@@ -1685,7 +1696,7 @@ export const okButton = new Button(1650, 1100, 200, 100, 'Okay',
 export const retryButton = new Button(1650, 950, 200, 100, 'Retry',
   () => {
       gameState.closeDialog();
-      gameState.startWave();
+      gameState.startWave(false);
       okButton.removeListener();
     }
 )
