@@ -72,7 +72,8 @@ function wave1Event (this: WaveData, gameState: GameState) {
       [
         'Oh no, a Black Cat!! Its much faster than critters!', '',
         'It will also CURSE many of your towers as it passes!', '',
-        'Place a Fish on a Stick to distract it!', '',
+        'There are new towers in the menu...',
+        'place a Fish on a Stick to distract it!', '',
         'Click a tower to sell it for extra cash if needed.'
       ], () => new Cat());
   }
