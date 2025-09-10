@@ -115,7 +115,7 @@ const dialogs = [
   ['Skin of snake', 'Wing of fly', 'Soup just splashed', 'Into my eye', 'Ow ow ow!'],
   ['Oh come on', 'Just leave me', 'Some critters!'],
   ['You know', 'I would share', 'Some soup if', 'Youd calm down'],
-  ['If only I had', 'A can of tuna', 'And a can opener'],
+  // ['If only I had', 'A can of tuna', 'And a can opener'],
   ['For how hard', 'Youre trying', 'I sure hope', 'Youre a vegan'],
   ['Wait are you', 'Going to eat', 'These critters', 'Yourself?!'],
 ];

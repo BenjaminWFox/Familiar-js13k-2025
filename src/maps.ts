@@ -236,7 +236,8 @@ export function drawTileMap(ctx: CanvasRenderingContext2D): void {
         // }
       } else if (x * TILE_WIDTH < MENU_START_X) {
         const place = getRandomInt(0, 100)
-        if (place < 10) {
+        const test = gameState.isAndroid ? 3 : 10;
+        if (place < test) {
           const o = getRandomInt(0, 3);
           const s = sprites[fillerOptions[o]]();
           s.draw(ctx, x * TILE_WIDTH, y * TILE_WIDTH, o < 2 ? TILE_WIDTH * 3 : TILE_WIDTH);
