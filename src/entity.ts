@@ -1482,7 +1482,7 @@ export class Dialog extends Entity {
         if (isWaveEnd) {
           retryButton.addListener();
           retryButton.render();
-          const btnText = gameState.wave === gameState.waves ? 'Okay' : 'Next'
+          const btnText = gameState.wave === gameState.waves ? 'Menu' : 'Next'
           okButton.render(btnText);
         } else {
           okButton.render('Okay');

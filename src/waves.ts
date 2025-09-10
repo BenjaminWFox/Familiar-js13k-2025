@@ -310,7 +310,7 @@ export const WAVE_DATA = {
     PATH_7,
     300,
     15,
-    500,
+    650,
     CRITTER_DEFAULT_SPEED + .75,
     CAT_DEFAULT_SPEED + .75,
     wave7Event
