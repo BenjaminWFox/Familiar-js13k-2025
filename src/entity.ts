@@ -489,12 +489,11 @@ export class MenuTower extends BaseTower {
     if (this.dragging) {
         if (gameState.hasTouchDown) {
           // gameState.yTouchOffset = -100;
-          // if (mouseTile.x < WIDTH * .25 && gameState.xTouchOffset > 0) {
-          //   gameState.xTouchOffset = -250;
-          // } else if (mouseTile.x > WIDTH * .75 && gameState.xTouchOffset <= 0) {
-          //   gameState.xTouchOffset = 250;
-          // }
-          gameState.xTouchOffset = -250;
+          if (mouseTile.x < WIDTH * .25 && gameState.xTouchOffset > 0) {
+            gameState.xTouchOffset = -250;
+          } else if (mouseTile.x > WIDTH * .75 && gameState.xTouchOffset <= 0) {
+            gameState.xTouchOffset = 250;
+          }
           gameState.isTouchDragging = true;
         } else {
           gameState.isTouchDragging = false;
