@@ -488,12 +488,23 @@ export class MenuTower extends BaseTower {
 
     if (this.dragging) {
         if (gameState.hasTouchDown) {
-          // gameState.yTouchOffset = -100;
-          if (mouseTile.x < WIDTH * .25 && gameState.xTouchOffset > 0) {
-            gameState.xTouchOffset = -250;
-          } else if (mouseTile.x > WIDTH * .75 && gameState.xTouchOffset <= 0) {
-            gameState.xTouchOffset = 250;
+          if (gameState.hasSwapped && mouseTile.x < MENU_START_X) {
+            gameState.hasSwapped = false;
           }
+          if (!gameState.hasSwapped && mouseTile.x > MENU_START_X) {
+            if(gameState.xTouchOffset === 0) {
+              gameState.xTouchOffset = -250;
+            } else {
+              gameState.xTouchOffset *= -1;
+            }
+            gameState.hasSwapped = true;
+          }
+          // gameState.yTouchOffset = -100;
+          // if (mouseTile.x < WIDTH * .25 && gameState.xTouchOffset > 0) {
+          //   gameState.xTouchOffset = -250;
+          // } else if (mouseTile.x > WIDTH * .75 && gameState.xTouchOffset <= 0) {
+          //   gameState.xTouchOffset = 250;
+          // }
           gameState.isTouchDragging = true;
         } else {
           gameState.isTouchDragging = false;
@@ -604,6 +615,8 @@ export class MenuTower extends BaseTower {
   touchHandler(e: TouchEvent) {
     if (e.targetTouches.length === 1) {
       const t = e.targetTouches[0];
+      gameState.xTouchOffset = -250;
+      gameState.hasSwapped = true;
       this.dragHandler(t as unknown as MouseEvent);
     }
   }
