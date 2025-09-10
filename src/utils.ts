@@ -96,6 +96,7 @@ export function drawMouseTile(ctx: CanvasRenderingContext2D) {
 export function touchHitTest(e: TouchEvent) {
   if (e.targetTouches.length === 1) {
     gameState.hasTouchDown = true;
+    gameState.usedTouch = true;
     gameState.touchStartAt = Date.now();
     const t = e.targetTouches[0];
     setMouseTile(t.pageX, t.pageY);

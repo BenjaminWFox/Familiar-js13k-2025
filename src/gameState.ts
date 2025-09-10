@@ -21,6 +21,7 @@ export class GameState {
   mouseDownAt: number = 0;
   touchStartAt: number = 0;
   hasTouchDown: boolean = false;
+  usedTouch: boolean = false;
   hasSwapped: boolean = false;
   isTouchDragging: boolean = false;
   yTouchOffset: number = 0;

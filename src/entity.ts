@@ -491,7 +491,7 @@ export class MenuTower extends BaseTower {
           if (gameState.hasSwapped && mouseTile.x < MENU_START_X) {
             gameState.hasSwapped = false;
           }
-          if (!gameState.hasSwapped && mouseTile.x > MENU_START_X) {
+          if (!gameState.hasSwapped && mouseTile.x > MENU_START_X + 100) {
             if(gameState.xTouchOffset === 0) {
               gameState.xTouchOffset = -250;
             } else {
@@ -1573,8 +1573,13 @@ export class Button extends Entity {
   }
 
   hitTest() {
-    if (dialog.hasRendered && gameState.mouseDownAt < dialog.openedAt) {
-      return;
+    if (dialog.hasRendered) {
+      console.log(gameState.usedTouch, gameState.mouseDownAt < dialog.openedAt, gameState.touchStartAt < dialog.openedAt);
+      if (gameState.usedTouch &&  gameState.touchStartAt < dialog.openedAt) {
+        return;
+      } else if (gameState.mouseDownAt < dialog.openedAt) {
+        return;
+      }
     }
 
     if (hitTest(this, {x: mouseTile.x, y: mouseTile.y, width: 1, height: 1})) {
