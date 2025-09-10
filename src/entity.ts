@@ -103,7 +103,7 @@ export class Entity {
 }
 
 const dialogs = [
-  ['Wing of fly', 'Eye of fewt', 'Chop em up', 'Into soup!'],
+  ['Wing of fly', 'Eye of newt', 'Chop em up', 'Into soup!'],
   ['Here kitty kitty!', 'Pspspspsps!'],
   ['Pspspspsps!', 'Pspspspsps!'],
   ['Cant a girl', 'Just make soup', 'In peace?!'],
@@ -871,7 +871,7 @@ class WitchText extends Particle {
       const {x, y} = movePoint(this, this.att, this.speed);
       this.x = x;
       this.y = y;
-      setFont(35);
+      setFont(35, 'white', 'bold');
       gameState.ctx.textAlign = 'right'
       gameState.ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
       gameState.ctx.fillText(this.text, this.x, this.y)

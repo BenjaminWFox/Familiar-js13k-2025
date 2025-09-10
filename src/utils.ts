@@ -40,11 +40,11 @@ export const mouseTile = {
 export const canAffordTower = (p: number) => {
   return p <= gameState.cash
 }
-export const setFont = (size: number, color?: string) => {
+export const setFont = (size: number, color?: string, style?: string) => {
   if (color) {
     gameState.ctx.fillStyle = color;
   }
-  gameState.ctx.font = `${size}px 'Courier New'`;
+  gameState.ctx.font = style ? `${style} ${size}px 'Courier New'` : `${size}px 'Courier New'`;
 }
 export const getPriceForAffordability = (p: number) => {
   setFont(MENU_DETAIL_FONT);
